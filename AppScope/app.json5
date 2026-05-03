@@ -1,0 +1,11 @@
+{
+  "app": {
+    "bundleName": "com.1990os.huawei",
+    "vendor": "example",
+    "versionCode": 1000000,
+    "versionName": "1.0.0",
+    "bundleType": "app",
+    "icon": "$media:front",
+    "label": "$string:app_name"
+  }
+}

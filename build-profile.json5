@@ -1,0 +1,58 @@
+{
+  "app": {
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "compileSdkVersion": "6.1.0(23)",
+        "compatibleSdkVersion": "6.1.0(23)",
+        "targetSdkVersion": "6.1.0(23)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        },
+        "bundleType": "app"
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug"
+      },
+      {
+        "name": "release"
+      }
+    ],
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\mengj\\.ohos\\config\\default_code_FBL_fiSExEEjCZk_X9PDjTMy5NQEctmxShq6dMr9lD4=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001A6D930918DC2AD088100877D7A45154A5D0C5E72E547985E493521AE1626604C479F8CFC208B9",
+          "profile": "C:\\Users\\mengj\\.ohos\\config\\default_code_FBL_fiSExEEjCZk_X9PDjTMy5NQEctmxShq6dMr9lD4=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\mengj\\.ohos\\config\\default_code_FBL_fiSExEEjCZk_X9PDjTMy5NQEctmxShq6dMr9lD4=.p12",
+          "storePassword": "0000001AB3F685C2151D03E36A07911025E7F2BB57AC75B366BB65477DBF506D0FF999DE09E787FD075F"
+        }
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}

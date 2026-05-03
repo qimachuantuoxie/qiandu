@@ -1,0 +1,36 @@
+# HarmonyOS 项目 .gitignore
+
+# 构建产物
+.hvigor/
+entry/.hvigor/
+entry/build/
+build/
+
+# IDE 配置
+.idea/
+*.iml
+.DS_Store
+
+# 依赖目录
+oh_modules/
+entry/oh_modules/
+node_modules/
+
+# 预览和临时文件
+.preview/
+*.log
+*.tmp
+
+# 系统文件
+Thumbs.db
+desktop.ini
+
+# 敏感信息
+local.properties
+*.keystore
+*.jks
+
+# 其他
+*.swp
+*.swo
+*~

@@ -1,0 +1,24 @@
+# Obfuscation rules for HarmonyOS application
+# Keep all public classes and methods
+-keep public class * {
+    public *;
+}
+
+# Keep all entry classes
+-keep class entry.** { *; }
+
+# Keep all native methods
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
+
+# Keep all serializable classes
+-keepnames class * implements java.io.Serializable
+
+# Keep all parcelable classes  
+-keep class * implements ohos.utils.Parcelable {
+    *;
+}
+
+# Keep all resource classes
+-keep class **.ResourceTable { *; }

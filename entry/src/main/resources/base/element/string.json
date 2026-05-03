@@ -1,0 +1,102 @@
+{
+    "string": [
+        {
+            "name": "module_desc",
+            "value": "千读阅界电子书阅读模块"
+        },
+        {
+            "name": "EntryAbility_desc",
+            "value": "千读阅界入口Ability"
+        },
+        {
+            "name": "EntryAbility_label",
+            "value": "千读阅界"
+        },
+        {
+            "name": "permission_read_media_reason",
+            "value": "用于读取本地电子书文件"
+        },
+        {
+            "name": "permission_internet_reason",
+            "value": "用于网络连接、在线书源和云同步"
+        },
+        {
+            "name": "permission_camera_reason",
+            "value": "用于扫描二维码或OCR识别"
+        },
+        {
+            "name": "permission_bundle_info",
+            "value": "用于获取应用包信息以检查更新"
+        },
+        {
+            "name": "permission_microphone_reason",
+            "value": "用于语音朗读（TTS）和录音功能"
+        },
+        {
+            "name": "permission_write_media_reason",
+            "value": "用于保存下载的电子书文件"
+        },
+        {
+            "name": "permission_distributed_datasync_reason",
+            "value": "用于多端设备间的数据同步"
+        },
+        {
+            "name": "permission_read_imagevideo_reason",
+            "value": "用于读取相册图片作为书源素材"
+        },
+        {
+            "name": "permission_write_imagevideo_reason",
+            "value": "用于保存笔记截图或封面"
+        },
+        { "name": "app_name", "value": "千读阅界" },
+        { "name": "bookshelf", "value": "书架" },
+        { "name": "discover", "value": "发现" },
+        { "name": "settings", "value": "设置" },
+        { "name": "profile", "value": "我的" },
+        { "name": "reading", "value": "阅读中" },
+        { "name": "finished", "value": "已读完" },
+        { "name": "unread", "value": "未读" },
+        { "name": "favorite", "value": "收藏" },
+        { "name": "add_book", "value": "添加书籍" },
+        { "name": "import_local", "value": "从本地导入" },
+        { "name": "scan_folder", "value": "扫描文件夹" },
+        { "name": "search", "value": "搜索" },
+        { "name": "sort", "value": "排序" },
+        { "name": "filter", "value": "筛选" },
+        { "name": "continue_reading", "value": "继续阅读" },
+        { "name": "recent_books", "value": "最近阅读" },
+        { "name": "total_books", "value": "总书籍" },
+        { "name": "today_reading", "value": "今天阅读" },
+        { "name": "streak_days", "value": "连续阅读" },
+        { "name": "quick_actions", "value": "快捷入口" },
+        { "name": "reading_stats", "value": "阅读统计" },
+        { "name": "todo", "value": "待办事项" },
+        { "name": "bookmarks", "value": "书签" },
+        { "name": "notes", "value": "笔记" },
+        { "name": "source_market", "value": "在线书源" },
+        { "name": "reading_settings", "value": "阅读设置" },
+        { "name": "dark_mode", "value": "深色模式" },
+        { "name": "font_size", "value": "字体大小" },
+        { "name": "language", "value": "语言" },
+        { "name": "about", "value": "关于" },
+        { "name": "help", "value": "帮助" },
+        { "name": "feedback", "value": "意见反馈" },
+        { "name": "privacy_policy", "value": "隐私政策" },
+        { "name": "user_agreement", "value": "用户协议" },
+        { "name": "cancel", "value": "取消" },
+        { "name": "confirm", "value": "确定" },
+        { "name": "delete", "value": "删除" },
+        { "name": "edit", "value": "编辑" },
+        { "name": "save", "value": "保存" },
+        { "name": "add", "value": "添加" },
+        { "name": "back", "value": "返回" },
+        { "name": "loading", "value": "加载中..." },
+        { "name": "no_data", "value": "暂无数据" },
+        { "name": "no_books", "value": "暂无书籍" },
+        { "name": "add_first_book", "value": "点击下方按钮添加您的第一本书" },
+        { "name": "import_success", "value": "成功导入 %{count} 本书" },
+        { "name": "import_failed", "value": "导入失败" },
+        { "name": "scan_complete", "value": "扫描完成，发现 %{count} 个文档" },
+        { "name": "no_supported_format", "value": "未发现支持的文档格式" }
+    ]
+}

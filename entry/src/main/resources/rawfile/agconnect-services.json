@@ -1,0 +1,40 @@
+{
+  "agcgw": {
+    "backurl": "connect-drcn.hispace.hicloud.com",
+    "url": "connect-drcn.dbankcdn.cn",
+    "websocketbackurl": "connect-ws-drcn.hispace.dbankcdn.cn",
+    "websocketurl": "connect-ws-drcn.hispace.dbankcdn.cn"
+  },
+  "agcgw_all": {
+    "CN": {
+      "backurl": "connect-drcn.hispace.hicloud.com",
+      "url": "connect-drcn.dbankcdn.cn",
+      "websocketbackurl": "connect-ws-drcn.hispace.dbankcdn.cn",
+      "websocketurl": "connect-ws-drcn.hispace.dbankcdn.cn"
+    }
+  },
+  "client": {
+    "cp_id": "123456789",
+    "product_id": "909854321",
+    "client_id": "109876543",
+    "package_name": "com.example.qianduyuejie",
+    "client_secret": "your_client_secret_here",
+    "app_id": "105985432"
+  },
+  "oauth_client": {
+    "client_id": "109876543",
+    "client_type": 1
+  },
+  "app_info": {
+    "app_id": "105985432",
+    "package_name": "com.example.qianduyuejie"
+  },
+  "service": {
+    "iap": {
+      "p30coins": false
+    },
+    "account": {
+      "enable": true
+    }
+  }
+}

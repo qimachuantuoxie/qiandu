@@ -1,0 +1,68 @@
+{
+  "color": [
+    {
+      "name": "start_window_background",
+      "value": "#1A1A1A"
+    },
+    {
+      "name": "primary",
+      "value": "#40A9FF"
+    },
+    {
+      "name": "primary_dark",
+      "value": "#69C0FF"
+    },
+    {
+      "name": "background",
+      "value": "#1A1A1A"
+    },
+    {
+      "name": "background_secondary",
+      "value": "#2D2D2D"
+    },
+    {
+      "name": "text_primary",
+      "value": "#E8E8E8"
+    },
+    {
+      "name": "text_secondary",
+      "value": "#B4B4B4"
+    },
+    {
+      "name": "text_hint",
+      "value": "#808080"
+    },
+    {
+      "name": "text_disabled",
+      "value": "#5C5C5C"
+    },
+    {
+      "name": "divider",
+      "value": "#3D3D3D"
+    },
+    {
+      "name": "border",
+      "value": "#4A4A4A"
+    },
+    {
+      "name": "success",
+      "value": "#73D13D"
+    },
+    {
+      "name": "warning",
+      "value": "#FFC53D"
+    },
+    {
+      "name": "error",
+      "value": "#FF7875"
+    },
+    {
+      "name": "card_background",
+      "value": "#2D2D2D"
+    },
+    {
+      "name": "shadow",
+      "value": "#000000"
+    }
+  ]
+}

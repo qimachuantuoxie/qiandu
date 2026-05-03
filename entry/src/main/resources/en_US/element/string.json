@@ -1,0 +1,106 @@
+{
+    "string": [
+        {
+            "name": "module_desc",
+            "value": "QianDu E-Book Reader Module"
+        },
+        {
+            "name": "EntryAbility_desc",
+            "value": "QianDu Reader Entry Ability"
+        },
+        {
+            "name": "EntryAbility_label",
+            "value": "QianDu Reader"
+        },
+        {
+            "name": "permission_read_media_reason",
+            "value": "To read local e-book files"
+        },
+        {
+            "name": "permission_internet_reason",
+            "value": "For network connection, online book sources and cloud sync"
+        },
+        {
+            "name": "permission_camera_reason",
+            "value": "To scan QR codes or perform OCR recognition"
+        },
+        {
+            "name": "permission_bundle_info",
+            "value": "To get application package information for update check"
+        },
+        {
+            "name": "permission_microphone_reason",
+            "value": "For text-to-speech (TTS) and voice recording"
+        },
+        {
+            "name": "permission_write_media_reason",
+            "value": "To save downloaded e-book files"
+        },
+        {
+            "name": "permission_distributed_datasync_reason",
+            "value": "For data sync across devices"
+        },
+        {
+            "name": "permission_read_imagevideo_reason",
+            "value": "To read photo album images as book source materials"
+        },
+        {
+            "name": "permission_write_imagevideo_reason",
+            "value": "To save note screenshots or covers"
+        },
+        {
+            "name": "permission_approximately_location_reason",
+            "value": "For eye tracking device calibration"
+        },
+        { "name": "app_name", "value": "QianDu Reader" },
+        { "name": "bookshelf", "value": "Bookshelf" },
+        { "name": "discover", "value": "Discover" },
+        { "name": "settings", "value": "Settings" },
+        { "name": "profile", "value": "Profile" },
+        { "name": "reading", "value": "Reading" },
+        { "name": "finished", "value": "Finished" },
+        { "name": "unread", "value": "Unread" },
+        { "name": "favorite", "value": "Favorite" },
+        { "name": "add_book", "value": "Add Book" },
+        { "name": "import_local", "value": "Import Local" },
+        { "name": "scan_folder", "value": "Scan Folder" },
+        { "name": "search", "value": "Search" },
+        { "name": "sort", "value": "Sort" },
+        { "name": "filter", "value": "Filter" },
+        { "name": "continue_reading", "value": "Continue Reading" },
+        { "name": "recent_books", "value": "Recent" },
+        { "name": "total_books", "value": "Total Books" },
+        { "name": "today_reading", "value": "Today" },
+        { "name": "streak_days", "value": "Streak" },
+        { "name": "quick_actions", "value": "Quick Actions" },
+        { "name": "reading_stats", "value": "Statistics" },
+        { "name": "todo", "value": "Todo" },
+        { "name": "bookmarks", "value": "Bookmarks" },
+        { "name": "notes", "value": "Notes" },
+        { "name": "source_market", "value": "Source Market" },
+        { "name": "reading_settings", "value": "Reading Settings" },
+        { "name": "dark_mode", "value": "Dark Mode" },
+        { "name": "font_size", "value": "Font Size" },
+        { "name": "language", "value": "Language" },
+        { "name": "about", "value": "About" },
+        { "name": "help", "value": "Help" },
+        { "name": "feedback", "value": "Feedback" },
+        { "name": "privacy_policy", "value": "Privacy Policy" },
+        { "name": "user_agreement", "value": "User Agreement" },
+        { "name": "cancel", "value": "Cancel" },
+        { "name": "confirm", "value": "Confirm" },
+        { "name": "delete", "value": "Delete" },
+        { "name": "edit", "value": "Edit" },
+        { "name": "save", "value": "Save" },
+        { "name": "add", "value": "Add" },
+        { "name": "back", "value": "Back" },
+        { "name": "loading", "value": "Loading..." },
+        { "name": "no_data", "value": "No Data" },
+        { "name": "no_books", "value": "No Books" },
+        { "name": "add_first_book", "value": "Tap below to add your first book" },
+        { "name": "import_success", "value": "Imported %{count} books" },
+        { "name": "import_failed", "value": "Import Failed" },
+        { "name": "scan_complete", "value": "Scan complete, found %{count} docs" },
+        { "name": "no_supported_format", "value": "No supported formats found" }
+    ]
+}
