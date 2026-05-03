@@ -2,7 +2,7 @@
 
 import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { window, router } from '@kit.ArkUI';
+import { window, router, display } from '@kit.ArkUI';
 import { displayHelper } from '../utils/DisplayHelper';
 import { nativeModules } from '../utils/NativeModules';
 import { preferenceManager } from '../utils/PreferenceManager';
@@ -13,9 +13,11 @@ import { imageCacheService } from '../services/image/ImageCacheService';
 import { secureStorage } from '../utils/SecureStorage';
 import { initAppStore } from '../store/AppStore';
 import { huaweiAuthService } from '../services/auth/HuaweiAuthService';
+import { foldableAdapter } from '../utils/FoldableAdapterManager';
 
 export default class EntryAbility extends UIAbility {
   private windowClass: window.Window | null = null;
+  private displayListener: ((id: number) => void) | null = null;
 
   async onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): Promise<void> {
     hilog.info(0x0000, 'EntryAbility', 'Ability onCreate');
@@ -26,10 +28,16 @@ export default class EntryAbility extends UIAbility {
     // 2. 初始化安全存储
     await secureStorage.init(this.context);
 
-    // 3. 初始化设备工具
+    // 3. 初始化设备工具（包含折叠屏检测）
     await DeviceUtils.init();
 
-    // 4. 异步初始化重量级服务（不阻塞 UI 加载）
+    // 4. 初始化折叠屏适配器
+    if (DeviceUtils.isFoldable()) {
+      await foldableAdapter.init();
+      hilog.info(0x0000, 'EntryAbility', 'Foldable device detected and initialized');
+    }
+
+    // 5. 异步初始化重量级服务（不阻塞 UI 加载）
     this.initHeavyServices();
   }
 
@@ -104,9 +112,31 @@ export default class EntryAbility extends UIAbility {
 
   onDestroy(): void {
     hilog.info(0x0000, 'EntryAbility', '%{public}s', 'App onDestroy');
-
-    // 释放所有Kit服务
+  
+    // 清理折叠屏监听器
+    this.cleanupFoldableListeners();
+  
+    // 释放所有 Kit 服务
     this.releaseKitServices();
+      
+    // 清理 DisplayHelper
+    displayHelper.cleanup();
+  }
+  
+  /**
+   * 清理折叠屏监听器
+   */
+  private cleanupFoldableListeners(): void {
+    try {
+      if (this.displayListener) {
+        display.off('change', this.displayListener);
+        this.displayListener = null;
+        hilog.info(0x0000, 'EntryAbility', 'Display listener removed');
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      hilog.error(0x0000, 'EntryAbility', 'Cleanup listeners failed: %{public}s', message);
+    }
   }
 
   /**
