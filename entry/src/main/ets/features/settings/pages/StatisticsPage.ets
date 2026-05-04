@@ -1,65 +1,44 @@
 import { logger } from '../../../common/utils/Logger';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
-// 闃呰�缁熻�椤甸潰 - 灞曠ず瀹屾暣缁熻�鏁版嵁
-
-
 import { common } from '@kit.AbilityKit';
-import { BookInfo } from '../core/models/CoreBookModel';
-import { ReadingStatistics, AchievementBadge } from '../core/models/AdvancedReading';
-import { readingStatisticsManager, achievementManager } from '../core/models/ReadingStats';
-import { advancedNoteManager } from '../core/models/AdvancedReading';
-import { preferenceManager } from '../core/utils/PreferenceManager';
-import { appTheme, themeManager, AppColors, COMMON_COLORS } from '../core/utils/AppTheme';
+import { bookViewModel } from '../core/viewmodels/BookViewModel';
+import { BookInfo, formatDuration } from '../core/models/CoreBookModel';
 import { DeviceUtils } from '../core/utils/DeviceUtils';
+import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../core/utils/AppTheme';
 import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { tr } from '../core/utils/LocalizationUtil';
-import { CommonCard, CardType, EmptyState, EmptyStateType, CommonDivider } from '../components/common/CommonButton';
+import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
 @Entry
-@Component
+@ComponentV2
 struct StatisticsPage {
-  @State statistics: ReadingStatistics = { totalBooks: 0, finishedBooks: 0, readingDays: 0, totalReadingTime: 0, todayReadingTime: 0, weekReadingTime: 0, totalWords: 0, totalNotes: 0, totalBookmarks: 0 };
-  @State badges: AchievementBadge[] = [];
-  @State noteCount: number = 0;
-  @State bookmarkCount: number = 0;
-  @State isTablet: boolean = false;
-  @State isDarkMode: boolean = false;
-  @State currentColors: AppColors = themeManager.getColors();
-  @State fontScale: number = 1.0;
-  @State screenInfo: ScreenInfo | null = null;
+  @Local isDarkMode: boolean = false;
+  @Local currentColors: AppColors = themeManager.getColors();
+  @Local fontScale: number = 1.0;
+  @Local screenInfo: ScreenInfo | null = null;
+  @Local books: BookInfo[] = [];
+  private context: common.Context | null = null;
 
   aboutToAppear() {
+    this.context = this.getUIContext().getHostContext() as common.Context;
     this.initData();
-    this.initAsyncData();
+    this.loadBooks();
   }
 
-  private initData(): void {
+  private async initData(): Promise<void> {
+    if (this.context) {
+      await layoutHelper.init(this.context);
+      this.screenInfo = layoutHelper.getScreenInfo();
+      await fontScaleManager.init(this.context);
+    }
     DeviceUtils.init();
-    this.isTablet = DeviceUtils.isTablet();
     this.isDarkMode = appTheme.isDarkMode();
     this.currentColors = themeManager.getColors();
+    this.fontScale = await fontScaleManager.getFontScale();
   }
 
-  private async initAsyncData(): Promise<void> {
-    const context = this.getUIContext().getHostContext() as common.Context;
-    await layoutHelper.init(context);
-    this.screenInfo = layoutHelper.getScreenInfo();
-    this.fontScale = await fontScaleManager.getFontScale();
-
-    try {
-      preferenceManager.init(context);
-      appTheme.init(context);
-    } catch (error) {
-      logger.info('StatisticsPage context init skipped');
-    }
-
-    this.isTablet = DeviceUtils.isTablet() || (this.screenInfo?.isTablet ?? false);
-    this.statistics = readingStatisticsManager.getFullStatistics();
-    this.badges = achievementManager.getUnlockedBadges();
-    const noteStats = advancedNoteManager.countNotes();
-    this.noteCount = noteStats.notes + noteStats.highlights;
-    this.bookmarkCount = noteStats.total;
+  private loadBooks(): void {
+    this.books = bookViewModel.getAllBooks();
   }
 
   private tc(light: string, dark: string): string {
@@ -69,304 +48,351 @@ struct StatisticsPage {
   private bg(light: string, dark: string): string {
     return this.isDarkMode ? dark : light;
   }
-  
+
+  private getTotalReadingTime(): number {
+    return this.books.reduce((total: number, book: BookInfo) => 
+      total + (book.totalReadingTime || 0), 0);
+  }
+
+  private getTotalReadBooks(): number {
+    return this.books.filter(book => book.readStatus === 2).length;
+  }
+
+  private getAverageReadingTime(): number {
+    const readingBooks = this.books.filter(book => book.totalReadingTime && book.totalReadingTime > 0);
+    if (readingBooks.length === 0) return 0;
+    return Math.floor(
+      readingBooks.reduce((total: number, book: BookInfo) => 
+        total + (book.totalReadingTime || 0), 0) / readingBooks.length
+    );
+  }
+
   build() {
     Column() {
-this.TopBar()
-      
+      // 顶部导航栏
+      Row() {
+        Row() {
+          SymbolGlyph($r('sys.symbol.chevron.left'))
+            .fontSize(Size.iconLG)
+            .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
+        }
+        .width(Size.buttonMD)
+        .height(Size.buttonMD)
+        .borderRadius(BorderRadius.full)
+        .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
+        .justifyContent(FlexAlign.Center)
+        .onClick(() => {
+          try {
+            goBack();
+          } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            logger.error('[StatisticsPage] back failed:', msg);
+          }
+        })
+        .stateStyles({
+          pressed: { .scale({ x: 0.9, y: 0.9 }) },
+          normal: { .scale({ x: 1, y: 1 }) }
+        })
+
+        Text('阅读统计')
+          .fontSize(fontScaleManager.getScaledFontSize(18))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .layoutWeight(1)
+          .textAlign(TextAlign.Center)
+
+        Blank()
+          .width(Size.buttonMD)
+      }
+      .width('100%')
+      .height(Size.buttonLG + Spacing.sm)
+      .padding({ left: Spacing.lg, right: Spacing.lg })
+      .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
+      .shadow(getShadow('sm', this.isDarkMode))
+
       Scroll() {
-        Column({ space: 24 }) {
-          this.statOverviewCard()
-          
-          this.timeDistributionCard()
-          
-          this.badgeCard()
-          
-          this.notesCard()
-          
-          this.rankingCard()
+        Column({ space: Spacing.lg }) {
+          // 核心数据卡片
+          this.CoreStats()
+
+          // 阅读趋势
+          this.ReadingTrend()
+
+          // 阅读偏好
+          this.ReadingPreference()
+
+          // 成就徽章
+          this.Achievements()
         }
         .width('100%')
-        .padding(this.isTablet ? 24 : 16)
+        .padding({ 
+          left: Spacing.lg, 
+          right: Spacing.lg,
+          top: Spacing.md,
+          bottom: Spacing.xxxl
+        })
       }
+      .width('100%')
       .layoutWeight(1)
+      .scrollBar(BarState.Auto)
+      .edgeEffect(EdgeEffect.Spring)
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.currentColors.background)
+    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
   }
-  
+
   @Builder
-  TopBar() {
-    Row() {
-      // 杩斿洖鎸夐挳 - 浼樺寲鏍峰紡
-      Row() {
-        Text('arrow_left')
-          .fontSize(20)
-          .fontColor(this.currentColors.textPrimary)
+  CoreStats() {
+    Column({ space: Spacing.md }) {
+      Text('核心数据')
+        .fontSize(fontScaleManager.getScaledFontSize(16))
+        .fontWeight(FontWeight.SemiBold)
+        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+        .width('100%')
+
+      Row({ space: Spacing.md }) {
+        // 总阅读时长
+        this.StatCard('总阅读时长', formatDuration(this.getTotalReadingTime()), 'clock.fill', this.currentColors.primary)
+        
+        // 已读书籍
+        this.StatCard('已读书籍', `${this.getTotalReadBooks()}本`, 'book.fill', '#4CAF50')
       }
-      .width(40)
-      .height(40)
-      .borderRadius(20)
-      .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)')
-      .justifyContent(FlexAlign.Center)
-      .onClick(() => {
-        try {
-          goBack();
-        } catch (error) {
-          const msg = error instanceof Error ? error.message : String(error);
-          logger.error('[StatisticsPage] back failed:', msg);
-        }
-      })
-      .stateStyles({
-        pressed: { scale: { x: 0.9, y: 0.9 } },
-        normal: { scale: { x: 1, y: 1 } }
-      })
+      .width('100%')
 
-      Text('闃呰�缁熻�')
-        .fontSize(20)
-        .fontWeight(FontWeight.Bold)
-        .fontColor(this.currentColors.textPrimary)
-        .layoutWeight(1)
-        .textAlign(TextAlign.Center)
-
-      Blank()
+      Row({ space: Spacing.md }) {
+        // 平均阅读时长
+        this.StatCard('平均每本', formatDuration(this.getAverageReadingTime()), 'chart.bar.xaxis', '#FF9800')
+        
+        // 藏书数量
+        this.StatCard('藏书总数', `${this.books.length}本`, 'folder.fill', '#9C27B0')
+      }
+      .width('100%')
     }
     .width('100%')
-    .height(56)
-    .padding({ left: Spacing.lg, right: Spacing.lg })
-    .backgroundColor(this.currentColors.cardBackground)
-    .padding(Spacing.lg)
-      top: layoutHelper.getSafeTopPadding(),
-      bottom: Spacing.sm
-    })
-  }
-  
-  @Builder
-  statOverviewCard() {
-    CommonCard({
-      type: CardType.ELEVATED,
-      isDarkMode: this.isDarkMode,
-      cornerRadius: 16,
-      containerPadding: this.isTablet ? 30 : 20
-    }) {
-      Column({ space: 16 }) {
-        Text('chart_bar_fill 闃呰�姒傝�')
-          .fontSize(this.isTablet ? 22 : 18)
-          .fontWeight(FontWeight.Bold)
-          .alignSelf(ItemAlign.Start)
-
-        Grid() {
-          GridItem() {
-this.statItem('book_fill', '鎬讳功绫嶆暟', this.statistics.totalBooks + '锟?, COMMON_COLORS.PRIMARY_BLUE)
-            }
-            GridItem() {
-              this.statItem('checkmark_circle_fill', '宸茶�锟?, this.statistics.finishedBooks + '锟?, COMMON_COLORS.SUCCESS_GREEN)
-            }
-            GridItem() {
-              this.statItem('calendar', '闃呰�澶╂暟', this.statistics.readingDays + '锟?, '#FF6B6B')
-            }
-            GridItem() {
-              this.statItem('stopwatch', '鎬绘椂锟?, Math.round(this.statistics.totalReadingTime / 60) + '灏忔椂', '#FA8C16')
-          }
-        }
-        .columnsTemplate('1fr 1fr')
-        .rowsGap(16)
-        .columnsGap(16)
-      }
-    }
+    .padding(Spacing.xl)
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.xl)
+    .shadow(getShadow('md', this.isDarkMode))
   }
 
   @Builder
-  statItem(icon: string, label: string, value: string, color: string) {
+  StatCard(title: string, value: string, iconName: string, color: string) {
     Column({ space: Spacing.sm }) {
-      // 图标容器 - 带渐变背景
-      Column() {
-        Text(icon)
-          .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(34) : fontScaleManager.getScaledFontSize(28))
-      }
-      .width(this.isTablet ? Size.avatarXL : Size.avatarLG)
-      .height(this.isTablet ? Size.avatarXL : Size.avatarLG)
-      .borderRadius(BorderRadius.lg)
-      .backgroundColor(color + '15')
-      .justifyContent(FlexAlign.Center)
+      SymbolGlyph($r(`sys.symbol.${iconName}`))
+        .fontSize(this.screenInfo?.isTablet ? Size.iconXXL : Size.iconXL)
+        .fontColor([color])
 
       Text(value)
-        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(24) : fontScaleManager.getScaledFontSize(20))
+        .fontSize(fontScaleManager.getScaledFontSize(this.screenInfo?.isTablet ? 20 : 18))
         .fontWeight(FontWeight.Bold)
-        .fontColor(color)
+        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
 
-      Text(label)
-        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(14) : fontScaleManager.getScaledFontSize(12))
-        .fontColor(this.currentColors.textSecondary)
-    }
-    .width('100%')
-    .padding(this.isTablet ? Spacing.xl : Spacing.md)
-    .borderRadius(BorderRadius.md)
-    .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)')
-  }
-  
-  @Builder
-  timeDistributionCard() {
-    Column({ space: 16 }) {
-      Text('闃呰�鏃堕暱鍒嗗竷')
-        .fontSize(this.isTablet ? 22 : 18)
-        .fontWeight(FontWeight.Bold)
-        .alignSelf(ItemAlign.Start)
-      
-      Row({ space: 16 }) {
-        this.timeBlock('浠婃棩', this.statistics.todayReadingTime, '鍒嗛挓')
-        this.timeBlock('鏈�懆', Math.round(this.statistics.weekReadingTime), '鍒嗛挓')
-        this.timeBlock('鎬昏�', Math.round(this.statistics.totalReadingTime), '鍒嗛挓')
-      }
-      .width('100%')
-    }
-    .width('100%')
-    .padding(this.isTablet ? 30 : 20)
-    .borderRadius(16)
-    .backgroundColor(this.currentColors.cardBackground)
-  }
-  
-  @Builder
-  timeBlock(label: string, value: number, unit: string) {
-    Column({ space: Spacing.sm }) {
-      Text(value + unit)
-        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(29) : fontScaleManager.getScaledFontSize(24))
-        .fontWeight(FontWeight.Bold)
-        .fontColor(this.currentColors.primary)
-      
-      Text(label)
-        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(14) : fontScaleManager.getScaledFontSize(12))
-        .fontColor(this.currentColors.textSecondary)
+      Text(title)
+        .fontSize(fontScaleManager.getScaledFontSize(12))
+        .fontColor(this.tc('#8E8E93', '#8E8E93'))
     }
     .layoutWeight(1)
-    .padding(this.isTablet ? Spacing.xl : Spacing.md)
-    .borderRadius(BorderRadius.md)
-    .backgroundColor(this.currentColors.background)
+    .padding(Spacing.md)
+    .backgroundColor(color + '15')
+    .borderRadius(BorderRadius.lg)
   }
-  
+
   @Builder
-  badgeCard() {
-    CommonCard({
-      type: CardType.ELEVATED,
-      isDarkMode: this.isDarkMode,
-      cornerRadius: 16,
-      containerPadding: this.isTablet ? 30 : 20
-    }) {
-      Column({ space: 16 }) {
-        Text('馃弲 鎴愬氨寰界珷 (' + this.badges.length + ')')
-          .fontSize(this.isTablet ? 22 : 18)
-          .fontWeight(FontWeight.Bold)
-          .alignSelf(ItemAlign.Start)
+  ReadingTrend() {
+    Column({ space: Spacing.md }) {
+      Row() {
+        SymbolGlyph($r('sys.symbol.chart.line.uptrend.xyaxis'))
+          .fontSize(Size.iconMD)
+          .fontColor([this.currentColors.primary])
+        
+        Text('阅读趋势')
+          .fontSize(fontScaleManager.getScaledFontSize(16))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .layoutWeight(1)
+          .margin({ left: Spacing.sm })
+      }
+      .width('100%')
 
-        if (this.badges.length > 0) {
-          Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start, alignItems: ItemAlign.Center }) {
-            ForEach(this.badges, (badge: AchievementBadge) => {
-              Column({ space: 8 }) {
-                Text(badge.icon)
-                  .fontSize(this.isTablet ? 38 : 32)
+      // 模拟图表（实际应使用Chart组件）
+      Column() {
+        ForEach([70, 85, 60, 90, 75, 95, 80], (value: number, index: number) => {
+          Row() {
+            Text(['周一', '周二', '周三', '周四', '周五', '周六', '周日'][index])
+              .fontSize(fontScaleManager.getScaledFontSize(11))
+              .fontColor(this.tc('#8E8E93', '#8E8E93'))
+              .width(30)
 
-                Text(badge.name)
-                  .fontSize(this.isTablet ? 14 : 12)
-                  .fontColor(this.currentColors.textPrimary)
-              }
-              .width('25%')
-              .padding(this.isTablet ? 18 : 12)
-            }, (badge: AchievementBadge) => badge.id)
+            Column()
+              .width('100%')
+              .height(value)
+              .linearGradient({
+                direction: GradientDirection.Top,
+                colors: [this.currentColors.primary, this.currentColors.primary + 'CC']
+              })
+              .borderRadius(BorderRadius.sm)
           }
           .width('100%')
-        } else {
-          EmptyState({
-            type: EmptyStateType.DATA,
-            isDarkMode: this.isDarkMode,
-            icon: 'trophy_fill',
-            title: '杩樻病鏈夎幏寰楀窘锟?,
-            subtitle: '缁х画闃呰�瑙ｉ攣鏇村�鎴愬氨锟?',
-            showButton: false
-          })
-        }
+          .alignItems(VerticalAlign.Bottom)
+          .margin({ bottom: Spacing.sm })
+        }, (value: number, index: number) => index.toString())
       }
+      .width('100%')
+      .height(150)
+      .padding({ top: Spacing.lg })
     }
+    .width('100%')
+    .padding(Spacing.xl)
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.xl)
+    .shadow(getShadow('sm', this.isDarkMode))
   }
-  
-@Builder
-  notesCard() {
-    Column({ space: 16 }) {
-      Text('鎴戠殑绗旇�')
-        .fontSize(this.isTablet ? 22 : 18)
-        .fontWeight(FontWeight.Bold)
-        .alignSelf(ItemAlign.Start)
-      
-      Row({ space: 16 }) {
-        this.noteStatItem('note', '绗旇�', this.noteCount)
-        this.noteStatItem('bookmark', '涔︾�', this.bookmarkCount)
+
+  @Builder
+  ReadingPreference() {
+    Column({ space: Spacing.md }) {
+      Row() {
+        SymbolGlyph($r('sysymbol.piechart'))
+          .fontSize(Size.iconMD)
+          .fontColor([this.currentColors.primary])
+        
+        Text('阅读偏好')
+          .fontSize(fontScaleManager.getScaledFontSize(16))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .layoutWeight(1)
+          .margin({ left: Spacing.sm })
+      }
+      .width('100%')
+
+      // 格式分布
+      Column({ space: Spacing.md }) {
+        Text('书籍格式')
+          .fontSize(fontScaleManager.getScaledFontSize(14))
+          .fontWeight(FontWeight.Medium)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .width('100%')
+
+        this.PreferenceBar('EPUB', this.getFormatCount('epub'), '#4CAF50')
+        this.PreferenceBar('PDF', this.getFormatCount('pdf'), '#F44336')
+        this.PreferenceBar('TXT', this.getFormatCount('txt'), '#2196F3')
+        this.PreferenceBar('其他', this.getFormatCount('other'), '#FF9800')
       }
       .width('100%')
     }
     .width('100%')
-    .padding(this.isTablet ? 30 : 20)
-    .borderRadius(16)
-    .backgroundColor(this.currentColors.cardBackground)
+    .padding(Spacing.xl)
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.xl)
+    .shadow(getShadow('sm', this.isDarkMode))
   }
-  
+
   @Builder
-  noteStatItem(icon: string, label: string, count: number) {
-    Column({ space: Spacing.sm }) {
-      Text(icon)
-        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(34) : fontScaleManager.getScaledFontSize(28))
-      
-      Text(count.toString())
-        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(29) : fontScaleManager.getScaledFontSize(24))
-        .fontWeight(FontWeight.Bold)
-        .fontColor(this.currentColors.primary)
-      
+  PreferenceBar(label: string, count: number, color: string) {
+    const total = this.books.length || 1;
+    const percentage = Math.floor(count / total * 100);
+
+    Row({ space: Spacing.md }) {
       Text(label)
-        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(14) : fontScaleManager.getScaledFontSize(12))
-        .fontColor(this.currentColors.textSecondary)
-    }
-    .layoutWeight(1)
-    .padding(this.isTablet ? Spacing.xl : Spacing.md)
-    .borderRadius(BorderRadius.md)
-    .backgroundColor(this.currentColors.background)
-  }
-  
-  @Builder
-  rankingCard() {
-    Column({ space: 16 }) {
-      Text('鎺掕�锟?)
-        .fontSize(this.isTablet ? 22 : 18)
-        .fontWeight(FontWeight.Bold)
-        .alignSelf(ItemAlign.Start)
-      
-      Column() {
-        Text('濂藉弸 PK 鍔熻兘寮€鍙戜腑...')
-          .fontSize(this.isTablet ? 17 : 14)
-          .fontColor(this.currentColors.textSecondary)
-      }
-      .width('100%')
-      .padding(40)
+        .fontSize(fontScaleManager.getScaledFontSize(13))
+        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+        .width(50)
+
+      Progress({ value: count, total: total, type: ProgressType.Linear })
+        .layoutWeight(1)
+        .height(8)
+        .borderRadius(BorderRadius.xl)
+        .color(color)
+        .backgroundColor(this.tc('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.1)'))
+
+      Text(`${count}本 (${percentage}%)`)
+        .fontSize(fontScaleManager.getScaledFontSize(12))
+        .fontColor(this.tc('#8E8E93', '#8E8E93'))
+        .width(80)
+        .textAlign(TextAlign.End)
     }
     .width('100%')
-    .padding(this.isTablet ? 30 : 20)
-    .borderRadius(16)
-    .backgroundColor(this.currentColors.cardBackground)
   }
-  
-  scaleFontSize(baseSize: number): number {
-    return Math.round(baseSize * this.fontScale);
+
+  private getFormatCount(format: string): number {
+    if (format === 'other') {
+      return this.books.filter(book => 
+        !['epub', 'pdf', 'txt'].includes((book.format || '').toLowerCase())
+      ).length;
+    }
+    return this.books.filter(book => 
+      (book.format || '').toLowerCase() === format
+    ).length;
+  }
+
+  @Builder
+  Achievements() {
+    Column({ space: Spacing.md }) {
+      Row() {
+        SymbolGlyph($r('sys.symbol.trophy.fill'))
+          .fontSize(Size.iconMD)
+          .fontColor(['#FFD700'])
+        
+        Text('成就徽章')
+          .fontSize(fontScaleManager.getScaledFontSize(16))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .layoutWeight(1)
+          .margin({ left: Spacing.sm })
+      }
+      .width('100%')
+
+      Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
+        this.AchievementBadge('初次阅读', 'book.fill', '#4CAF50', true)
+        this.AchievementBadge('阅读达人', 'clock.fill', '#2196F3', this.getTotalReadingTime() > 3600000)
+        this.AchievementBadge('博览群书', 'books.vertical.fill', '#9C27B0', this.getTotalReadBooks() >= 10)
+        this.AchievementBadge('坚持阅读', 'calendar.badge.clock', '#FF9800', this.books.some(b => b.lastReadTime && Date.now() - b.lastReadTime < 86400000))
+      }
+      .width('100%')
+    }
+    .width('100%')
+    .padding(Spacing.xl)
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.xl)
+    .shadow(getShadow('sm', this.isDarkMode))
+  }
+
+  @Builder
+  AchievementBadge(name: string, iconName: string, color: string, unlocked: boolean) {
+    Column({ space: Spacing.sm }) {
+      SymbolGlyph($r(`sys.symbol.${iconName}`))
+        .fontSize(Size.iconXL)
+        .fontColor([unlocked ? color : this.tc('#D1D1D6', '#48484A')])
+
+      Text(name)
+        .fontSize(fontScaleManager.getScaledFontSize(11))
+        .fontColor(unlocked ? color : this.tc('#8E8E93', '#8E8E93'))
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+    }
+    .width('30%')
+    .padding(Spacing.md)
+    .backgroundColor(unlocked ? color + '15' : this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+    .borderRadius(BorderRadius.lg)
+    .border({ 
+      width: 1, 
+      color: unlocked ? color + '40' : 'transparent' 
+    })
+    .margin({ right: Spacing.md, bottom: Spacing.md })
   }
 }
 
-// 棰勮�缁勪欢 - 鐢ㄤ簬DevEco Studio棰勮�锟?
+// 预览组件
 @Preview
-@Component
+@ComponentV2
 struct StatisticsPagePreview {
   build() {
     Column() {
-      Text('闃呰�缁熻�锟?- 娴呰壊妯″紡')
+      Text('阅读统计 - 浅色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       StatisticsPage()
@@ -375,10 +401,10 @@ struct StatisticsPagePreview {
       Divider()
         .margin({ top: 20, bottom: 20 })
 
-      Text('闃呰�缁熻�锟?- 娣辫壊妯″紡')
+      Text('阅读统计 - 深色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

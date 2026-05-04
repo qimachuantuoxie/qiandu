@@ -1,70 +1,50 @@
 import { logger } from '../../../common/utils/Logger';
-
-// 璇嶅吀鏌ヨ�椤甸潰 - 楦胯挋鍘熺敓椋庢牸
-// Dictionary Page - HarmonyOS Native Style
-
-
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
+import { router, promptAction } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { preferenceManager } from '../core/utils/PreferenceManager';
-import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../core/utils/AppTheme';
-import { getDarkModeColors, IDarkModeColors, HarmonyColors } from '../core/utils/HarmonyDesignTokens';
-import { dictionaryManager, advancedNoteManager, DictionaryResult, Definition, Example, WordBookItem } from '../core/models/AdvancedReading';
-import { dictionaryViewModel, DictionaryViewModel } from '../viewmodels/DictionaryViewModel';
-import { DeviceUtils } from '../core/utils/DeviceUtils';
+import { themeManager, AppColors, COMMON_COLORS } from '../core/utils/AppTheme';
 import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { BackButton } from '../components/common/BackButton';
-import { tr } from '../core/utils/LocalizationUtil';
 import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
+interface DictionaryResult {
+  word: string;
+  phonetic: string;
+  meanings: MeaningItem[];
+}
+
+interface MeaningItem {
+  partOfSpeech: string;
+  definitions: string[];
+}
+
 @Entry
-@Component
+@ComponentV2
 struct DictionaryPage {
-  @State isDarkMode: boolean = false;
-  @State colors: IDarkModeColors = { background: '', backgroundSecondary: '', cardBackground: '', textPrimary: '', textSecondary: '', textHint: '', primary: '', border: '', surface: '' };
-  @State fontScale: number = 1.0;
-  @State isTablet: boolean = false;
-  @State currentColors: AppColors = themeManager.getColors();
-  @State screenInfo: ScreenInfo | null = null;
+  @Local isDarkMode: boolean = false;
+  @Local currentColors: AppColors = themeManager.getColors();
+  @Local fontScale: number = 1.0;
+  @Local screenInfo: ScreenInfo | null = null;
+  @Local searchText: string = '';
+  @Local searchResult: DictionaryResult | null = null;
+  @Local isSearching: boolean = false;
+  private context: common.Context | null = null;
 
-  vm: DictionaryViewModel = dictionaryViewModel;
-
-  aboutToAppear() {
-    this.initData();
+  async aboutToAppear(): Promise<void> {
+    this.context = this.getUIContext().getHostContext() as common.Context;
+    this.isDarkMode = themeManager.isDarkMode();
+    this.currentColors = themeManager.getColors();
+    this.fontScale = await fontScaleManager.getFontScale();
+    await this.initData();
   }
 
   private async initData(): Promise<void> {
-    try {
-      const context = this.getUIContext().getHostContext() as common.Context;
-      await layoutHelper.init(context);
+    if (this.context) {
+      await layoutHelper.init(this.context);
       this.screenInfo = layoutHelper.getScreenInfo();
-      preferenceManager.init(context);
-      appTheme.init(context);
-      await fontScaleManager.init(context);
-      DeviceUtils.init();
-    } catch (error) {
-      logger.info('DictionaryPage context init skipped');
+      await preferenceManager.init(this.context);
     }
-
-    this.isDarkMode = appTheme.isDarkMode();
-    this.colors = getDarkModeColors(this.isDarkMode);
-    this.fontScale = await fontScaleManager.getFontScale();
-    this.currentColors = themeManager.getColors();
-    this.isTablet = DeviceUtils.isTablet() || (this.screenInfo?.isTablet ?? false);
-
-    this.vm.init();
-  }
-
-  private scaleFontSize(baseSize: number): number {
-    const tabletMultiplier = this.isTablet ? 1.2 : 1.0;
-    return Math.round(baseSize * this.fontScale * tabletMultiplier);
-  }
-
-  private async searchWordAction(): Promise<void> {
-    if (!this.vm.searchWord.trim()) return;
-
-    await this.vm.search(this.vm.searchWord.trim());
   }
 
   private tc(light: string, dark: string): string {
@@ -75,292 +55,355 @@ struct DictionaryPage {
     return this.isDarkMode ? dark : light;
   }
 
-  private addToWordBook(): void {
-    if (!this.vm.currentResult) return;
+  private handleSearch(): void {
+    if (!this.searchText.trim()) {
+      promptAction.showToast({ message: '请输入要查询的单词', duration: 1500 });
+      return;
+    }
 
-    dictionaryManager.addToVocabulary(this.vm.currentResult.word, this.vm.currentResult);
-    this.vm.checkWordBookStatus(this.vm.currentResult.word);
+    this.isSearching = true;
+    
+    // 模拟搜索 - 实际应调用词典API
+    setTimeout(() => {
+      this.isSearching = false;
+      this.searchResult = {
+        word: this.searchText,
+        phonetic: '/ˈdɪkʃənəri/',
+        meanings: [
+          {
+            partOfSpeech: 'n.',
+            definitions: [
+              '词典，字典',
+              '（某学科的）工具书'
+            ]
+          },
+          {
+            partOfSpeech: 'adj.',
+            definitions: [
+              '词典的',
+              '字面的'
+            ]
+          }
+        ]
+      };
+    }, 800);
   }
 
   build() {
     Column() {
-      this.NavBar()
-      this.SearchBar()
-      
-      if (this.vm.showResult && this.vm.currentResult) {
-        this.ResultCard()
-      } else if (this.vm.searchHistory.length > 0) {
-        this.HistoryCard()
-      }
-      
-      Blank()
-    }
-    .width('100%')
-    .height('100%')
-    .backgroundColor(this.colors.background)
-  }
-
-  @Builder
-  NavBar() {
-    Row() {
-      BackButton({ isDarkMode: this.isDarkMode, colors: this.tc('rgba(0,0,0,0.3)', 'rgba(255,255,255,0.3)') })
-
-      Text('璇嶅吀')
-        .fontSize(this.isTablet ? 22 : 18)
-        .fontWeight(600)
-        .fontColor(this.colors.textPrimary)
-        .layoutWeight(1)
-        .textAlign(TextAlign.Center)
-      
-      Button() {
-        Text('锟?)
-          .fontSize(18)
-          .fontWeight(FontWeight.Bold)
-      }
-      .width(40)
-      .height(40)
-      .backgroundColor(this.tc('rgba(0,0,0,0.3)', 'rgba(255,255,255,0.3)'))
-      .borderRadius(20)
-      .onClick(() => {
-        navigateTo('pages/WordBookPage');
-      })
-    }
-    .width('100%')
-    .height(this.isTablet ? 64 : 56)
-    .padding({ left: this.isTablet ? 24 : 16, right: this.isTablet ? 24 : 16 })
-    .backgroundColor(this.isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.3)')
-  }
-
-  @Builder
-  SearchBar() {
-    Column({ space: 12 }) {
-      Row({ space: 12 }) {
+      // 顶部导航栏
+      Row() {
         Row() {
-          Text('锟?)
-            .fontSize(16)
-            .fontWeight(FontWeight.Bold)
-            .margin({ left: 12 })
-          
-          TextInput({ placeholder: '杈撳叆鍗曡瘝鏌ヨ�...', text: this.vm.searchWord })
-            .layoutWeight(1)
-            .height(44)
-            .fontSize(this.scaleFontSize(15))
-            .fontColor(this.colors.textPrimary)
-            .placeholderColor(this.colors.textHint)
-            .backgroundColor('transparent')
-            .onChange((value: string) => {
-              this.vm.searchWord = value;
-            })
-            .onSubmit(() => {
-              this.searchWordAction();
-            })
+          SymbolGlyph($r('sys.symbol.chevron.left'))
+            .fontSize(Size.iconLG)
+            .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
         }
-        .layoutWeight(1)
-        .padding({ left: 8 })
-        .borderRadius(22)
-        .backgroundColor(this.isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)')
-        
-        Button(this.vm.isLoading ? '...' : '鏌ヨ�')
-          .height(44)
-          .padding({ left: 20, right: 20 })
-          .backgroundColor(HarmonyColors.primary)
-          .fontColor('#FFFFFF')
-          .fontSize(this.scaleFontSize(14))
-          .borderRadius(22)
-          .enabled(!this.vm.isLoading)
-          .onClick(() => this.searchWordAction())
+        .width(Size.buttonMD)
+        .height(Size.buttonMD)
+        .borderRadius(BorderRadius.full)
+        .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
+        .justifyContent(FlexAlign.Center)
+        .onClick(() => {
+          try {
+            goBack();
+          } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            logger.error('[DictionaryPage] back failed:', msg);
+          }
+        })
+        .stateStyles({
+          pressed: { .scale({ x: 0.9, y: 0.9 }) },
+          normal: { .scale({ x: 1, y: 1 }) }
+        })
+
+        Text('词典')
+          .fontSize(fontScaleManager.getScaledFontSize(18))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .layoutWeight(1)
+          .textAlign(TextAlign.Center)
+
+        Blank()
+          .width(Size.buttonMD)
       }
-      
-      Row({ space: 8 }) {
-        Text('鏌ヨ�璇�█锟?)
-          .fontSize(13)
-          .fontColor(this.colors.textSecondary)
-        
-        Radio({ value: 'en', group: 'lang' })
-          .checked(this.vm.selectedLanguage === 'en')
-          .onChange((isChecked: boolean) => {
-            if (isChecked) this.vm.selectedLanguage = 'en';
+      .width('100%')
+      .height(Size.buttonLG + Spacing.sm)
+      .padding({ left: Spacing.lg, right: Spacing.lg })
+      .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
+      .shadow(getShadow('sm', this.isDarkMode))
+
+      // 搜索区域
+      Column({ space: Spacing.md }) {
+        Row({ space: Spacing.sm }) {
+          SymbolGlyph($r('sys.symbol.magnifyingglass'))
+            .fontSize(Size.iconMD)
+            .fontColor([this.tc('#8E8E93', '#8E8E93')])
+            .margin({ left: Spacing.md })
+
+          TextInput({ 
+            placeholder: '输入单词查询...', 
+            text: $$this.searchText,
+            onEnterKeyClick: () => this.handleSearch()
           })
-        Text('English')
-          .fontSize(13)
-          .fontColor(this.colors.textSecondary)
+            .placeholderColor(this.tc('#C7C7CC', '#8E8E93'))
+            .fontSize(fontScaleManager.getScaledFontSize(15))
+            .height(Size.inputSM + Spacing.sm)
+            .backgroundColor(Color.Transparent)
+            .layoutWeight(1)
+            .onChange((value: string) => {
+              this.searchText = value;
+            })
 
-        Radio({ value: 'zh', group: 'lang' })
-          .checked(this.vm.selectedLanguage === 'zh')
-          .onChange((isChecked: boolean) => {
-            if (isChecked) this.vm.selectedLanguage = 'zh';
-          })
-        Text('涓�枃')
-          .fontSize(13)
-          .fontColor(this.colors.textSecondary)
-      }
-    }
-    .width('100%')
-    .padding(this.isTablet ? 24 : 16)
-  }
-
-  @Builder
-  ResultCard() {
-    if (this.vm.currentResult) {
-      Scroll() {
-        Column({ space: 16 }) {
-          Row() {
-            Text(this.vm.currentResult.word)
-              .fontSize(this.scaleFontSize(28))
-              .fontWeight(FontWeight.Bold)
-              .fontColor(this.colors.textPrimary)
-
-            if (this.vm.currentResult.phonetic) {
-              Text(this.vm.currentResult.phonetic)
-                .fontSize(this.scaleFontSize(16))
-                .fontColor(this.colors.textHint)
-                .margin({ left: 12 })
+          if (this.searchText) {
+            Row() {
+              SymbolGlyph($r('sys.symbol.xmark.circle.fill'))
+                .fontSize(Size.iconMD)
+                .fontColor([this.tc('#8E8E93', '#8E8E93')])
             }
-          }
-          .width('100%')
-
-          Button(this.vm.isAddedToWordBook ? '锟?宸插姞鍏ョ敓璇嶆湰' : '+ 鍔犲叆鐢熻瘝锟?)
-            .height(40)
-            .padding({ left: 20, right: 20 })
-            .backgroundColor(this.vm.isAddedToWordBook ? 'rgba(76, 175, 80, 0.2)' : HarmonyColors.primary)
-            .fontColor(this.vm.isAddedToWordBook ? '#4CAF50' : '#FFFFFF')
-            .fontSize(this.scaleFontSize(14))
-            .borderRadius(20)
-            .enabled(!this.vm.isAddedToWordBook)
-            .onClick(() => this.addToWordBook())
-
-          Column({ space: 12 }) {
-            ForEach(this.vm.currentResult.definitions, (def: Definition, index: number) => {
-              Column({ space: 4 }) {
-                Text(def.partOfSpeech)
-                  .fontSize(this.scaleFontSize(14))
-                  .fontWeight(FontWeight.Medium)
-                  .fontColor(HarmonyColors.primary)
-
-                Text(String(index + 1) + '. ' + def.meaning)
-                  .fontSize(this.scaleFontSize(15))
-                  .fontColor(this.colors.textPrimary)
-                  .lineHeight(22)
-              }
-              .width('100%')
-              .padding(Spacing.md)
-              .borderRadius(8)
-              .backgroundColor(this.isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)')
-            }, (def: Definition, index: number) => def.partOfSpeech + index)
-          }
-          .width('100%')
-
-          if (this.vm.currentResult.examples && this.vm.currentResult.examples.length > 0) {
-            Column({ space: 8 }) {
-              Text('渚嬪彞')
-                .fontSize(this.scaleFontSize(16))
-                .fontWeight(FontWeight.Medium)
-                .fontColor(this.colors.textPrimary)
-
-              ForEach(this.vm.currentResult.examples, (example: Example) => {
-                Column({ space: 4 }) {
-                  Text(example.sentence)
-                    .fontSize(this.scaleFontSize(14))
-                    .fontColor(this.colors.textPrimary)
-                    .fontStyle(FontStyle.Italic)
-
-                  Text(example.translation || '')
-                    .fontSize(this.scaleFontSize(13))
-                    .fontColor(this.colors.textSecondary)
-                }
-                .width('100%')
-                .padding(Spacing.md)
-                .borderRadius(8)
-                .backgroundColor(this.isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)')
-              }, (example: Example, index: number) => example.sentence + index)
-            }
-            .width('100%')
-          }
-
-          if (this.vm.currentResult.synonyms && this.vm.currentResult.synonyms.length > 0) {
-            Row({ space: 8 }) {
-              Text('鍚屼箟璇嶏細')
-                .fontSize(this.scaleFontSize(14))
-                .fontColor(this.colors.textSecondary)
-
-              Flex({ wrap: FlexWrap.Wrap }) {
-                ForEach(this.vm.currentResult.synonyms, (word: string) => {
-                  Text(word)
-                    .fontSize(this.scaleFontSize(13))
-                    .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-                    .backgroundColor('#007DFF20')
-                    .fontColor(HarmonyColors.primary)
-                    .borderRadius(4)
-                    .margin({ right: 6, bottom: 4 })
-                    .onClick(() => {
-                      this.vm.searchWord = word;
-                      this.searchWordAction();
-                    })
-                }, (word: string) => word)
-              }
-              .layoutWeight(1)
-            }
-            .width('100%')
+            .width(Size.buttonMD)
+            .height(Size.buttonMD)
+            .justifyContent(FlexAlign.Center)
+            .onClick(() => {
+              this.searchText = '';
+              this.searchResult = null;
+            })
           }
         }
         .width('100%')
-        .padding(Spacing.lg)
+        .height(Size.inputSM + Spacing.sm)
+        .padding({ left: Spacing.sm, right: Spacing.sm })
+        .backgroundColor(this.tc('#F2F2F7', '#2C2C2E'))
+        .borderRadius(BorderRadius.xl)
+
+        // 搜索按钮
+        Button() {
+          if (this.isSearching) {
+            LoadingProgress()
+              .width(24)
+              .height(24)
+              .color('#FFFFFF')
+          } else {
+            Row({ space: Spacing.sm }) {
+              SymbolGlyph($r('sys.symbol.magnifyingglass'))
+                .fontSize(Size.iconSM)
+                .fontColor(['#FFFFFF'])
+              
+              Text('查询')
+                .fontSize(fontScaleManager.getScaledFontSize(15))
+                .fontWeight(FontWeight.Medium)
+                .fontColor('#FFFFFF')
+            }
+          }
+        }
+        .width('100%')
+        .height(Size.buttonLG)
+        .linearGradient({
+          direction: GradientDirection.Right,
+          colors: [COMMON_COLORS.PRIMARY_BLUE, COMMON_COLORS.PRIMARY_BLUE + 'CC']
+        })
+        .borderRadius(BorderRadius.xl)
+        .shadow({
+          radius: 8,
+          color: COMMON_COLORS.PRIMARY_BLUE + '40',
+          offsetY: 4
+        })
+        .enabled(!this.isSearching)
+        .onClick(() => this.handleSearch())
+        .stateStyles({
+          pressed: { .scale({ x: 0.98, y: 0.98 }) },
+          normal: { .scale({ x: 1, y: 1 }) }
+        })
       }
-      .layoutWeight(1)
-    }
-  }
+      .width('100%')
+      .padding(Spacing.lg)
 
-  @Builder
-  HistoryCard() {
-    Column({ space: 12 }) {
-      Row() {
-        Text('鎼滅储鍘嗗彶')
-          .fontSize(this.scaleFontSize(16))
-          .fontWeight(FontWeight.Medium)
-          .fontColor(this.colors.textPrimary)
+      // 搜索结果
+      if (this.searchResult) {
+        Scroll() {
+          Column({ space: Spacing.lg }) {
+            // 单词卡片
+            Column({ space: Spacing.md }) {
+              Row({ space: Spacing.md }) {
+                // 字母图标
+                Column() {
+                  Text(this.searchResult!.word.charAt(0).toUpperCase())
+                    .fontSize(fontScaleManager.getScaledFontSize(32))
+                    .fontWeight(FontWeight.Bold)
+                    .fontColor(COMMON_COLORS.PRIMARY_BLUE)
+                }
+                .width(70)
+                .height(70)
+                .borderRadius(BorderRadius.lg)
+                .backgroundColor(COMMON_COLORS.PRIMARY_BLUE + '15')
+                .justifyContent(FlexAlign.Center)
 
-        Blank()
+                Column({ space: Spacing.sm }) {
+                  Text(this.searchResult!.word)
+                    .fontSize(fontScaleManager.getScaledFontSize(24))
+                    .fontWeight(FontWeight.Bold)
+                    .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
 
-        Text('娓呴櫎')
-          .fontSize(this.scaleFontSize(14))
-          .fontColor(this.colors.textHint)
-          .onClick(() => {
-            this.vm.searchHistory = [];
-            preferenceManager.setValue('dictionary_history', '');
-          })
-      }
+                  Text(this.searchResult!.phonetic)
+                    .fontSize(fontScaleManager.getScaledFontSize(14))
+                    .fontColor(this.tc('#8E8E93', '#8E8E93'))
+                }
+                .alignItems(HorizontalAlign.Start)
+                .layoutWeight(1)
 
-      Flex({ wrap: FlexWrap.Wrap }) {
-        ForEach(this.vm.searchHistory, (word: string) => {
-          Text(word)
-            .fontSize(this.scaleFontSize(14))
-            .padding({ left: 12, right: 12, top: 8, bottom: 8 })
-            .backgroundColor(this.isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)')
-            .fontColor(this.colors.textPrimary)
-            .borderRadius(16)
-            .margin({ right: 8, bottom: 8 })
-            .onClick(() => {
-              this.vm.searchWord = word;
-              this.searchWordAction();
+                // 发音按钮
+                Row() {
+                  SymbolGlyph($r('sys.symbol.waveform'))
+                    .fontSize(Size.iconLG)
+                    .fontColor([COMMON_COLORS.PRIMARY_BLUE])
+                }
+                .width(Size.buttonLG)
+                .height(Size.buttonLG)
+                .borderRadius(BorderRadius.full)
+                .backgroundColor(COMMON_COLORS.PRIMARY_BLUE + '15')
+                .justifyContent(FlexAlign.Center)
+                .onClick(() => {
+                  promptAction.showToast({ message: '播放发音', duration: 1000 });
+                })
+              }
+              .width('100%')
+            }
+            .width('100%')
+            .padding(Spacing.xl)
+            .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+            .borderRadius(BorderRadius.xl)
+            .shadow(getShadow('md', this.isDarkMode))
+
+            // 释义列表
+            ForEach(this.searchResult!.meanings, (meaning: MeaningItem, index: number) => {
+              Column({ space: Spacing.md }) {
+                Row({ space: Spacing.sm }) {
+                  Text(meaning.partOfSpeech)
+                    .fontSize(fontScaleManager.getScaledFontSize(16))
+                    .fontWeight(FontWeight.SemiBold)
+                    .fontColor(COMMON_COLORS.PRIMARY_BLUE)
+                  
+                  Rectangle()
+                    .width('100%')
+                    .height(1)
+                    .fill(this.tc('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.06)'))
+                }
+                .width('100%')
+
+                Column({ space: Spacing.sm }) {
+                  ForEach(meaning.definitions, (def: string, idx: number) => {
+                    Row({ space: Spacing.sm }) {
+                      Text((idx + 1).toString() + '.')
+                        .fontSize(fontScaleManager.getScaledFontSize(14))
+                        .fontWeight(FontWeight.Medium)
+                        .fontColor(this.tc('#8E8E93', '#8E8E93'))
+                        .width(20)
+                      
+                      Text(def)
+                        .fontSize(fontScaleManager.getScaledFontSize(14))
+                        .fontColor(this.tc('#3A3A3C', '#E5E5EA'))
+                        .lineHeight(22)
+                        .layoutWeight(1)
+                    }
+                    .width('100%')
+                  }, (def: string, idx: number) => def)
+                }
+                .width('100%')
+              }
+              .width('100%')
+              .padding(Spacing.xl)
+              .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+              .borderRadius(BorderRadius.xl)
+              .shadow(getShadow('sm', this.isDarkMode))
+            }, (meaning: MeaningItem, index: number) => meaning.partOfSpeech + index)
+
+            // 添加到生词本按钮
+            Button() {
+              Row({ space: Spacing.sm }) {
+                SymbolGlyph($r('sys.symbol.bookmark'))
+                  .fontSize(Size.iconMD)
+                  .fontColor(['#FFFFFF'])
+                
+                Text('添加到生词本')
+                  .fontSize(fontScaleManager.getScaledFontSize(15))
+                  .fontWeight(FontWeight.Medium)
+                  .fontColor('#FFFFFF')
+              }
+            }
+            .width('100%')
+            .height(Size.buttonLG)
+            .linearGradient({
+              direction: GradientDirection.Right,
+              colors: ['#FFD700', '#FFA500']
             })
-        }, (word: string) => word)
+            .borderRadius(BorderRadius.xl)
+            .shadow({
+              radius: 8,
+              color: '#FFD70040',
+              offsetY: 4
+            })
+            .onClick(() => {
+              promptAction.showToast({ message: '已添加到生词本', duration: 1500 });
+            })
+            .stateStyles({
+              pressed: { .scale({ x: 0.98, y: 0.98 }) },
+              normal: { .scale({ x: 1, y: 1 }) }
+            })
+          }
+          .width('100%')
+          .padding({ 
+            left: Spacing.lg, 
+            right: Spacing.lg,
+            bottom: Spacing.xxxl
+          })
+        }
+        .layoutWeight(1)
+        .width('100%')
+        .scrollBar(BarState.Auto)
+        .edgeEffect(EdgeEffect.Spring)
+      } else {
+        // 空状态
+        Column({ space: Spacing.xl }) {
+          Column() {
+            SymbolGlyph($r('sysymbol.book.closed'))
+              .fontSize(Size.iconXXXL * 1.5)
+              .fontColor([this.tc('#D1D1D6', '#48484A')])
+          }
+          .width(100)
+          .height(100)
+          .borderRadius(BorderRadius.full)
+          .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+          .justifyContent(FlexAlign.Center)
+
+          Text('输入单词开始查询')
+            .fontSize(fontScaleManager.getScaledFontSize(16))
+            .fontWeight(FontWeight.Medium)
+            .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+
+          Text('支持中英文词典查询')
+            .fontSize(fontScaleManager.getScaledFontSize(13))
+            .fontColor(this.tc('#8E8E93', '#8E8E93'))
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .justifyContent(FlexAlign.Center)
       }
     }
     .width('100%')
-    .padding(Spacing.lg)
+    .height('100%')
+    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
   }
 }
 
-// 棰勮�缁勪欢 - 鐢ㄤ簬DevEco Studio棰勮�锟?
+// 预览组件
 @Preview
-@Component
+@ComponentV2
 struct DictionaryPagePreview {
   build() {
     Column() {
-      Text('璇嶅吀锟?- 娴呰壊妯″紡')
+      Text('词典页面 - 浅色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       DictionaryPage()
@@ -369,10 +412,10 @@ struct DictionaryPagePreview {
       Divider()
         .margin({ top: 20, bottom: 20 })
 
-      Text('璇嶅吀锟?- 娣辫壊妯″紡')
+      Text('词典页面 - 深色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

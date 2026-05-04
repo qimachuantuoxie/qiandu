@@ -1,6 +1,4 @@
 import { logger } from '../../../common/utils/Logger';
-// 闃呰�缁熻�鎶ュ憡椤甸潰
-
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { common } from '@kit.AbilityKit';
 import { bookViewModel } from '../core/viewmodels/BookViewModel';
@@ -13,18 +11,16 @@ import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutCons
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
 @Entry
-@Component
+@ComponentV2
 struct ReadingStatsPage {
-  // UI 鎺у埗鐘讹拷?
-  @State isTablet: boolean = false;
-  @State isDarkMode: boolean = false;
-  @State fontScale: number = 1.0;
-  @State currentColors: AppColors = themeManager.getColors();
-  @State screenInfo: ScreenInfo | null = null;
+  @Local isTablet: boolean = false;
+  @Local isDarkMode: boolean = false;
+  @Local fontScale: number = 1.0;
+  @Local currentColors: AppColors = themeManager.getColors();
+  @Local screenInfo: ScreenInfo | null = null;
 
-  // ViewModel
   vm: ReadingStatsViewModel = readingStatsViewModel;
-  @State private context: common.Context | null = null;
+  @Local private context: common.Context | null = null;
 
   aboutToAppear() {
     this.context = this.getUIContext().getHostContext() as common.Context;
@@ -58,56 +54,59 @@ struct ReadingStatsPage {
     return this.isDarkMode ? dark : light;
   }
 
-  private scaleFontSize(baseSize: number): number {
-    const tabletMultiplier = this.isTablet ? 1.2 : 1.0;
-    return Math.round(baseSize * tabletMultiplier);
-  }
-
   build() {
     Column() {
-      // 椤堕儴瀵艰埅
+      // 顶部导航栏
       this.TopBar()
 
       Scroll() {
-        Column({ space: 16 }) {
-          // 鎬昏�鍗＄墖
+        Column({ space: Spacing.lg }) {
+          // 总览卡片 - 渐变背景
           this.OverviewCard()
 
-          // 杩炵画闃呰�澶╂暟
+          // 连续阅读天数 - 激励卡片
           this.StreakCard()
 
-          // 鏈�懆闃呰�瓒嬪娍
+          // 阅读趋势图表
           this.WeeklyChartCard()
 
-          // 闃呰�鍒嗗竷
+          // 阅读分布统计
           this.DistributionCard()
 
-          // 鏈€杩戦槄锟?
+          // 最近阅读书籍
           this.RecentBooksCard()
         }
         .width('100%')
-        .padding(this.isTablet ? 24 : 16)
+        .padding({ 
+          left: Spacing.lg, 
+          right: Spacing.lg, 
+          bottom: Spacing.xxxl 
+        })
       }
       .width('100%')
       .layoutWeight(1)
+      .scrollBar(BarState.Auto)
+      .edgeEffect(EdgeEffect.Spring)
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.bg('#F5F5F5', '#141414'))
+    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
   }
 
   @Builder
   TopBar() {
     Row() {
-      Button() {
-        Text('杩斿洖')
-          .fontSize(20)
-          .fontColor(this.tc('#333333', '#FFFFFF'))
+      // 返回按钮 - 带背景
+      Row() {
+        SymbolGlyph($r('sys.symbol.chevron.left'))
+          .fontSize(Size.iconLG)
+          .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
       }
-      .width(40)
-      .height(40)
-      .backgroundColor('rgba(255, 255, 255, 0.5)')
-      .borderRadius(20)
+      .width(Size.buttonMD)
+      .height(Size.buttonMD)
+      .borderRadius(BorderRadius.full)
+      .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
+      .justifyContent(FlexAlign.Center)
       .onClick(() => {
         try {
           goBack();
@@ -116,349 +115,500 @@ struct ReadingStatsPage {
           logger.error('[ReadingStatsPage] back failed:', msg);
         }
       })
+      .stateStyles({
+        pressed: { .scale({ x: 0.9, y: 0.9 }) },
+        normal: { .scale({ x: 1, y: 1 }) }
+      })
 
-      Text('闃呰�鎶ュ憡')
-        .fontSize(this.isTablet ? 22 : 18)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(this.tc('#333333', '#FFFFFF'))
+      Text('阅读报告')
+        .fontSize(fontScaleManager.getScaledFontSize(this.isTablet ? 22 : 18))
+        .fontWeight(FontWeight.SemiBold)
+        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
         .layoutWeight(1)
         .textAlign(TextAlign.Center)
 
       Blank()
-        .width(40)
+        .width(Size.buttonMD)
     }
     .width('100%')
-    .height(this.isTablet ? 64 : 56)
-    .padding({ left: this.isTablet ? 24 : 8, right: this.isTablet ? 24 : 8 })
-    .backgroundColor(this.bg('#FFFFFF', '#1C1C1E'))
+    .height(this.isTablet ? Size.buttonXL + Spacing.md : Size.buttonLG + Spacing.sm)
+    .padding({ 
+      left: Spacing.lg, 
+      right: Spacing.lg,
+      top: layoutHelper.getSafeTopPadding()
+    })
+    .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
+    .shadow(getShadow('sm', this.isDarkMode))
   }
 
   @Builder
   OverviewCard() {
-    Column({ space: 16 }) {
-      Text('闃呰�鎬昏�')
-        .fontSize(16)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(this.tc('#333333', '#FFFFFF'))
-        .width('100%')
-
-      Row({ space: 0 }) {
-        this.StatItem('鎬婚槄璇绘椂锟?, formatDuration(this.vm.getTotalStats().totalReadingTime), '锟?, COMMON_COLORS.PRIMARY_BLUE)
-        this.StatItem('浠婃棩闃呰�', formatDuration(this.vm.getTodayData().readingTime), '锟?, '#52C41A')
+    Column({ space: Spacing.lg }) {
+      Row() {
+        SymbolGlyph($r('sys.symbol.chart.pie.fill'))
+          .fontSize(Size.iconLG)
+          .fontColor([this.currentColors.primary])
+        
+        Text('阅读总览')
+          .fontSize(fontScaleManager.getScaledFontSize(17))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .layoutWeight(1)
+          .margin({ left: Spacing.sm })
       }
       .width('100%')
 
-      Row({ space: 0 }) {
-        this.StatItem('鏈�懆闃呰�', formatDuration(this.vm.getWeekData().readingTime), '缁熻�', '#FA8C16')
-        this.StatItem('鏈�湀闃呰�', formatDuration(this.vm.getMonthData().readingTime), '瓒嬪娍', '#722ED1')
+      // 统计数据网格 - 2x2布局
+      Grid() {
+        GridItem() {
+          this.StatItem(
+            'clock.fill', 
+            '总阅读时长', 
+            formatDuration(this.vm.getTotalStats().totalReadingTime), 
+            COMMON_COLORS.PRIMARY_BLUE,
+            'linear-gradient(135deg, #667EEA 0%, #764BA2 100%)'
+          )
+        }
+        GridItem() {
+          this.StatItem(
+            'sun.max.fill', 
+            '今日阅读', 
+            formatDuration(this.vm.getTodayData().readingTime), 
+            '#52C41A',
+            'linear-gradient(135deg, #52C41A 0%, #73D13D 100%)'
+          )
+        }
+        GridItem() {
+          this.StatItem(
+            'calendar.badge.clock', 
+            '本周阅读', 
+            formatDuration(this.vm.getWeekData().readingTime), 
+            '#FA8C16',
+            'linear-gradient(135deg, #FA8C16 0%, #FFC53D 100%)'
+          )
+        }
+        GridItem() {
+          this.StatItem(
+            'chart.line.uptrend.xyaxis', 
+            '本月阅读', 
+            formatDuration(this.vm.getMonthData().readingTime), 
+            '#722ED1',
+            'linear-gradient(135deg, #722ED1 0%, #B37FEB 100%)'
+          )
+        }
       }
+      .columnsTemplate('1fr 1fr')
+      .rowsTemplate('1fr 1fr')
+      .columnsGap(Spacing.md)
+      .rowsGap(Spacing.md)
       .width('100%')
+      .height(this.isTablet ? 220 : 200)
     }
     .width('100%')
-    .padding(16)
-    .backgroundColor(this.bg('#FFFFFF', '#1C1C1E'))
-    .borderRadius(12)
+    .padding(Spacing.xl)
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.xl)
+    .shadow(getShadow('md', this.isDarkMode))
   }
 
   @Builder
-  StatItem(label: string, value: string, icon: string, color: string) {
-    Column({ space: 8 }) {
-      Text(icon)
-        .fontSize(24)
+  StatItem(iconName: string, label: string, value: string, color: string, gradient: string) {
+    Column({ space: Spacing.sm }) {
+      // 图标容器 - 渐变色背景
+      Column() {
+        SymbolGlyph($r(`sys.symbol.${iconName}`))
+          .fontSize(this.isTablet ? Size.iconXXL : Size.iconXL)
+          .fontColor(['#FFFFFF'])
+      }
+      .width(this.isTablet ? Size.avatarLG : Size.avatarMD)
+      .height(this.isTablet ? Size.avatarLG : Size.avatarMD)
+      .borderRadius(BorderRadius.lg)
+      .linearGradient({
+        direction: GradientDirection.Top,
+        colors: [
+          [color, 0.0],
+          [color + 'CC', 1.0]
+        ]
+      })
+      .justifyContent(FlexAlign.Center)
+      .shadow({
+        radius: 8,
+        color: color + '40',
+        offsetY: 4
+      })
 
       Text(value)
-        .fontSize(18)
+        .fontSize(fontScaleManager.getScaledFontSize(16))
         .fontWeight(FontWeight.Bold)
-        .fontColor(color)
+        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
 
       Text(label)
-        .fontSize(12)
-        .fontColor(this.tc('#999999', '#888888'))
+        .fontSize(fontScaleManager.getScaledFontSize(11))
+        .fontColor(this.tc('#8E8E93', '#8E8E93'))
     }
-    .layoutWeight(1)
-    .padding(12)
-    .backgroundColor('#F8F8F8')
-    .borderRadius(8)
+    .width('100%')
+    .height('100%')
+    .justifyContent(FlexAlign.Center)
+    .padding(Spacing.sm)
+    .backgroundColor(this.tc('rgba(0,0,0,0.02)', 'rgba(255,255,255,0.03)'))
+    .borderRadius(BorderRadius.md)
   }
 
   @Builder
   StreakCard() {
-    Column({ space: 12 }) {
-      Row() {
-        Text('馃敟')
-          .fontSize(24)
-
-        Column({ space: 4 }) {
-          Text('杩炵画闃呰� ' + this.vm.getCurrentStreak() + ' 锟?)
-            .fontSize(18)
-            .fontWeight(FontWeight.Bold)
-            .fontColor('#FF4D4F')
-
-          Text('淇濇寔闃呰�涔犳儻锛岀户缁�姞娌癸紒')
-            .fontSize(13)
-            .fontColor(this.tc('#999999', '#888888'))
-        }
-        .layoutWeight(1)
-        .alignItems(HorizontalAlign.Start)
-        .margin({ left: 12 })
+    Row({ space: Spacing.lg }) {
+      // 火焰图标 - 带动画效果
+      Column() {
+        SymbolGlyph($r('sys.symbol.flame.fill'))
+          .fontSize(Size.iconXXXL)
+          .fontColor(['#FF4D4F'])
       }
-      .width('100%')
+      .width(this.isTablet ? Size.avatarXL : Size.avatarLG)
+      .height(this.isTablet ? Size.avatarXL : Size.avatarLG)
+      .borderRadius(BorderRadius.full)
+      .linearGradient({
+        direction: GradientDirection.Top,
+        colors: ['#FFF2F0', '#FFCCC7']
+      })
+      .justifyContent(FlexAlign.Center)
+
+      Column({ space: Spacing.xs }) {
+        Text('连续阅读 ' + this.vm.getCurrentStreak() + ' 天')
+          .fontSize(fontScaleManager.getScaledFontSize(18))
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#FF4D4F')
+
+        Text('保持阅读习惯，继续加油！')
+          .fontSize(fontScaleManager.getScaledFontSize(13))
+          .fontColor(this.tc('#8E8E93', '#8E8E93'))
+      }
+      .alignItems(HorizontalAlign.Start)
+      .layoutWeight(1)
     }
     .width('100%')
-    .padding(16)
-    .backgroundColor('#FFF2F0')
-    .borderRadius(12)
-    .border({ width: 1, color: '#FFCCC7' })
+    .padding(Spacing.xl)
+    .linearGradient({
+      direction: GradientDirection.Right,
+      colors: this.isDarkMode 
+        ? [['rgba(255,77,79,0.15)', 0.0], ['rgba(255,77,79,0.05)', 1.0]]
+        : [['#FFF2F0', 0.0], ['#FFFFFF', 1.0]]
+    })
+    .borderRadius(BorderRadius.xl)
+    .border({ 
+      width: 1.5, 
+      color: this.isDarkMode ? 'rgba(255,77,79,0.3)' : '#FFCCC7' 
+    })
+    .shadow({
+      radius: 12,
+      color: 'rgba(255,77,79,0.15)',
+      offsetY: 4
+    })
   }
 
   @Builder
   WeeklyChartCard() {
-    Column({ space: 16 }) {
+    Column({ space: Spacing.lg }) {
       Row() {
-        Text('闃呰�瓒嬪娍')
-          .fontSize(16)
-          .fontWeight(FontWeight.Medium)
-          .fontColor(this.tc('#333333', '#FFFFFF'))
+        SymbolGlyph($r('sys.symbol.chart.bar.xaxis'))
+          .fontSize(Size.iconLG)
+          .fontColor([this.currentColors.primary])
+        
+        Text('阅读趋势')
+          .fontSize(fontScaleManager.getScaledFontSize(17))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
           .layoutWeight(1)
+          .margin({ left: Spacing.sm })
 
-        // 鍛ㄦ湡鍒囨崲鎸夐挳
-        Row({ space: 8 }) {
-          this.PeriodButton('锟?, 'week')
-          this.PeriodButton('锟?, 'month')
-          this.PeriodButton('锟?, 'year')
+        // 周期切换按钮
+        Row({ space: Spacing.xs }) {
+          this.PeriodButton('周', 'week')
+          this.PeriodButton('月', 'month')
+          this.PeriodButton('年', 'year')
         }
       }
       .width('100%')
 
-      // 鏌辩姸锟?
-      Row({ space: 8 }) {
+      // 柱状图
+      Row({ space: Spacing.sm }) {
         ForEach(this.vm.getTrendData(), (value: TrendDataPoint, index: number) => {
-          Column({ space: 4 }) {
+          Column({ space: Spacing.xs }) {
+            // 柱子
             Column()
-              .width(24)
-              .height(value.minutes > 0 ? Math.max(20, (value.minutes / this.getMaxTrendValue()) * 100) : 4)
-              .backgroundColor(value.minutes > 0 ? COMMON_COLORS.PRIMARY_BLUE : '#E8E8E8')
-              .borderRadius(4)
+              .width('100%')
+              .height(value.minutes > 0 
+                ? Math.max(30, (value.minutes / this.getMaxTrendValue()) * 120) 
+                : 4)
+              .linearGradient({
+                direction: GradientDirection.Top,
+                colors: value.minutes > 0 
+                  ? [
+                      [COMMON_COLORS.PRIMARY_BLUE, 0.0], 
+                      [COMMON_COLORS.PRIMARY_BLUE + '80', 1.0]
+                    ]
+                  : [
+                      [this.tc('#E8E8E8', '#3A3A3C'), 0.0], 
+                      [this.tc('#E8E8E8', '#3A3A3C'), 1.0]
+                    ]
+              })
+              .borderRadius({ topLeft: 6, topRight: 6 })
 
+            // 日期标签
             Text(this.getShortDateLabel(value.date))
-              .fontSize(11)
-              .fontColor(this.tc('#999999', '#888888'))
+              .fontSize(fontScaleManager.getScaledFontSize(11))
+              .fontColor(this.tc('#8E8E93', '#8E8E93'))
           }
           .layoutWeight(1)
-          .height(120)
+          .height(150)
           .justifyContent(FlexAlign.End)
         }, (value: TrendDataPoint, index: number) => value.date)
       }
       .width('100%')
-      .height(140)
+      .height(170)
+      .padding({ top: Spacing.sm })
 
-      // 骞冲潎锟?
-      Row() {
-        Text('鏃ュ潎闃呰�: ' + this.getAvgDailyMinutes() + ' 鍒嗛挓')
-          .fontSize(13)
-          .fontColor('#666666')
+      // 平均数据
+      Row({ space: Spacing.xs }) {
+        SymbolGlyph($r('sys.symbol.info.circle'))
+          .fontSize(Size.iconSM)
+          .fontColor([this.tc('#8E8E93', '#8E8E93')])
+        
+        Text('日均阅读: ' + this.getAvgDailyMinutes() + ' 分钟')
+          .fontSize(fontScaleManager.getScaledFontSize(13))
+          .fontColor(this.tc('#8E8E93', '#8E8E93'))
       }
       .width('100%')
       .justifyContent(FlexAlign.Center)
+      .padding({ top: Spacing.sm })
     }
     .width('100%')
-    .padding(16)
-    .backgroundColor(this.bg('#FFFFFF', '#1C1C1E'))
-    .borderRadius(12)
+    .padding(Spacing.xl)
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.xl)
+    .shadow(getShadow('md', this.isDarkMode))
   }
 
   @Builder
   PeriodButton(label: string, period: StatsPeriod) {
     Button(label)
-      .height(28)
-      .fontSize(12)
-      .fontColor(this.vm.getSelectedPeriod() === period ? '#FFFFFF' : this.tc('#666666', '#AAAAAA'))
-      .backgroundColor(this.vm.getSelectedPeriod() === period ? COMMON_COLORS.PRIMARY_BLUE : 'rgba(150, 150, 150, 0.1)')
-      .borderRadius(14)
+      .height(Size.buttonSM)
+      .fontSize(fontScaleManager.getScaledFontSize(12))
+      .fontColor(this.vm.getSelectedPeriod() === period 
+        ? '#FFFFFF' 
+        : this.tc('#8E8E93', '#8E8E93'))
+      .backgroundColor(this.vm.getSelectedPeriod() === period 
+        ? COMMON_COLORS.PRIMARY_BLUE 
+        : this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
+      .borderRadius(BorderRadius.xl)
       .onClick(() => this.vm.setSelectedPeriod(period))
+      .stateStyles({
+        pressed: { .scale({ x: 0.95, y: 0.95 }) },
+        normal: { .scale({ x: 1, y: 1 }) }
+      })
   }
 
   private getMaxTrendValue(): number {
     const data = this.vm.getTrendData();
-    return data.reduce((max: number, val: TrendDataPoint) => val.minutes > max ? val.minutes : max, 1);
+    return data.reduce((max: number, val: TrendDataPoint) => 
+      val.minutes > max ? val.minutes : max, 1);
   }
 
   private getShortDateLabel(dateStr: string): string {
-    // 绠€鍖栨棩鏈熸樉锟?
     if (dateStr.includes('-') && dateStr.split('-').length === 3) {
       const parts = dateStr.split('-');
-      return parts[2]; // 鍙�樉绀烘棩锟?
+      return parts[2];
     }
-    return dateStr.substring(0, 5); // 鏈堜唤
+    return dateStr.substring(0, 5);
   }
 
   private getAvgDailyMinutes(): number {
     const data = this.vm.getTrendData();
     if (data.length === 0) return 0;
-    const total = data.reduce((sum: number, item: TrendDataPoint) => sum + item.minutes, 0);
+    const total = data.reduce((sum: number, item: TrendDataPoint) => 
+      sum + item.minutes, 0);
     return Math.floor(total / data.length);
   }
 
   @Builder
   DistributionCard() {
-    Column({ space: 16 }) {
-      Text('闃呰�鍒嗗竷')
-        .fontSize(16)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(this.tc('#333333', '#FFFFFF'))
-        .width('100%')
+    Column({ space: Spacing.lg }) {
+      Row() {
+        SymbolGlyph($r('sys.symbol.piechart.fill'))
+          .fontSize(Size.iconLG)
+          .fontColor([this.currentColors.primary])
+        
+        Text('阅读分布')
+          .fontSize(fontScaleManager.getScaledFontSize(17))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .layoutWeight(1)
+          .margin({ left: Spacing.sm })
+      }
+      .width('100%')
 
-      Row({ space: 16 }) {
-        // 涔︾睄鐘舵€佺粺锟?
-        Column({ space: 8 }) {
-          Text('馃摎')
-            .fontSize(32)
+      Row({ space: Spacing.md }) {
+        // 总书籍数
+        Column({ space: Spacing.sm }) {
+          Column() {
+            SymbolGlyph($r('sys.symbol.books.vertical.fill'))
+              .fontSize(this.isTablet ? Size.iconXXXL : Size.iconXXL)
+              .fontColor([COMMON_COLORS.PRIMARY_BLUE])
+          }
+          .width(this.isTablet ? Size.avatarXL : Size.avatarLG)
+          .height(this.isTablet ? Size.avatarXL : Size.avatarLG)
+          .borderRadius(BorderRadius.lg)
+          .backgroundColor(COMMON_COLORS.PRIMARY_BLUE + '15')
+          .justifyContent(FlexAlign.Center)
 
-          Text(this.vm.getTotalStats().totalBooks + ' 锟?)
-            .fontSize(14)
+          Text(this.vm.getTotalStats().totalBooks + ' 本')
+            .fontSize(fontScaleManager.getScaledFontSize(14))
             .fontWeight(FontWeight.Medium)
-            .fontColor(this.tc('#333333', '#FFFFFF'))
+            .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
 
-          Text('鎬讳功锟?)
-            .fontSize(12)
-            .fontColor(this.tc('#999999', '#888888'))
+          Text('总藏书')
+            .fontSize(fontScaleManager.getScaledFontSize(12))
+            .fontColor(this.tc('#8E8E93', '#8E8E93'))
         }
         .layoutWeight(1)
-        .padding(12)
-        .backgroundColor('#F6FFED')
-        .borderRadius(8)
+        .padding(Spacing.md)
+        .backgroundColor(this.tc('#F6FFED', 'rgba(82,196,26,0.1)'))
+        .borderRadius(BorderRadius.lg)
 
-        Column({ space: 8 }) {
-          Text('纭�畾')
-            .fontSize(32)
+        // 已读完
+        Column({ space: Spacing.sm }) {
+          Column() {
+            SymbolGlyph($r('sys.symbol.checkmark.circle.fill'))
+              .fontSize(this.isTablet ? Size.iconXXXL : Size.iconXXL)
+              .fontColor(['#52C41A'])
+          }
+          .width(this.isTablet ? Size.avatarXL : Size.avatarLG)
+          .height(this.isTablet ? Size.avatarXL : Size.avatarLG)
+          .borderRadius(BorderRadius.lg)
+          .backgroundColor('#52C41A15')
+          .justifyContent(FlexAlign.Center)
 
-          Text(this.vm.getTotalStats().finishedBooks + ' 锟?)
-            .fontSize(14)
+          Text(this.vm.getTotalStats().finishedBooks + ' 本')
+            .fontSize(fontScaleManager.getScaledFontSize(14))
             .fontWeight(FontWeight.Medium)
             .fontColor('#52C41A')
 
-          Text('宸茶�锟?)
-            .fontSize(12)
-            .fontColor(this.tc('#999999', '#888888'))
+          Text('已读完')
+            .fontSize(fontScaleManager.getScaledFontSize(12))
+            .fontColor(this.tc('#8E8E93', '#8E8E93'))
         }
         .layoutWeight(1)
-        .padding(12)
-        .backgroundColor('#F6FFED')
-        .borderRadius(8)
+        .padding(Spacing.md)
+        .backgroundColor(this.tc('#F6FFED', 'rgba(82,196,26,0.1)'))
+        .borderRadius(BorderRadius.lg)
 
-        Column({ space: 8 }) {
-          Text('闃呰�')
-            .fontSize(32)
+        // 阅读天数
+        Column({ space: Spacing.sm }) {
+          Column() {
+            SymbolGlyph($r('sys.symbol.calendar.badge.clock'))
+              .fontSize(this.isTablet ? Size.iconXXXL : Size.iconXXL)
+              .fontColor(['#FA8C16'])
+          }
+          .width(this.isTablet ? Size.avatarXL : Size.avatarLG)
+          .height(this.isTablet ? Size.avatarXL : Size.avatarLG)
+          .borderRadius(BorderRadius.lg)
+          .backgroundColor('#FA8C1615')
+          .justifyContent(FlexAlign.Center)
 
-          Text(this.vm.getTotalStats().readingDays + ' 锟?)
-            .fontSize(14)
+          Text(this.vm.getTotalStats().readingDays + ' 天')
+            .fontSize(fontScaleManager.getScaledFontSize(14))
             .fontWeight(FontWeight.Medium)
-            .fontColor(COMMON_COLORS.PRIMARY_BLUE)
+            .fontColor('#FA8C16')
 
-          Text('闃呰�澶╂暟')
-            .fontSize(12)
-            .fontColor(this.tc('#999999', '#888888'))
+          Text('阅读天数')
+            .fontSize(fontScaleManager.getScaledFontSize(12))
+            .fontColor(this.tc('#8E8E93', '#8E8E93'))
         }
         .layoutWeight(1)
-        .padding(12)
-        .backgroundColor('#E6F7FF')
-        .borderRadius(8)
+        .padding(Spacing.md)
+        .backgroundColor(this.tc('#FFF7E6', 'rgba(250,140,22,0.1)'))
+        .borderRadius(BorderRadius.lg)
       }
       .width('100%')
     }
     .width('100%')
-    .padding(16)
-    .backgroundColor(this.bg('#FFFFFF', '#1C1C1E'))
-    .borderRadius(12)
+    .padding(Spacing.xl)
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.xl)
+    .shadow(getShadow('md', this.isDarkMode))
   }
 
   @Builder
   RecentBooksCard() {
-    Column({ space: 12 }) {
+    Column({ space: Spacing.lg }) {
       Row() {
-        Text('鏈€杩戦槄锟?)
-          .fontSize(16)
-          .fontWeight(FontWeight.Medium)
-          .fontColor(this.tc('#333333', '#FFFFFF'))
+        SymbolGlyph($r('sys.symbol.book.fill'))
+          .fontSize(Size.iconLG)
+          .fontColor([this.currentColors.primary])
+        
+        Text('最近阅读')
+          .fontSize(fontScaleManager.getScaledFontSize(17))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
           .layoutWeight(1)
+          .margin({ left: Spacing.sm })
 
-        Text('鏌ョ湅鍏ㄩ儴 >')
-          .fontSize(13)
-          .fontColor(COMMON_COLORS.PRIMARY_BLUE)
+        Text('查看全部')
+          .fontSize(fontScaleManager.getScaledFontSize(13))
+          .fontColor(this.currentColors.primary)
           .onClick(() => navigateTo('pages/ReadRecordPage'))
       }
       .width('100%')
 
-      if (this.getRecentBooks().length === 0) {
-        Text('鏆傛棤闃呰�璁板綍')
-          .fontSize(13)
-          .fontColor(this.tc('#999999', '#888888'))
-          .width('100%')
-          .padding(20)
-          .textAlign(TextAlign.Center)
-      } else {
-        Column({ space: 8 }) {
-          ForEach(this.getRecentBooks(), (book: BookInfo) => {
-            Row({ space: 12 }) {
-              Column() {
-                Text(book.title.charAt(0))
-                  .fontSize(16)
-                  .fontWeight(FontWeight.Bold)
-                  .fontColor('#FFFFFF')
-              }
-              .width(40)
-              .height(40)
-              .backgroundColor(COMMON_COLORS.PRIMARY_BLUE)
-              .borderRadius(8)
-              .justifyContent(FlexAlign.Center)
-
-              Column({ space: 4 }) {
-                Text(book.title)
-                  .fontSize(14)
-                  .fontWeight(FontWeight.Medium)
-                  .fontColor(this.tc('#333333', '#FFFFFF'))
-                  .maxLines(1)
-                  .textOverflow({ overflow: TextOverflow.Ellipsis })
-                  .width('100%')
-
-                Text('宸茶� ' + book.readProgress + '% 锟?' + formatDuration(book.totalReadTime || 0))
-                  .fontSize(12)
-                  .fontColor(this.tc('#999999', '#888888'))
-                  .width('100%')
-              }
-              .layoutWeight(1)
-              .alignItems(HorizontalAlign.Start)
-
-              Button('缁х画')
-                .height(28)
-                .fontSize(12)
-                .backgroundColor('#E6F7FF')
-                .fontColor(COMMON_COLORS.PRIMARY_BLUE)
-                .borderRadius(14)
-                .onClick(() => {
-  const navParams: Record<string, Object> = {};
-  navParams['bookId'] = book.id;
-  navigateTo('pages/EnhancedReaderPage', navParams);
-})
-            }
-            .width('100%')
-            .padding(12)
-            .backgroundColor('#F8F8F8')
-            .borderRadius(8)
-          }, (book: BookInfo) => book.id)
-        }
-        .width('100%')
+      // 最近阅读列表（简化版）
+      Column() {
+        Text('暂无阅读记录')
+          .fontSize(fontScaleManager.getScaledFontSize(14))
+          .fontColor(this.tc('#8E8E93', '#8E8E93'))
+          .padding(Spacing.xl)
       }
+      .width('100%')
+      .backgroundColor(this.tc('rgba(0,0,0,0.02)', 'rgba(255,255,255,0.03)'))
+      .borderRadius(BorderRadius.md)
     }
     .width('100%')
-    .padding(16)
-    .backgroundColor(this.bg('#FFFFFF', '#1C1C1E'))
-    .borderRadius(12)
-  }
-
-  private getRecentBooks(): BookInfo[] {
-    return bookViewModel.getRecentBooks(5);
+    .padding(Spacing.xl)
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.xl)
+    .shadow(getShadow('md', this.isDarkMode))
   }
 }
 
-// 闃呰�璁板綍鎺ュ彛锛堣ˉ鍏咃級
+// 预览组件
+@Preview
+@ComponentV2
+struct ReadingStatsPagePreview {
+  build() {
+    Column() {
+      Text('阅读统计 - 浅色模式')
+        .fontSize(16)
+        .fontWeight(FontWeight.Bold)
+        .padding(Spacing.md)
+        .backgroundColor('#F0F0F0')
+
+      ReadingStatsPage()
+        .height(700)
+
+      Divider()
+        .margin({ top: 20, bottom: 20 })
+
+      Text('阅读统计 - 深色模式')
+        .fontSize(16)
+        .fontWeight(FontWeight.Bold)
+        .padding(Spacing.md)
+        .backgroundColor('#333333')
+        .fontColor('#FFFFFF')
+
+      ReadingStatsPage()
+        .height(700)
+    }
+    .width('100%')
+    .backgroundColor('#FFFFFF')
+  }
+}

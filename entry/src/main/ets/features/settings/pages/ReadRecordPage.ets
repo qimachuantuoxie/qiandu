@@ -1,42 +1,63 @@
-import { logger } from '../../common/utils/Logger';
-import { navigateTo } from '../../../common/utils/NavigationHelper';
-
-import { ReadRecord, formatTime, formatDuration } from '../core/models/CoreBookModel';
+import { logger } from '../../../common/utils/Logger';
+import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
+import { common } from '@kit.AbilityKit';
 import { bookViewModel } from '../core/viewmodels/BookViewModel';
-import { themeManager, AppColors } from '../core/utils/AppTheme';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
+import { BookInfo, formatDuration } from '../core/models/CoreBookModel';
 import { DeviceUtils } from '../core/utils/DeviceUtils';
-import { BackButton } from '../components/common/BackButton';
+import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../core/utils/AppTheme';
+import { fontScaleManager } from '../core/utils/FontScaleManager';
+import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
 enum TabType {
-  ALL,
-  TODAY,
-  WEEK
+  ALL = '全部',
+  READING = '阅读中',
+  FINISHED = '已读完'
 }
 
 @Entry
-@Component
+@ComponentV2
 struct ReadRecordPage {
-  @State currentTab: TabType = TabType.ALL;
-  @State showSortPanel: boolean = false;
-  @State editingRecord: ReadRecord | null = null;
-  @State isDarkMode: boolean = false;
-  @State currentColors: AppColors = themeManager.getColors();
-  @State fontScale: number = 1.0;
-  @State isTablet: boolean = false;
-  @State screenInfo: ScreenInfo | null = null;
+  @Local currentTab: TabType = TabType.ALL;
+  @Local isDarkMode: boolean = false;
+  @Local currentColors: AppColors = themeManager.getColors();
+  @Local fontScale: number = 1.0;
+  @Local screenInfo: ScreenInfo | null = null;
+  @Local books: BookInfo[] = [];
+  private context: common.Context | null = null;
 
-  async aboutToAppear(): Promise<void> {
-    const context = this.getUIContext().getHostContext();
-    if (context) {
-      await layoutHelper.init(context);
+  aboutToAppear() {
+    this.context = this.getUIContext().getHostContext() as common.Context;
+    this.initData();
+    this.loadBooks();
+  }
+
+  private async initData(): Promise<void> {
+    if (this.context) {
+      await layoutHelper.init(this.context);
       this.screenInfo = layoutHelper.getScreenInfo();
+      await fontScaleManager.init(this.context);
     }
-    this.isDarkMode = themeManager.isDarkMode();
+    DeviceUtils.init();
+    this.isDarkMode = appTheme.isDarkMode();
     this.currentColors = themeManager.getColors();
     this.fontScale = await fontScaleManager.getFontScale();
-    this.isTablet = DeviceUtils.isTablet() || (this.screenInfo?.isTablet ?? false);
+  }
+
+  private loadBooks(): void {
+    const allBooks = bookViewModel.getAllBooks();
+    
+    switch (this.currentTab) {
+      case TabType.READING:
+        this.books = allBooks.filter(book => book.readStatus !== 2);
+        break;
+      case TabType.FINISHED:
+        this.books = allBooks.filter(book => book.readStatus === 2);
+        break;
+      default:
+        this.books = allBooks;
+        break;
+    }
   }
 
   private tc(light: string, dark: string): string {
@@ -47,225 +68,328 @@ struct ReadRecordPage {
     return this.isDarkMode ? dark : light;
   }
 
-  private getFilteredRecords(): ReadRecord[] {
-    const records = bookViewModel.getAllReadRecords();
-    if (this.currentTab === TabType.TODAY) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayTime = today.getTime();
-      return records.filter((r: ReadRecord) => r.endTime >= todayTime);
-    } else if (this.currentTab === TabType.WEEK) {
-      const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-      return records.filter((r: ReadRecord) => r.endTime >= weekAgo);
-    }
-    return records;
+  private getTotalReadingTime(): number {
+    return this.books.reduce((total: number, book: BookInfo) => 
+      total + (book.totalReadingTime || 0), 0);
   }
 
   private getTotalReadBooks(): number {
-    const bookIds: string[] = [];
-    const records = bookViewModel.getAllReadRecords();
-    for (let i = 0; i < records.length; i++) {
-      let exists = false;
-      for (let j = 0; j < bookIds.length; j++) {
-        if (bookIds[j] === records[i].bookId) {
-          exists = true;
-          break;
+    return this.books.filter(book => book.readStatus === 2).length;
+  }
+
+  build() {
+    Column() {
+      // 顶部导航栏
+      Row() {
+        Row() {
+          SymbolGlyph($r('sys.symbol.chevron.left'))
+            .fontSize(Size.iconLG)
+            .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
         }
+        .width(Size.buttonMD)
+        .height(Size.buttonMD)
+        .borderRadius(BorderRadius.full)
+        .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
+        .justifyContent(FlexAlign.Center)
+        .onClick(() => {
+          try {
+            goBack();
+          } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            logger.error('[ReadRecordPage] back failed:', msg);
+          }
+        })
+        .stateStyles({
+          pressed: { .scale({ x: 0.9, y: 0.9 }) },
+          normal: { .scale({ x: 1, y: 1 }) }
+        })
+
+        Text('阅读记录')
+          .fontSize(fontScaleManager.getScaledFontSize(18))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .layoutWeight(1)
+          .textAlign(TextAlign.Center)
+
+        Blank()
+          .width(Size.buttonMD)
       }
-      if (!exists) {
-        bookIds.push(records[i].bookId);
+      .width('100%')
+      .height(Size.buttonLG + Spacing.sm)
+      .padding({ left: Spacing.lg, right: Spacing.lg })
+      .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
+      .shadow(getShadow('sm', this.isDarkMode))
+
+      // 统计卡片
+      this.StatCards()
+
+      // Tab切换
+      this.TabBar()
+
+      // 书籍列表
+      if (this.books.length === 0) {
+        this.EmptyState()
+      } else {
+        List({ space: Spacing.md }) {
+          ForEach(this.books, (book: BookInfo) => {
+            ListItem() {
+              this.BookItem(book)
+            }
+          }, (book: BookInfo) => book.id)
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .padding({ 
+          left: Spacing.lg, 
+          right: Spacing.lg,
+          top: Spacing.md,
+          bottom: Spacing.xxxl
+        })
+        .scrollBar(BarState.Auto)
+        .edgeEffect(EdgeEffect.Spring)
       }
     }
-    return bookIds.length;
-  }
-
-  private onRecordClick(record: ReadRecord): void {
-    try {
-      navigateTo.push('EnhancedReaderPage', { bookId: record.bookId, page: record.endPage });
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      logger.error('[ReadRecordPage] navigate failed:', msg);
-    }
-  }
-
-  private onDeleteRecord(recordId: string): void {
-    bookViewModel.deleteReadRecord(recordId);
+    .width('100%')
+    .height('100%')
+    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
   }
 
   @Builder
-  StatCard(title: string, value: string, icon: string, color: string) {
-    Column({ space: Spacing.sm }) {
-      Text(icon)
-        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(28) : fontScaleManager.getScaledFontSize(24))
-      Text(value)
-        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(24) : fontScaleManager.getScaledFontSize(20))
-        .fontWeight(FontWeight.Bold)
-        .fontColor(color)
-      Text(title)
-        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(14) : fontScaleManager.getScaledFontSize(12))
-        .fontColor(this.tc('#999999', '#888888'))
-    }
-    .width('30%')
-    .padding(this.isTablet ? Spacing.xl : Spacing.md)
-    .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
-    .borderRadius(BorderRadius.md)
-  }
-
-  @Builder
-  TabButton(label: string, type: TabType) {
-    Button(label)
-      .width(80)
-      .height(Size.buttonSM)
-      .fontSize(fontScaleManager.getScaledFontSize(13))
-      .backgroundColor(this.currentTab === type ? this.currentColors.primary : '#F5F5F5')
-      .fontColor(this.currentTab === type ? '#FFFFFF' : '#666666')
-      .borderRadius(BorderRadius.full)
-      .onClick(() => { this.currentTab = type; })
-  }
-
-  @Builder
-  RecordItem(record: ReadRecord) {
+  StatCards() {
     Row({ space: Spacing.md }) {
-      Column({ space: Spacing.xs }) {
-        Text(record.bookTitle)
-          .fontSize(fontScaleManager.getScaledFontSize(16))
-          .fontWeight(FontWeight.Medium)
-          .fontColor(this.tc('#333333', '#FFFFFF'))
-          .maxLines(1)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-        Row({ space: Spacing.sm }) {
-          Text(`${record.startPage}-${record.endPage}页`)
-            .fontSize(fontScaleManager.getScaledFontSize(12))
-            .fontColor(this.tc('#666666', '#AAAAAA'))
-          Text('|')
-            .fontSize(fontScaleManager.getScaledFontSize(12))
-            .fontColor(this.tc('#999999', '#888888'))
-          Text(formatDuration(record.duration))
-            .fontSize(fontScaleManager.getScaledFontSize(12))
-            .fontColor(this.currentColors.primary)
-        }
-        Text(formatTime(record.endTime))
-          .fontSize(fontScaleManager.getScaledFontSize(11))
-          .fontColor(this.tc('#999999', '#888888'))
-      }
-      .layoutWeight(1)
-      .alignItems(HorizontalAlign.Start)
-      Button() {
-        Text('×')
-          .fontSize(fontScaleManager.getScaledFontSize(14))
-          .fontColor(this.tc('#999999', '#888888'))
-      }
-      .width(Size.avatarSM)
-      .height(Size.avatarSM)
-      .backgroundColor('rgba(255,255,255,0.5)')
-      .borderRadius(BorderRadius.full)
-      .onClick(() => { this.onDeleteRecord(record.id); })
+      // 今日阅读
+      this.StatCard('今日阅读', formatDuration(this.getTodayReadingTime()), 'clock.fill', this.currentColors.primary)
+      
+      // 累计阅读
+      this.StatCard('累计阅读', formatDuration(this.getTotalReadingTime()), 'book.fill', '#4CAF50')
+      
+      // 阅读书籍
+      this.StatCard('阅读书籍', this.getTotalReadBooks().toString(), 'bookmark.fill', '#FF9800')
     }
     .width('100%')
     .padding(Spacing.lg)
-    .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
-    .borderRadius(BorderRadius.sm)
-    .onClick(() => { this.onRecordClick(record); })
   }
 
   @Builder
-  EmptyView() {
-    Column({ space: 16 }) {
-      Image($r('sys.symbol.book'))
-        .width(64)
-        .height(64)
-        .fillColor(this.tc('#CCCCCC', '#666666'))
+  StatCard(title: string, value: string, iconName: string, color: string) {
+    Column({ space: Spacing.sm }) {
+      SymbolGlyph($r(`sys.symbol.${iconName}`))
+        .fontSize(this.screenInfo?.isTablet ? Size.iconXXL : Size.iconXL)
+        .fontColor([color])
+
+      Text(value)
+        .fontSize(fontScaleManager.getScaledFontSize(this.screenInfo?.isTablet ? 20 : 18))
+        .fontWeight(FontWeight.Bold)
+        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+
+      Text(title)
+        .fontSize(fontScaleManager.getScaledFontSize(12))
+        .fontColor(this.tc('#8E8E93', '#8E8E93'))
+    }
+    .layoutWeight(1)
+    .padding(Spacing.md)
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.lg)
+    .shadow(getShadow('sm', this.isDarkMode))
+  }
+
+  private getTodayReadingTime(): number {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return this.books.reduce((total: number, book: BookInfo) => {
+      if (book.lastReadTime && book.lastReadTime >= today.getTime()) {
+        return total + (book.todayReadingTime || 0);
+      }
+      return total;
+    }, 0);
+  }
+
+  @Builder
+  TabBar() {
+    Scroll() {
+      Row({ space: Spacing.sm }) {
+        ForEach(Object.values(TabType), (tab: TabType) => {
+          Text(tab)
+            .fontSize(fontScaleManager.getScaledFontSize(14))
+            .padding({ 
+              left: Spacing.lg, 
+              right: Spacing.lg, 
+              top: Spacing.sm, 
+              bottom: Spacing.sm 
+            })
+            .backgroundColor(this.currentTab === tab ? 
+              this.currentColors.primary : this.bg('#F2F2F7', '#2C2C2E'))
+            .fontColor(this.currentTab === tab ? 
+              '#FFFFFF' : this.tc('#1A1A1A', '#FFFFFF'))
+            .borderRadius(BorderRadius.xl)
+            .fontWeight(this.currentTab === tab ? 
+              FontWeight.Medium : FontWeight.Regular)
+            .onClick(() => { 
+              this.currentTab = tab;
+              this.loadBooks();
+            })
+            .stateStyles({
+              pressed: { .scale({ x: 0.95, y: 0.95 }) },
+              normal: { .scale({ x: 1, y: 1 }) }
+            })
+        }, (tab: TabType) => tab)
+      }
+      .padding({ left: Spacing.lg, right: Spacing.lg })
+    }
+    .width('100%')
+    .scrollable(ScrollDirection.Horizontal)
+    .scrollBar(BarState.Off)
+  }
+
+  @Builder
+  BookItem(book: BookInfo) {
+    Row({ space: Spacing.lg }) {
+      // 封面
+      Stack() {
+        if (book.coverPath) {
+          Image(book.coverPath)
+            .width(this.screenInfo?.isTablet ? 70 : 60)
+            .height(this.screenInfo?.isTablet ? 95 : 80)
+            .borderRadius(BorderRadius.md)
+            .objectFit(ImageFit.Cover)
+        } else {
+          Column() {
+            SymbolGlyph($r('sys.symbol.book.fill'))
+              .fontSize(Size.iconXL)
+              .fontColor([this.currentColors.primary])
+          }
+          .width(this.screenInfo?.isTablet ? 70 : 60)
+          .height(this.screenInfo?.isTablet ? 95 : 80)
+          .borderRadius(BorderRadius.md)
+          .backgroundColor(this.currentColors.primary + '15')
+          .justifyContent(FlexAlign.Center)
+        }
+
+        // 进度标签
+        if (book.progress && book.progress > 0) {
+          Text(`${book.progress}%`)
+            .fontSize(fontScaleManager.getScaledFontSize(10))
+            .fontWeight(FontWeight.Medium)
+            .fontColor('#FFFFFF')
+            .padding({ 
+              left: Spacing.sm, 
+              right: Spacing.sm, 
+              top: Spacing.xs, 
+              bottom: Spacing.xs 
+            })
+            .backgroundColor('rgba(0,0,0,0.6)')
+            .borderRadius(BorderRadius.xl)
+            .position({ bottom: 5, right: 5 })
+        }
+      }
+
+      // 信息
+      Column({ space: Spacing.sm }) {
+        Text(book.title)
+          .fontSize(fontScaleManager.getScaledFontSize(this.screenInfo?.isTablet ? 16 : 15))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .width('100%')
+
+        Text(book.author)
+          .fontSize(fontScaleManager.getScaledFontSize(12))
+          .fontColor(this.tc('#8E8E93', '#8E8E93'))
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+
+        Row({ space: Spacing.sm }) {
+          Row({ space: Spacing.xs }) {
+            SymbolGlyph($r('sys.symbol.clock'))
+              .fontSize(Size.iconXS)
+              .fontColor([this.tc('#8E8E93', '#8E8E93')])
+            
+            Text(formatDuration(book.totalReadingTime || 0))
+              .fontSize(fontScaleManager.getScaledFontSize(11))
+              .fontColor(this.tc('#8E8E93', '#8E8E93'))
+          }
+
+          if (book.readStatus === 2) {
+            Row({ space: Spacing.xs }) {
+              SymbolGlyph($r('sys.symbol.checkmark.circle.fill'))
+                .fontSize(Size.iconXS)
+                .fontColor(['#52C41A'])
+              
+              Text('已读完')
+                .fontSize(fontScaleManager.getScaledFontSize(11))
+                .fontColor('#52C41A')
+            }
+          }
+        }
+        .width('100%')
+      }
+      .layoutWeight(1)
+      .alignItems(HorizontalAlign.Start)
+
+      // 箭头
+      SymbolGlyph($r('sys.symbol.chevron.right'))
+        .fontSize(Size.iconSM)
+        .fontColor([this.tc('#C7C7CC', '#48484A')])
+    }
+    .width('100%')
+    .padding(Spacing.lg)
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.xl)
+    .shadow(getShadow('sm', this.isDarkMode))
+    .onClick(() => {
+      const params: Record<string, string> = {};
+      params['bookId'] = book.id;
+      navigateTo('pages/EnhancedReaderPage', params);
+    })
+    .stateStyles({
+      pressed: { 
+        .scale({ x: 0.98, y: 0.98 }),
+        .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+      },
+      normal: { 
+        .scale({ x: 1, y: 1 }),
+        .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+      }
+    })
+  }
+
+  @Builder
+  EmptyState() {
+    Column({ space: Spacing.xl }) {
+      Column() {
+        SymbolGlyph($r('sys.symbol.book.closed'))
+          .fontSize(Size.iconXXXL * 1.5)
+          .fontColor([this.tc('#D1D1D6', '#48484A')])
+      }
+      .width(100)
+      .height(100)
+      .borderRadius(BorderRadius.full)
+      .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+      .justifyContent(FlexAlign.Center)
+
       Text('暂无阅读记录')
-        .fontSize(16)
-        .fontColor(this.tc('#999999', '#888888'))
-      Text('开始阅读书籍，记录会在这里显示')
-        .fontSize(14)
-        .fontColor(this.tc('#BBBBBB', '#666666'))
+        .fontSize(fontScaleManager.getScaledFontSize(16))
+        .fontWeight(FontWeight.Medium)
+        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+
+      Text('开始阅读第一本书吧')
+        .fontSize(fontScaleManager.getScaledFontSize(13))
+        .fontColor(this.tc('#8E8E93', '#8E8E93'))
     }
     .width('100%')
     .layoutWeight(1)
     .justifyContent(FlexAlign.Center)
   }
-
-  build() {
-    Column() {
-      Row() {
-        BackButton({ isDarkMode: this.isDarkMode })
-
-        Text('阅读记录')
-          .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(22) : fontScaleManager.getScaledFontSize(18))
-          .fontWeight(FontWeight.Bold)
-          .fontColor(this.tc('#333333', '#FFFFFF'))
-          .layoutWeight(1)
-          .textAlign(TextAlign.Center)
-
-        Blank()
-      }
-      .width('100%')
-      .height(this.isTablet ? Size.buttonXL : Size.buttonLG)
-      .padding({ left: this.isTablet ? Spacing.xl : Spacing.md, right: this.isTablet ? Spacing.xl : Spacing.md })
-      .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
-      .padding({
-        top: layoutHelper.getSafeTopPadding(),
-        bottom: Spacing.sm
-      })
-
-      Scroll() {
-        Column({ space: 16 }) {
-          Row({ space: 12 }) {
-            this.StatCard('今日阅读', formatDuration(bookViewModel.getTodayReadDuration()), '�?, this.currentColors.primary)
-            this.StatCard('累计阅读', formatDuration(bookViewModel.getTotalReadDuration()), '📚', '#4CAF50')
-            this.StatCard('阅读书籍', this.getTotalReadBooks().toString(), '📕', '#FF9800')
-          }
-          .width('100%')
-          .padding({ left: this.isTablet ? 24 : 16, right: this.isTablet ? 24 : 16, top: this.isTablet ? 24 : 16 })
-          .justifyContent(FlexAlign.SpaceBetween)
-
-          Row({ space: 12 }) {
-            this.TabButton('全部', TabType.ALL)
-            this.TabButton('今日', TabType.TODAY)
-            this.TabButton('本周', TabType.WEEK)
-          }
-          .width('100%')
-          .padding({ left: this.isTablet ? 24 : 16, right: this.isTablet ? 24 : 16 })
-          .justifyContent(FlexAlign.Start)
-
-          Column({ space: 8 }) {
-            Text(`�?${this.getFilteredRecords().length} 条记录`)
-              .fontSize(this.isTablet ? 14 : 12)
-              .fontColor(this.tc('#999999', '#888888'))
-              .width('100%')
-              .padding({ left: 4, bottom: 8 })
-            if (this.getFilteredRecords().length === 0) {
-              this.EmptyView()
-            } else {
-              ForEach(this.getFilteredRecords(), (record: ReadRecord) => {
-                this.RecordItem(record)
-              }, (record: ReadRecord) => record.id)
-            }
-          }
-          .width('100%')
-          .padding(this.isTablet ? 24 : 16)
-          .layoutWeight(1)
-        }
-        .width('100%')
-      }
-      .layoutWeight(1)
-      .backgroundColor(this.bg('#F5F5F5', '#141414'))
-    }
-    .width('100%')
-    .height('100%')
-    .backgroundColor(this.bg('#F5F5F5', '#141414'))
-  }
 }
 
-// 预览组件 - 用于DevEco Studio预览�?
+// 预览组件
 @Preview
-@Component
+@ComponentV2
 struct ReadRecordPagePreview {
   build() {
     Column() {
-      Text('阅读记录�?- 浅色模式')
+      Text('阅读记录 - 浅色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .padding(Spacing.md)
@@ -277,7 +401,7 @@ struct ReadRecordPagePreview {
       Divider()
         .margin({ top: 20, bottom: 20 })
 
-      Text('阅读记录�?- 深色模式')
+      Text('阅读记录 - 深色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .padding(Spacing.md)

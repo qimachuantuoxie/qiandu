@@ -1,7 +1,4 @@
 import { logger } from '../../../common/utils/Logger';
-// 笔记管理页面
-// Notes Management Page
-
 import { router, promptAction } from '@kit.ArkUI';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { common } from '@kit.AbilityKit';
@@ -23,24 +20,24 @@ interface NoteWithBook {
 }
 
 @Entry
-@Component
+@ComponentV2
 struct NotesPage {
-  @State notes: NoteWithBook[] = [];
-  @State isDarkMode: boolean = false;
-  @State currentColors: AppColors = themeManager.getColors();
-  @State fontScale: number = 1.0;
-  @State searchText: string = '';
-  @State selectedBookId: string = '';
-  @State selectedTag: string = '';
-  @State showDeleteConfirm: boolean = false;
-  @State noteToDelete: NoteWithBook | null = null;
-  @State isTablet: boolean = false;
-  @State screenInfo: ScreenInfo | null = null;
+  @Local notes: NoteWithBook[] = [];
+  @Local isDarkMode: boolean = false;
+  @Local currentColors: AppColors = themeManager.getColors();
+  @Local fontScale: number = 1.0;
+  @Local searchText: string = '';
+  @Local selectedBookId: string = '';
+  @Local selectedTag: string = '';
+  @Local showDeleteConfirm: boolean = false;
+  @Local noteToDelete: NoteWithBook | null = null;
+  @Local isTablet: boolean = false;
+  @Local screenInfo: ScreenInfo | null = null;
   private unsubscribe: (() => void) | null = null;
-  @State private context: common.Context | null = null;
+  @Local private context: common.Context | null = null;
 
-  // LazyForEach 数据源
-  private notesDataSource: LazyDataSource<NoteWithBook> = new LazyDataSource<NoteWithBook>((item: NoteWithBook) => item.note.id);
+  private notesDataSource: LazyDataSource<NoteWithBook> = 
+    new LazyDataSource<NoteWithBook>((item: NoteWithBook) => item.note.id);
 
   aboutToAppear() {
     this.context = this.getUIContext().getHostContext() as common.Context;
@@ -109,7 +106,8 @@ struct NotesPage {
       }
     }
 
-    const sortedNotes = allNotes.slice().sort((a, b) => b.note.createTime - a.note.createTime);
+    const sortedNotes = allNotes.slice().sort((a, b) => 
+      b.note.createTime - a.note.createTime);
 
     this.notes = sortedNotes;
     this.updateDataSource();
@@ -192,46 +190,13 @@ struct NotesPage {
   }
 
   private deleteNote(): void {
-    if (this.noteToDelete !== null && this.noteToDelete !== undefined && this.noteToDelete.book !== null && this.noteToDelete.book !== undefined) {
+    if (this.noteToDelete !== null && this.noteToDelete !== undefined && 
+        this.noteToDelete.book !== null && this.noteToDelete.book !== undefined) {
       bookViewModel.deleteNote(this.noteToDelete.book.id, this.noteToDelete.note.id);
       this.loadNotes();
     }
     this.showDeleteConfirm = false;
     this.noteToDelete = null;
-  }
-
-  private goToNote(note: NoteWithBook): void {
-    if (note.book) {
-      const params: Record<string, Object> = {};
-      params['bookId'] = note.book.id;
-      params['page'] = note.note.pageNumber;
-      navigateTo('pages/EnhancedReaderPage', params);
-    }
-  }
-
-  private exportNote(note: NoteWithBook): void {
-    const bookTitle = note.book !== null && note.book !== undefined ? note.book.title : tr('unknown_book');
-    const highlight = note.note.highlight !== null && note.note !== undefined ? note.note.highlight : '';
-    const content = '【笔记】' + bookTitle + '\n' +
-                   '时间: ' + this.formatTime(note.note.createTime) + '\n' +
-                   '页码: 第' + note.note.pageNumber + '页\n' +
-                   '摘录: ' + highlight + '\n\n' +
-                   '笔记: ' + note.note.content;
-
-    logger.info('导出笔记:', content);
-  }
-
-  private getAllTags(): string[] {
-    const tags = new Set<string>();
-    for (let i = 0; i < this.notes.length; i++) {
-      const noteTags = this.notes[i].note.tags;
-      if (noteTags) {
-        for (let j = 0; j < noteTags.length; j++) {
-          tags.add(noteTags[j]);
-        }
-      }
-    }
-    return Array.from(tags);
   }
 
   private formatTime(timestamp: number): string {
@@ -244,26 +209,61 @@ struct NotesPage {
     if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
     if (diff < 604800000) return Math.floor(diff / 86400000) + '天前';
 
-    return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+    return date.getFullYear() + '-' + 
+      String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+      String(date.getDate()).padStart(2, '0');
   }
 
-  private getHighlightColor(color: string | undefined): string {
-    if (color) return color;
-    return COMMON_COLORS.WARNING_ORANGE;
+  build() {
+    Column() {
+      // 顶部导航栏
+      this.Header()
+
+      // 搜索和筛选栏
+      this.SearchBar()
+
+      // 笔记列表
+      if (this.getFilteredNotes().length === 0) {
+        this.EmptyState()
+      } else {
+        List({ space: Spacing.md }) {
+          ForEach(this.getFilteredNotes(), (note: NoteWithBook) => {
+            ListItem() {
+              this.NoteItem(note)
+            }
+          }, (note: NoteWithBook) => note.note.id)
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .padding({ 
+          left: Spacing.lg, 
+          right: Spacing.lg,
+          top: Spacing.sm,
+          bottom: Spacing.xxxl
+        })
+        .scrollBar(BarState.Auto)
+        .edgeEffect(EdgeEffect.Spring)
+      }
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
   }
 
   @Builder
   Header() {
     Row() {
-      Button() {
-        Text('<')
-          .fontSize(Size.iconXL)
-          .fontColor(this.currentColors.textPrimary)
+      // 返回按钮
+      Row() {
+        SymbolGlyph($r('sys.symbol.chevron.left'))
+          .fontSize(Size.iconLG)
+          .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
       }
       .width(Size.buttonMD)
       .height(Size.buttonMD)
-      .backgroundColor(this.tc('rgba(255, 255, 255, 0.3)', 'rgba(0, 0, 0, 0.3)'))
       .borderRadius(BorderRadius.full)
+      .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
+      .justifyContent(FlexAlign.Center)
       .onClick(() => {
         try {
           goBack();
@@ -272,404 +272,340 @@ struct NotesPage {
           logger.error('[NotesPage] back failed:', msg);
         }
       })
+      .stateStyles({
+        pressed: { .scale({ x: 0.9, y: 0.9 }) },
+        normal: { .scale({ x: 1, y: 1 }) }
+      })
 
-      Text(tr('notes_title'))
-        .fontSize(fontScaleManager.getScaledFontSize(20))
-        .fontWeight(FontWeight.Medium)
-        .fontColor(this.currentColors.textPrimary)
-        .layoutWeight(1)
+      Column({ space: Spacing.xs }) {
+        Text(tr('notes_title'))
+          .fontSize(fontScaleManager.getScaledFontSize(18))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
 
-      Text(this.notes.length + '条笔记')
-        .fontSize(fontScaleManager.getScaledFontSize(14))
-        .fontColor(this.currentColors.textSecondary)
+        Text(this.notes.length + ' 条笔记')
+          .fontSize(fontScaleManager.getScaledFontSize(12))
+          .fontColor(this.tc('#8E8E93', '#8E8E93'))
+      }
+      .layoutWeight(1)
+      .alignItems(HorizontalAlign.Start)
+      .margin({ left: Spacing.md })
+
+      // 标签筛选按钮
+      Row() {
+        SymbolGlyph($r('sys.symbol.tag.fill'))
+          .fontSize(Size.iconMD)
+          .fontColor([this.selectedTag ? COMMON_COLORS.PRIMARY_BLUE : this.tc('#8E8E93', '#8E8E93')])
+      }
+      .width(Size.buttonMD)
+      .height(Size.buttonMD)
+      .borderRadius(BorderRadius.full)
+      .backgroundColor(this.selectedTag ? COMMON_COLORS.PRIMARY_BLUE + '15' : this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
+      .justifyContent(FlexAlign.Center)
+      .onClick(() => {
+        this.showTagFilterDialog();
+      })
     }
     .width('100%')
-    .height(Size.buttonLG)
-    .padding({ left: Spacing.xs, right: Spacing.lg })
-    .backgroundColor(this.bg('rgba(255, 255, 255, 0.95)', 'rgba(44, 44, 46, 0.95)'))
+    .height(Size.buttonLG + Spacing.sm)
+    .padding({ left: Spacing.lg, right: Spacing.lg })
+    .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
+    .shadow(getShadow('sm', this.isDarkMode))
   }
 
   @Builder
   SearchBar() {
     Column({ space: Spacing.sm }) {
-      // 搜索框和筛选按钮
       Row({ space: Spacing.sm }) {
+        // 搜索图标
+        SymbolGlyph($r('sys.symbol.magnifyingglass'))
+          .fontSize(Size.iconSM)
+          .fontColor([this.tc('#8E8E93', '#8E8E93')])
+          .margin({ left: Spacing.md })
+
         // 搜索输入框
-        TextInput({ placeholder: '搜索笔记...' })
-          .layoutWeight(1)
+        TextInput({ placeholder: '搜索笔记...', text: $$this.searchText })
+          .placeholderColor(this.tc('#C7C7CC', '#8E8E93'))
+          .fontSize(fontScaleManager.getScaledFontSize(14))
           .height(Size.inputSM)
-          .padding({ left: Spacing.lg, right: Spacing.lg })
-          .backgroundColor(this.bg('#F5F5F5', '#2C2C2E'))
-          .borderRadius(BorderRadius.md)
+          .backgroundColor(Color.Transparent)
+          .layoutWeight(1)
           .onChange((value: string) => {
             this.searchText = value;
             this.updateDataSource();
           })
 
-        // 筛选按钮
-        Button() {
-          Row({ space: Spacing.xs }) {
-            Text('line_horizontal_3_decrease_circle')
-              .fontSize(fontScaleManager.getScaledFontSize(16))
-              .fontColor((this.selectedBookId || this.selectedTag) ? COMMON_COLORS.PRIMARY_BLUE : this.currentColors.textSecondary)
-            if (this.selectedBookId || this.selectedTag) {
-              Text('●')
-                .fontSize(8)
-                .fontColor(COMMON_COLORS.PRIMARY_BLUE)
-            }
+        // 清空按钮
+        if (this.searchText) {
+          Row() {
+            SymbolGlyph($r('sys.symbol.xmark.circle.fill'))
+              .fontSize(Size.iconSM)
+              .fontColor([this.tc('#8E8E93', '#8E8E93')])
           }
+          .width(Size.buttonSM)
+          .height(Size.buttonSM)
+          .justifyContent(FlexAlign.Center)
+          .onClick(() => {
+            this.searchText = '';
+            this.updateDataSource();
+          })
         }
-        .width(Size.buttonMD)
-        .height(Size.inputSM)
-        .backgroundColor((this.selectedBookId || this.selectedTag) ? COMMON_COLORS.PRIMARY_BLUE + '15' : this.bg('#F5F5F5', '#2C2C2E'))
-        .borderRadius(BorderRadius.md)
-        .onClick(() => {
-          this.showFilterDialog();
-        })
       }
       .width('100%')
+      .height(Size.inputSM)
+      .padding({ left: Spacing.sm, right: Spacing.sm })
+      .backgroundColor(this.tc('#F2F2F7', '#2C2C2E'))
+      .borderRadius(BorderRadius.xl)
 
       // 激活的筛选标签
-      if (this.selectedBookId || this.selectedTag) {
-        Scroll() {
-          Row({ space: Spacing.sm }) {
-            if (this.selectedBookId) {
-              Row({ space: Spacing.xs }) {
-                Text('book.circle')
-                  .fontSize(14)
-                  .fontColor(COMMON_COLORS.PRIMARY_BLUE)
-                
-                Text(bookViewModel.getBookById(this.selectedBookId)?.title || '')
-                  .fontSize(fontScaleManager.getScaledFontSize(12))
-                  .fontColor(this.currentColors.textPrimary)
-                  .maxLines(1)
-                  .textOverflow({ overflow: TextOverflow.Ellipsis })
+      if (this.selectedTag) {
+        Row({ space: Spacing.sm }) {
+          SymbolGlyph($r('sys.symbol.tag.fill'))
+            .fontSize(Size.iconSM)
+            .fontColor([COMMON_COLORS.PRIMARY_BLUE])
+          
+          Text(this.selectedTag)
+            .fontSize(fontScaleManager.getScaledFontSize(12))
+            .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          
+          Blank()
 
-                Button() {
-                  Text('xmark.circle.fill')
-                    .fontSize(16)
-                    .fontColor(COMMON_COLORS.PRIMARY_BLUE)
-                }
-                .width(20)
-                .height(20)
-                .backgroundColor(Color.Transparent)
-                .onClick(() => { 
-                  this.selectedBookId = '';
-                  this.updateDataSource();
-                })
-              }
-              .height(28)
-              .padding({ left: Spacing.sm, right: Spacing.xs })
-              .backgroundColor(COMMON_COLORS.PRIMARY_BLUE + '10')
-              .borderRadius(BorderRadius.full)
-            }
-
-            if (this.selectedTag) {
-              Row({ space: Spacing.xs }) {
-                Text('number.circle')
-                  .fontSize(14)
-                  .fontColor('#1976D2')
-                
-                Text('#' + this.selectedTag)
-                  .fontSize(fontScaleManager.getScaledFontSize(12))
-                  .fontColor('#1976D2')
-
-                Button() {
-                  Text('xmark.circle.fill')
-                    .fontSize(16)
-                    .fontColor('#1976D2')
-                }
-                .width(20)
-                .height(20)
-                .backgroundColor(Color.Transparent)
-                .onClick(() => { 
-                  this.selectedTag = '';
-                  this.updateDataSource();
-                })
-              }
-              .height(28)
-              .padding({ left: Spacing.sm, right: Spacing.xs })
-              .backgroundColor('#1976D2' + '15')
-              .borderRadius(BorderRadius.full)
-            }
+          Row() {
+            SymbolGlyph($r('sys.symbol.xmark'))
+              .fontSize(Size.iconXS)
+              .fontColor([COMMON_COLORS.PRIMARY_BLUE])
           }
-          .padding({ top: Spacing.xs, bottom: Spacing.xs })
+          .width(Size.buttonSM)
+          .height(Size.buttonSM)
+          .justifyContent(FlexAlign.Center)
+          .onClick(() => { 
+            this.selectedTag = '';
+            this.updateDataSource();
+          })
         }
-        .scrollBar(BarState.Off)
         .width('100%')
+        .padding({ 
+          left: Spacing.md, 
+          right: Spacing.md, 
+          top: Spacing.sm, 
+          bottom: Spacing.sm 
+        })
+        .backgroundColor(COMMON_COLORS.PRIMARY_BLUE + '10')
+        .borderRadius(BorderRadius.lg)
       }
     }
     .width('100%')
-    .padding({ left: Spacing.xl, right: Spacing.xl, top: Spacing.md, bottom: Spacing.sm })
+    .padding({ 
+      left: Spacing.lg, 
+      right: Spacing.lg, 
+      top: Spacing.md, 
+      bottom: Spacing.sm 
+    })
   }
 
-  private showFilterDialog(): void {
-    const allBooks = bookViewModel.getAllBooks();
-    const allTags = this.getAllTags();
-    
-    const menuItems: Array<{ text: string, action: () => void }> = [];
-    
-    // 添加书籍选项
-    menuItems.push({ text: tr('all_books'), action: () => { this.selectedBookId = ''; this.updateDataSource(); } });
-    for (let i = 0; i < allBooks.length; i++) {
-      menuItems.push({ 
-        text: allBooks[i].title, 
-        action: () => { this.selectedBookId = allBooks[i].id; this.updateDataSource(); } 
-      });
-    }
-    
-    // 添加分隔符
-    menuItems.push({ text: '---', action: () => {} });
-    
-    // 添加标签选项
-    menuItems.push({ text: tr('all_tags'), action: () => { this.selectedTag = ''; this.updateDataSource(); } });
-    for (let i = 0; i < allTags.length; i++) {
-      menuItems.push({ 
-        text: '#' + allTags[i], 
-        action: () => { this.selectedTag = allTags[i]; this.updateDataSource(); } 
-      });
+  private showTagFilterDialog(): void {
+    const allTags = new Set<string>();
+    for (let i = 0; i < this.notes.length; i++) {
+      const note = this.notes[i];
+      if (note.note.tags) {
+        for (let j = 0; j < note.note.tags.length; j++) {
+          allTags.add(note.note.tags[j]);
+        }
+      }
     }
 
+    const tags = ['全部标签', ...Array.from(allTags)];
+    
     promptAction.showActionMenu({
-      title: tr('filter_notes'),
-      buttons: menuItems.map(item => ({
-        text: item.text,
-        action: item.action
+      title: '按标签筛选',
+      buttons: tags.map((tag) => ({
+        text: tag,
+        action: () => {
+          this.selectedTag = tag === '全部标签' ? '' : tag;
+          this.updateDataSource();
+        }
       }))
     });
   }
 
   @Builder
   NoteItem(noteWithBook: NoteWithBook) {
-    Column({ space: Spacing.none }) {
-      Row() {
-        Column({ space: Spacing.sm }) {
-          if (noteWithBook.book) {
-            Image(noteWithBook.book.coverPath || '')
-              .width(this.isTablet ? Size.avatarLG : Size.avatarMD)
-              .height(this.isTablet ? Size.cardSM : Size.cardXS)
-              .borderRadius(BorderRadius.xs)
+    Column({ space: Spacing.md }) {
+      // 头部：书籍信息和操作
+      Row({ space: Spacing.sm }) {
+        // 书籍封面
+        Stack() {
+          if (noteWithBook.book && noteWithBook.book.coverPath) {
+            Image(noteWithBook.book.coverPath)
+              .width(45)
+              .height(60)
+              .borderRadius(BorderRadius.sm)
               .objectFit(ImageFit.Cover)
-              .alt($r('app.media.app_icon'))
           } else {
-            Column()
-              .width(this.isTablet ? Size.avatarLG : Size.avatarMD)
-              .height(this.isTablet ? Size.cardSM : Size.cardXS)
-              .backgroundColor(this.currentColors.surface)
-              .borderRadius(BorderRadius.xs)
+            Column() {
+              SymbolGlyph($r('sys.symbol.book.fill'))
+                .fontSize(Size.iconLG)
+                .fontColor([this.currentColors.primary])
+            }
+            .width(45)
+            .height(60)
+            .borderRadius(BorderRadius.sm)
+            .backgroundColor(this.currentColors.primary + '15')
+            .justifyContent(FlexAlign.Center)
           }
         }
-        .width(this.isTablet ? Size.avatarLG + 12 : Size.avatarMD + 10)
-        .alignItems(HorizontalAlign.Start)
 
-        Column({ space: Spacing.sm }) {
-          Text(noteWithBook.book !== null && noteWithBook.book !== undefined ? noteWithBook.book.title : tr('unknown_book'))
-            .fontSize(fontScaleManager.getScaledFontSize(this.isTablet ? 16 : 13))
-            .fontColor(this.currentColors.textSecondary)
+        // 书籍信息
+        Column({ space: Spacing.xs }) {
+          Text(noteWithBook.book?.title || '未知书籍')
+            .fontSize(fontScaleManager.getScaledFontSize(13))
+            .fontWeight(FontWeight.Medium)
+            .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
             .maxLines(1)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
-            .width('100%')
 
-          Row({ space: Spacing.sm }) {
-            Text('第' + noteWithBook.note.pageNumber + '页')
-              .fontSize(fontScaleManager.getScaledFontSize(this.isTablet ? 12 : 10))
-              .fontColor(this.tc(COMMON_COLORS.PRIMARY_BLUE, COMMON_COLORS.PRIMARY_BLUE))
-              .padding({ left: Spacing.xs, right: Spacing.xs, top: Spacing.xs / 2, bottom: Spacing.xs / 2 })
-              .backgroundColor(this.isDarkMode ? 'rgba(0, 125, 255, 0.2)' : 'rgba(0, 125, 255, 0.1)')
-              .borderRadius(BorderRadius.xs / 2)
-
+          Row({ space: Spacing.xs }) {
+            SymbolGlyph($r('sys.symbol.clock'))
+              .fontSize(Size.iconXS)
+              .fontColor([this.tc('#8E8E93', '#8E8E93')])
+            
             Text(this.formatTime(noteWithBook.note.createTime))
-              .fontSize(fontScaleManager.getScaledFontSize(this.isTablet ? 12 : 10))
-              .fontColor(this.currentColors.textHint)
-          }
-
-          if (noteWithBook.previewTags.length > 0) {
-            Row({ space: Spacing.xs }) {
-              ForEach(noteWithBook.previewTags, (tag: string) => {
-                Text('#' + tag)
-                  .fontSize(fontScaleManager.getScaledFontSize(this.isTablet ? 12 : 10))
-                  .fontColor('#1976D2')
-              }, (tag: string) => tag)
-            }
-            .width('100%')
+              .fontSize(fontScaleManager.getScaledFontSize(11))
+              .fontColor(this.tc('#8E8E93', '#8E8E93'))
           }
         }
-        .layoutWeight(1)
         .alignItems(HorizontalAlign.Start)
-        .margin({ left: this.isTablet ? Spacing.md : Spacing.sm })
-        
-        Column({ space: Spacing.sm }) {
-          Button() {
-            Text('square_and_arrow_up')
-              .fontSize(fontScaleManager.getScaledFontSize(this.isTablet ? 19 : 16))
-          }
-          .width(this.isTablet ? Size.avatarSM - 2 : Size.avatarSM - 8)
-          .height(this.isTablet ? Size.avatarSM - 2 : Size.avatarSM - 8)
-          .backgroundColor(this.bg('rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.1)'))
-          .borderRadius(BorderRadius.full)
-          .onClick(() => { this.exportNote(noteWithBook); })
+        .layoutWeight(1)
 
-          Button() {
-            Text('trash')
-              .fontSize(fontScaleManager.getScaledFontSize(this.isTablet ? 19 : 16))
-          }
-          .width(this.isTablet ? Size.avatarSM - 2 : Size.avatarSM - 8)
-          .height(this.isTablet ? Size.avatarSM - 2 : Size.avatarSM - 8)
-          .backgroundColor(this.bg('rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.1)'))
-          .borderRadius(BorderRadius.full)
-          .onClick(() => { this.confirmDelete(noteWithBook); })
+        // 删除按钮
+        Row() {
+          SymbolGlyph($r('sys.symbol.trash'))
+            .fontSize(Size.iconSM)
+            .fontColor(['#FF4D4F'])
         }
+        .width(Size.buttonSM)
+        .height(Size.buttonSM)
+        .borderRadius(BorderRadius.full)
+        .backgroundColor('#FF4D4F15')
+        .justifyContent(FlexAlign.Center)
+        .onClick(() => this.confirmDelete(noteWithBook))
       }
       .width('100%')
-      .padding(this.isTablet ? Spacing.md + 2 : Spacing.md)
 
+      // 高亮文本
       if (noteWithBook.note.highlight) {
-        Column() {
+        Column({ space: Spacing.xs }) {
+          Row({ space: Spacing.xs }) {
+            SymbolGlyph($r('sys.symbol.quote.opening'))
+              .fontSize(Size.iconSM)
+              .fontColor([COMMON_COLORS.PRIMARY_BLUE])
+            
+            Text('高亮')
+              .fontSize(fontScaleManager.getScaledFontSize(11))
+              .fontWeight(FontWeight.Medium)
+              .fontColor(COMMON_COLORS.PRIMARY_BLUE)
+          }
+
           Text(noteWithBook.note.highlight)
-            .fontSize(fontScaleManager.getScaledFontSize(this.isTablet ? 16 : 13))
-            .fontColor(this.currentColors.textPrimary)
+            .fontSize(fontScaleManager.getScaledFontSize(13))
+            .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
             .lineHeight(20)
-            .maxLines(3)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-            .padding(Spacing.md)
-            .width('100%')
-            .backgroundColor(this.getHighlightColor(noteWithBook.note.color))
-            .opacity(0.3)
-            .borderRadius(BorderRadius.xs)
+            .padding({ left: Spacing.md })
+            .borderLeftWidth(3)
+            .borderLeftColor(COMMON_COLORS.PRIMARY_BLUE)
         }
         .width('100%')
-        .padding({ left: Spacing.md, right: Spacing.md, bottom: Spacing.xs })
+        .alignItems(HorizontalAlign.Start)
+        .padding(Spacing.md)
+        .backgroundColor(this.tc('#F8F9FA', '#2C2C2E'))
+        .borderRadius(BorderRadius.md)
       }
 
+      // 笔记内容
       Text(noteWithBook.note.content)
-        .fontSize(fontScaleManager.getScaledFontSize(this.isTablet ? 17 : 14))
-        .fontColor(this.currentColors.textPrimary)
+        .fontSize(fontScaleManager.getScaledFontSize(14))
+        .fontColor(this.tc('#3A3A3C', '#E5E5EA'))
         .lineHeight(22)
-        .maxLines(5)
+        .maxLines(4)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
         .width('100%')
-        .padding({ left: Spacing.md, right: Spacing.md, bottom: Spacing.md })
-    }
-    .width('100%')
-    .backgroundColor(this.currentColors.surface)
-    .borderRadius(BorderRadius.md)
-    .margin({ left: this.isTablet ? Spacing.xxl : Spacing.xl, right: this.isTablet ? Spacing.xxl : Spacing.xl, bottom: this.isTablet ? Spacing.lg + 2 : Spacing.md })
-    .onClick(() => { this.goToNote(noteWithBook); })
-  }
 
-  @Builder
-  EmptyView() {
-    Column({ space: Spacing.lg }) {
-      Text('note_text')
-        .fontSize(Size.iconXXL * 2)
-      
-      Text(tr('no_notes'))
-        .fontSize(fontScaleManager.getScaledFontSize(16))
-        .fontColor(this.currentColors.textSecondary)
-      
-      Text(tr('long_press_to_add_note'))
-        .fontSize(fontScaleManager.getScaledFontSize(14))
-        .fontColor(this.currentColors.textHint)
-    }
-    .width('100%')
-    .height('100%')
-    .justifyContent(FlexAlign.Center)
-  }
-
-  @Builder
-  DeleteConfirmDialog() {
-    Column() {
-      Text('确认删除')
-        .fontSize(fontScaleManager.getScaledFontSize(18))
-        .fontWeight(FontWeight.Medium)
-        .fontColor(this.currentColors.textPrimary)
-        .width('100%')
-        .textAlign(TextAlign.Center)
-        .padding({ top: Spacing.xl, bottom: Spacing.md })
-
-      Text('确定要删除这条笔记吗？')
-        .fontSize(fontScaleManager.getScaledFontSize(14))
-        .fontColor(this.currentColors.textSecondary)
-        .width('100%')
-        .textAlign(TextAlign.Center)
-        .padding({ left: Spacing.xl, right: Spacing.xl, bottom: Spacing.xl })
-
-      Row() {
-        Button('取消')
-          .width('45%')
-          .height(Size.buttonSM)
-          .backgroundColor(this.bg('rgba(0, 0, 0, 0.1)', 'rgba(255, 255, 255, 0.1)'))
-          .fontColor(this.currentColors.textPrimary)
-          .borderRadius(BorderRadius.full)
-          .onClick(() => {
-            this.showDeleteConfirm = false;
-            this.noteToDelete = null;
-          })
-
-        Button('删除')
-          .width('45%')
-          .height(Size.buttonSM)
-          .backgroundColor(COMMON_COLORS.ERROR_RED)
-          .fontColor(this.tc('#FFFFFF', '#FFFFFF'))
-          .borderRadius(BorderRadius.full)
-          .onClick(() => { this.deleteNote(); })
-      }
-      .width('100%')
-      .padding({ left: Spacing.xl, right: Spacing.xl, bottom: Spacing.xl })
-      .justifyContent(FlexAlign.SpaceAround)
-    }
-    .width('80%')
-    .backgroundColor(this.currentColors.surface)
-    .borderRadius(BorderRadius.lg)
-  }
-
-  build() {
-    Stack() {
-      Column() {
-        this.Header()
-        this.SearchBar()
-
-        if (this.getFilteredNotes().length === 0) {
-          this.EmptyView()
-        } else {
-          Scroll() {
-            Column({ space: Spacing.none }) {
-              LazyForEach(this.notesDataSource, (item: NoteWithBook) => {
-                this.NoteItem(item)
-              }, (item: NoteWithBook) => item.note.id)
+      // 标签
+      if (noteWithBook.previewTags.length > 0) {
+        Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
+          ForEach(noteWithBook.previewTags, (tag: string) => {
+            Row({ space: Spacing.xs }) {
+              SymbolGlyph($r('sys.symbol.tag'))
+                .fontSize(Size.iconXS)
+                .fontColor([this.currentColors.primary])
+              
+              Text(tag)
+                .fontSize(fontScaleManager.getScaledFontSize(11))
+                .fontColor(this.currentColors.primary)
             }
-            .padding({ top: Spacing.xs, bottom: Spacing.xl })
-          }
-          .scrollBar(BarState.Off)
-          .layoutWeight(1)
-        }
-      }
-      .width('100%')
-      .height('100%')
-      .backgroundColor(this.currentColors.background)
-
-      if (this.showDeleteConfirm) {
-        Column() {
-          Row()
-            .width('100%')
-            .layoutWeight(1)
-            .backgroundColor(this.tc('rgba(0,0,0,0.5)', 'rgba(0,0,0,0.7)'))
-            .onClick(() => {
-              this.showDeleteConfirm = false;
-              this.noteToDelete = null;
+            .padding({ 
+              left: Spacing.sm, 
+              right: Spacing.sm, 
+              top: Spacing.xs, 
+              bottom: Spacing.xs 
             })
-          this.DeleteConfirmDialog()
+            .backgroundColor(this.currentColors.primary + '10')
+            .borderRadius(BorderRadius.xl)
+            .margin({ right: Spacing.xs, bottom: Spacing.xs })
+          }, (tag: string) => tag)
         }
         .width('100%')
-        .height('100%')
       }
     }
+    .width('100%')
+    .padding(Spacing.lg)
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.xl)
+    .shadow(getShadow('sm', this.isDarkMode))
+    .stateStyles({
+      pressed: { 
+        .scale({ x: 0.98, y: 0.98 }),
+        .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+      },
+      normal: { 
+        .scale({ x: 1, y: 1 }),
+        .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+      }
+    })
+  }
+
+  @Builder
+  EmptyState() {
+    Column({ space: Spacing.xl }) {
+      Column() {
+        SymbolGlyph($r('sys.symbol.note.text'))
+          .fontSize(Size.iconXXXL * 1.5)
+          .fontColor([this.tc('#D1D1D6', '#48484A')])
+      }
+      .width(100)
+      .height(100)
+      .borderRadius(BorderRadius.full)
+      .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+      .justifyContent(FlexAlign.Center)
+
+      Text('暂无笔记')
+        .fontSize(fontScaleManager.getScaledFontSize(16))
+        .fontWeight(FontWeight.Medium)
+        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+
+      Text('阅读时添加笔记，记录精彩瞬间')
+        .fontSize(fontScaleManager.getScaledFontSize(13))
+        .fontColor(this.tc('#8E8E93', '#8E8E93'))
+    }
+    .width('100%')
+    .layoutWeight(1)
+    .justifyContent(FlexAlign.Center)
   }
 }
 
-// 预览组件 - 用于DevEco Studio预览
+// 预览组件
 @Preview
-@Component
+@ComponentV2
 struct NotesPagePreview {
   build() {
     Column() {
@@ -699,5 +635,3 @@ struct NotesPagePreview {
     .backgroundColor('#FFFFFF')
   }
 }
-
-export default NotesPage;

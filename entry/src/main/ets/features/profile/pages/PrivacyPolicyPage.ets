@@ -1,227 +1,225 @@
-import { logger } from '../../common/utils/Logger';
-import { goBack } from '../../../common/utils/NavigationHelper';
-// 隐私政策页面 - 鸿蒙原生风格
-// Privacy Policy Page - HarmonyOS Native Style
-
-import { common } from '@kit.AbilityKit';
-import { appTheme, themeManager, AppColors } from '../core/utils/AppTheme';
-import { getDarkModeColors, IDarkModeColors } from '../core/utils/HarmonyDesignTokens';
-import { DeviceUtils } from '../core/utils/DeviceUtils';
+import { logger } from '../../../common/utils/Logger';
+import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
+import { router } from '@kit.ArkUI';
+import { themeManager, AppColors } from '../core/utils/AppTheme';
 import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { tr } from '../core/utils/LocalizationUtil';
 import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
 @Entry
-@Component
+@ComponentV2
 struct PrivacyPolicyPage {
-  @State isDarkMode: boolean = false;
-  @State colors: IDarkModeColors = { background: '', backgroundSecondary: '', cardBackground: '', textPrimary: '', textSecondary: '', textHint: '', primary: '', border: '', surface: '' };
-  @State fontScale: number = 1.0;
-  @State isTablet: boolean = false;
-  @State currentColors: AppColors = themeManager.getColors();
-  @State screenInfo: ScreenInfo | null = null;
+  @Local isDarkMode: boolean = false;
+  @Local currentColors: AppColors = themeManager.getColors();
+  @Local fontScale: number = 1.0;
+  @Local screenInfo: ScreenInfo | null = null;
 
-  aboutToAppear() {
-    this.initData();
+  async aboutToAppear(): Promise<void> {
+    this.isDarkMode = themeManager.isDarkMode();
+    this.currentColors = themeManager.getColors();
+    this.fontScale = await fontScaleManager.getFontScale();
+    await this.initData();
   }
 
   private async initData(): Promise<void> {
-    try {
-      const context = this.getUIContext().getHostContext() as common.Context;
+    const context = this.getUIContext().getHostContext();
+    if (context) {
       await layoutHelper.init(context);
       this.screenInfo = layoutHelper.getScreenInfo();
-      appTheme.init(context);
-      await fontScaleManager.init(context);
-      DeviceUtils.init();
-
-      this.isDarkMode = appTheme.isDarkMode();
-      this.colors = getDarkModeColors(this.isDarkMode);
-      this.fontScale = await fontScaleManager.getFontScale();
-      this.currentColors = themeManager.getColors();
-      this.isTablet = DeviceUtils.isTablet() || (this.screenInfo?.isTablet ?? false);
-    } catch (error) {
-      logger.info('PrivacyPolicyPage init skipped');
     }
-  }
-
-  private scaleFontSize(baseSize: number): number {
-    const tabletMultiplier = this.isTablet ? 1.2 : 1.0;
-    return Math.round(baseSize * this.fontScale * tabletMultiplier);
   }
 
   private tc(light: string, dark: string): string {
     return this.isDarkMode ? dark : light;
   }
-  private bg(light: string, dark: string): string {
-    return this.isDarkMode ? dark : light;
-  }
 
   build() {
     Column() {
-      // 标题�?
-      this.NavBar()
+      // 顶部导航栏
+      Row() {
+        Row() {
+          SymbolGlyph($r('sys.symbol.chevron.left'))
+            .fontSize(Size.iconLG)
+            .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
+        }
+        .width(Size.buttonMD)
+        .height(Size.buttonMD)
+        .borderRadius(BorderRadius.full)
+        .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
+        .justifyContent(FlexAlign.Center)
+        .onClick(() => {
+          try {
+            goBack();
+          } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            logger.error('[PrivacyPolicyPage] back failed:', msg);
+          }
+        })
+        .stateStyles({
+          pressed: { .scale({ x: 0.9, y: 0.9 }) },
+          normal: { .scale({ x: 1, y: 1 }) }
+        })
+
+        Text('隐私政策')
+          .fontSize(fontScaleManager.getScaledFontSize(18))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .layoutWeight(1)
+          .textAlign(TextAlign.Center)
+
+        Blank()
+          .width(Size.buttonMD)
+      }
+      .width('100%')
+      .height(Size.buttonLG + Spacing.sm)
+      .padding({ left: Spacing.lg, right: Spacing.lg })
+      .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
+      .shadow(getShadow('sm', this.isDarkMode))
 
       // 内容区域
       Scroll() {
-        Column({ space: 20 }) {
-          // 标题
-          Column({ space: 8 }) {
-            Text('安全')
-              .fontSize(48)
+        Column({ space: Spacing.xl }) {
+          // 头部信息
+          Column({ space: Spacing.md }) {
+            Column() {
+              SymbolGlyph($r('sys.symbol.shield.checkered'))
+                .fontSize(Size.iconXXXL)
+                .fontColor([this.currentColors.primary])
+            }
+            .width(70)
+            .height(70)
+            .borderRadius(BorderRadius.full)
+            .backgroundColor(this.currentColors.primary + '15')
+            .justifyContent(FlexAlign.Center)
 
             Text('隐私政策')
-              .fontSize(this.scaleFontSize(22))
+              .fontSize(fontScaleManager.getScaledFontSize(22))
               .fontWeight(FontWeight.Bold)
-              .fontColor(this.colors.textPrimary)
+              .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
 
-            Text('最后更新日期：2026�?�?�?)
-              .fontSize(this.scaleFontSize(12))
-              .fontColor(this.colors.textHint)
+            Text('最后更新：2024年1月1日')
+              .fontSize(fontScaleManager.getScaledFontSize(13))
+              .fontColor(this.tc('#8E8E93', '#8E8E93'))
           }
           .width('100%')
-          .padding({ top: 24, bottom: 16 })
-          .alignItems(HorizontalAlign.Center)
+          .padding(Spacing.xl)
+          .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+          .borderRadius(BorderRadius.xl)
+          .shadow(getShadow('md', this.isDarkMode))
 
-          // 简�?
-          this.ContentCard('引言',
-            '欢迎您使用千读阅界（以下简�?本应�?）。我们非常重视您的隐私保护，特制定本隐私政策，向您说明我们如何收集、使用、存储和保护您的个人信息�?
-          )
+          // 条款内容
+          Column({ space: Spacing.lg }) {
+            this.PolicySection('1. 信息收集', [
+              '我们可能会收集以下类型的信息：',
+              '• 设备信息：设备型号、操作系统版本',
+              '• 使用数据：阅读时长、阅读偏好',
+              '• 账号信息：用户名、邮箱（如提供）'
+            ])
 
-          // 信息收集
-          this.ContentCard('1. 信息收集',
-            '本应用可能收集以下信息：\n\n' +
-            '�?设备信息：设备型号、操作系统版本、设备标识符等\n' +
-            '�?使用数据：应用使用频率、功能使用情况等\n' +
-            '�?阅读数据：您的阅读进度、书签、笔记等（仅存储在本地）\n' +
-            '�?文件信息：您导入的电子书文件信息'
-          )
+            this.PolicySection('2. 信息使用', [
+              '我们收集的信息将用于：',
+              '• 提供和改进服务',
+              '• 个性化阅读体验',
+              '• 同步阅读进度和书签',
+              '• 发送重要通知'
+            ])
 
-          // 信息使用
-          this.ContentCard('2. 信息使用',
-            '我们使用收集的信息用于：\n\n' +
-            '�?提供和改进应用功能\n' +
-            '�?分析应用性能和使用情况\n' +
-            '�?保护应用安全\n' +
-            '�?遵守法律法规要求'
-          )
+            this.PolicySection('3. 信息保护', [
+              '我们采取以下措施保护您的信息：',
+              '• 数据加密存储',
+              '• 访问权限控制',
+              '• 定期安全审计',
+              '• 不向第三方出售个人信息'
+            ])
 
-          // 信息存储与保�?
-          this.ContentCard('3. 信息存储与保�?,
-            '�?您的阅读数据、书签、笔记等个人信息仅存储在您的设备本地\n\n' +
-            '�?我们不会将您的个人数据上传到服务器\n\n' +
-            '�?我们采用行业标准的安全措施保护您的信�?
-          )
+            this.PolicySection('4. 信息共享', [
+              '在以下情况下，我们可能共享信息：',
+              '• 经您明确同意',
+              '• 法律法规要求',
+              '• 保护我们的合法权益',
+              '• 与服务提供商合作（已签署保密协议）'
+            ])
 
-          // 信息共享
-          this.ContentCard('4. 信息共享',
-            '我们不会向任何第三方出售、出租或分享您的个人信息，除非：\n\n' +
-            '�?获得您的明确同意\n' +
-            '�?应法律法规要求\n\n' +
-            '�?保护我们的合法权�?
-          )
+            this.PolicySection('5. 您的权利', [
+              '您拥有以下权利：',
+              '• 访问和查看个人信息',
+              '• 更正不准确的信息',
+              '• 删除个人账户和数据',
+              '• 撤回同意授权'
+            ])
 
-          // 您的权利
-          this.ContentCard('5. 您的权利',
-            '您有权：\n\n' +
-            '�?访问和查看您的个人数据\n' +
-            '�?删除您的个人数据\n' +
-            '�?导出您的阅读数据\n' +
-            '�?随时撤回同意'
-          )
+            this.PolicySection('6. 联系我们', [
+              '如有任何疑问，请联系我们：',
+              '• 邮箱：privacy@qianduyuejie.com',
+              '• 电话：400-xxx-xxxx',
+              '• 地址：北京市朝阳区xxx路xxx号'
+            ])
+          }
+          .width('100%')
 
-          // 儿童隐私
-          this.ContentCard('6. 儿童隐私',
-            '本应用不面向13岁以下的儿童。我们不会故意收集儿童的个人信息。如果您发现我们无意中收集了儿童的信息，请联系我们删除�?
-          )
-
-          // 政策更新
-          this.ContentCard('7. 政策更新',
-            '我们可能会不时更新本隐私政策。更新后的政策将在应用内公布，建议您定期查看以了解最新信息�?
-          )
-
-          // 联系我们
-          this.ContentCard('8. 联系我们',
-            '如果您对本隐私政策有任何疑问，请通过以下方式联系我们：\n\n' +
-            '�?应用内反馈功能\n' +
-            '�?电子邮件：support@qianduyuejie.com'
-          )
-
-          // 免责声明
-          this.ContentCard('9. 免责声明',
-            '千读阅界是一款独立开发的阅读应用。本应用与任何大型公司均无关联，亦非其官方产品。我们尊重所有知识产权，相关功能基于开源技术实现�?
-          )
-
-          // 底部留白
-          Blank().height(40)
+          // 底部提示
+          Row({ space: Spacing.xs }) {
+            SymbolGlyph($r('sys.symbol.info.circle'))
+              .fontSize(Size.iconSM)
+              .fontColor([this.tc('#8E8E93', '#8E8E93')])
+            
+            Text('继续使用即表示您同意本隐私政策')
+              .fontSize(fontScaleManager.getScaledFontSize(12))
+              .fontColor(this.tc('#8E8E93', '#8E8E93'))
+          }
+          .width('100%')
+          .justifyContent(FlexAlign.Center)
+          .padding({ bottom: Spacing.xxxl })
         }
-        .padding({ left: this.isTablet ? 24 : 16, right: this.isTablet ? 24 : 16 })
+        .width('100%')
+        .padding({ left: Spacing.lg, right: Spacing.lg, top: Spacing.lg })
       }
       .layoutWeight(1)
+      .width('100%')
       .scrollBar(BarState.Auto)
       .edgeEffect(EdgeEffect.Spring)
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.colors.backgroundSecondary)
+    .backgroundColor(this.tc('#F8F9FA', '#0F0F0F'))
   }
 
   @Builder
-  NavBar() {
-    Row() {
-      Button() {
-        Text('返回')
-          .fontSize(this.isTablet ? 18 : 14)
-          .fontColor(this.colors.textPrimary)
-      }
-      .width(this.isTablet ? 56 : 50)
-      .height(this.isTablet ? 48 : 40)
-      .backgroundColor(this.bg('rgba(255, 255, 255, 0.3)', 'rgba(255, 255, 255, 0.05)'))
-      .borderRadius(20)
-      .onClick(() => { try { goBack(); } catch(e) { logger.error('back error:', e); } })
-
-      Text('隐私政策')
-        .fontSize(this.isTablet ? 22 : 18)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(this.colors.textPrimary)
-        .layoutWeight(1)
-        .textAlign(TextAlign.Center)
-
-      Blank().width(this.isTablet ? 56 : 50)
-    }
-    .width('100%')
-    .height(this.isTablet ? 64 : 56)
-    .padding({ left: this.isTablet ? 24 : 8, right: this.isTablet ? 24 : 16 })
-    .backgroundColor(this.colors.background)
-  }
-
-  @Builder
-  ContentCard(title: string, content: string) {
-    Column({ space: 12 }) {
+  PolicySection(title: string, content: string[]) {
+    Column({ space: Spacing.md }) {
       Text(title)
-        .fontSize(this.scaleFontSize(16))
-        .fontWeight(600)
-        .fontColor(this.colors.textPrimary)
-      
-      Text(content)
-        .fontSize(this.scaleFontSize(14))
-        .lineHeight(this.scaleFontSize(22))
-        .fontColor(this.colors.textSecondary)
+        .fontSize(fontScaleManager.getScaledFontSize(16))
+        .fontWeight(FontWeight.SemiBold)
+        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+        .width('100%')
+
+      Column({ space: Spacing.sm }) {
+        ForEach(content, (line: string) => {
+          Text(line)
+            .fontSize(fontScaleManager.getScaledFontSize(14))
+            .fontColor(this.tc('#3A3A3C', '#E5E5EA'))
+            .lineHeight(22)
+            .width('100%')
+        }, (line: string) => line)
+      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Start)
     }
     .width('100%')
-    .padding(this.isTablet ? Spacing.xxl : Spacing.lg)
-    .backgroundColor(this.colors.background)
-    .borderRadius(BorderRadius.md)
+    .padding(Spacing.xl)
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.xl)
+    .shadow(getShadow('sm', this.isDarkMode))
   }
 }
 
-// 预览组件 - 用于DevEco Studio预览�?
+// 预览组件
 @Preview
-@Component
+@ComponentV2
 struct PrivacyPolicyPagePreview {
   build() {
     Column() {
-      Text('隐私政策�?- 浅色模式')
+      Text('隐私政策 - 浅色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .padding(Spacing.md)
@@ -233,7 +231,7 @@ struct PrivacyPolicyPagePreview {
       Divider()
         .margin({ top: 20, bottom: 20 })
 
-      Text('隐私政策�?- 深色模式')
+      Text('隐私政策 - 深色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .padding(Spacing.md)

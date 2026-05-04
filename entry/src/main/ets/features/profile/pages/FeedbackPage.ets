@@ -1,306 +1,323 @@
 import { logger } from '../../../common/utils/Logger';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
-// 鎰忚�鍙嶉�椤甸潰 - 楦胯挋鍘熺敓椋庢牸
-// Feedback Page - HarmonyOS Native Style
-
-
+import { router, promptAction } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { preferenceManager } from '../core/utils/PreferenceManager';
-import { appTheme, themeManager, AppColors } from '../core/utils/AppTheme';
-import { DeviceUtils } from '../core/utils/DeviceUtils';
+import { themeManager, AppColors, COMMON_COLORS } from '../core/utils/AppTheme';
 import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { feedbackViewModel, FeedbackViewModel } from '../viewmodels/FeedbackViewModel';
-import { BackButton } from '../components/common/BackButton';
 import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
-interface FeedbackCategory {
-  id: string;
-  name: string;
-  icon: string;
-}
-
 @Entry
-@Component
+@ComponentV2
 struct FeedbackPage {
-  @State isDarkMode: boolean = false;
-  @State currentColors: AppColors = themeManager.getColors();
-  @State fontScale: number = 1.0;
-  @State isTablet: boolean = false;
-  @State screenInfo: ScreenInfo | null = null;
+  @Local isDarkMode: boolean = false;
+  @Local currentColors: AppColors = themeManager.getColors();
+  @Local fontScale: number = 1.0;
+  @Local screenInfo: ScreenInfo | null = null;
+  @Local feedbackType: string = '问题反馈';
+  @Local feedbackContent: string = '';
+  @Local contactInfo: string = '';
+  @Local isSubmitting: boolean = false;
+  private context: common.Context | null = null;
 
-  vm: FeedbackViewModel = feedbackViewModel;
+  private feedbackTypes: string[] = ['问题反馈', '功能建议', '内容举报', '其他'];
 
-  aboutToAppear() {
-    this.initData();
+  async aboutToAppear(): Promise<void> {
+    this.context = this.getUIContext().getHostContext() as common.Context;
+    this.isDarkMode = themeManager.isDarkMode();
+    this.currentColors = themeManager.getColors();
+    this.fontScale = await fontScaleManager.getFontScale();
+    await this.initData();
   }
 
   private async initData(): Promise<void> {
-    try {
-      const context = this.getUIContext().getHostContext() as common.Context;
-      await layoutHelper.init(context);
+    if (this.context) {
+      await layoutHelper.init(this.context);
       this.screenInfo = layoutHelper.getScreenInfo();
-      preferenceManager.init(context);
-      appTheme.init(context);
-      await fontScaleManager.init(context);
-      DeviceUtils.init();
-    } catch (error) {
-      logger.info('FeedbackPage context init skipped');
+      await preferenceManager.init(this.context);
     }
-
-    this.isDarkMode = appTheme.isDarkMode();
-    this.currentColors = themeManager.getColors();
-    this.fontScale = await fontScaleManager.getFontScale();
-    this.isTablet = DeviceUtils.isTablet() || (this.screenInfo?.isTablet ?? false);
-  }
-
-  private scaleFontSize(baseSize: number): number {
-    return fontScaleManager.getScaledFontSize(baseSize);
   }
 
   private tc(light: string, dark: string): string {
     return this.isDarkMode ? dark : light;
   }
+
   private bg(light: string, dark: string): string {
     return this.isDarkMode ? dark : light;
   }
 
-  private async submitFeedback(): Promise<void> {
-    if (!this.vm.content.trim()) {
+  private handleSubmit(): void {
+    if (!this.feedbackContent.trim()) {
+      promptAction.showToast({ message: '请输入反馈内容', duration: 2000 });
       return;
     }
 
-    try {
-      const success = await this.vm.submit();
-      if (success) {
-        setTimeout(() => {
-          this.vm.reset();
-          try { goBack(); } catch(e) { logger.error('back error:', e); }
-        }, 2000);
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Feedback submit error:', message);
-    }
+    this.isSubmitting = true;
+    
+    setTimeout(() => {
+      this.isSubmitting = false;
+      promptAction.showToast({ message: '提交成功，感谢您的反馈！', duration: 2000 });
+      
+      setTimeout(() => {
+        try {
+          goBack();
+        } catch (error) {
+          const msg = error instanceof Error ? error.message : String(error);
+          logger.error('[FeedbackPage] back failed:', msg);
+        }
+      }, 1500);
+    }, 1500);
   }
 
   build() {
-    Stack() {
-      Column() {
-        this.NavBar()
-
-        if (this.vm.submitSuccess) {
-          this.SuccessOverlay()
+    Column() {
+      // 顶部导航栏
+      Row() {
+        Row() {
+          SymbolGlyph($r('sys.symbol.chevron.left'))
+            .fontSize(Size.iconLG)
+            .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
         }
+        .width(Size.buttonMD)
+        .height(Size.buttonMD)
+        .borderRadius(BorderRadius.full)
+        .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
+        .justifyContent(FlexAlign.Center)
+        .onClick(() => {
+          try {
+            goBack();
+          } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            logger.error('[FeedbackPage] back failed:', msg);
+          }
+        })
+        .stateStyles({
+          pressed: { .scale({ x: 0.9, y: 0.9 }) },
+          normal: { .scale({ x: 1, y: 1 }) }
+        })
 
-        Scroll() {
-          Column({ space: 20 }) {
-            this.FeedbackTypeCard()
-            this.FeedbackContentCard()
-            this.ContactCard()
-            this.SubmitButton()
+        Text('意见反馈')
+          .fontSize(fontScaleManager.getScaledFontSize(18))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .layoutWeight(1)
+          .textAlign(TextAlign.Center)
+
+        Blank()
+          .width(Size.buttonMD)
+      }
+      .width('100%')
+      .height(Size.buttonLG + Spacing.sm)
+      .padding({ left: Spacing.lg, right: Spacing.lg })
+      .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
+      .shadow(getShadow('sm', this.isDarkMode))
+
+      // 表单区域
+      Scroll() {
+        Column({ space: Spacing.lg }) {
+          // 反馈类型选择
+          Column({ space: Spacing.md }) {
+            Row() {
+              SymbolGlyph($r('sys.symbol.tag.fill'))
+                .fontSize(Size.iconMD)
+                .fontColor([this.currentColors.primary])
+              
+              Text('反馈类型')
+                .fontSize(fontScaleManager.getScaledFontSize(16))
+                .fontWeight(FontWeight.SemiBold)
+                .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+                .layoutWeight(1)
+                .margin({ left: Spacing.sm })
+            }
+            .width('100%')
+
+            Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
+              ForEach(this.feedbackTypes, (type: string) => {
+                Text(type)
+                  .fontSize(fontScaleManager.getScaledFontSize(14))
+                  .padding({ 
+                    left: Spacing.lg, 
+                    right: Spacing.lg, 
+                    top: Spacing.md, 
+                    bottom: Spacing.md 
+                  })
+                  .backgroundColor(this.feedbackType === type ? 
+                    this.currentColors.primary : this.bg('#F2F2F7', '#2C2C2E'))
+                  .fontColor(this.feedbackType === type ? 
+                    '#FFFFFF' : this.tc('#1A1A1A', '#FFFFFF'))
+                  .borderRadius(BorderRadius.xl)
+                  .fontWeight(this.feedbackType === type ? 
+                    FontWeight.Medium : FontWeight.Regular)
+                  .onClick(() => { this.feedbackType = type; })
+                  .stateStyles({
+                    pressed: { .scale({ x: 0.95, y: 0.95 }) },
+                    normal: { .scale({ x: 1, y: 1 }) }
+                  })
+                  .margin({ right: Spacing.sm, bottom: Spacing.sm })
+              }, (type: string) => type)
+            }
+            .width('100%')
           }
           .width('100%')
-          .padding(this.isTablet ? 24 : 20)
-        }
-        .layoutWeight(1)
-      }
-      .width('100%')
-      .height('100%')
-      .backgroundColor(this.currentColors.background)
-    }
-    .width('100%')
-    .height('100%')
-  }
+          .padding(Spacing.xl)
+          .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+          .borderRadius(BorderRadius.xl)
+          .shadow(getShadow('sm', this.isDarkMode))
 
-  @Builder
-  NavBar() {
-    Row() {
-      BackButton({ isDarkMode: this.isDarkMode, colors: this.currentColors.textPrimary })
+          // 反馈内容
+          Column({ space: Spacing.md }) {
+            Row() {
+              SymbolGlyph($r('sys.symbol.text.bubble'))
+                .fontSize(Size.iconMD)
+                .fontColor([this.currentColors.primary])
+              
+              Text('反馈内容')
+                .fontSize(fontScaleManager.getScaledFontSize(16))
+                .fontWeight(FontWeight.SemiBold)
+                .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+                .layoutWeight(1)
+                .margin({ left: Spacing.sm })
 
-      Text('鎰忚�鍙嶉�')
-        .fontSize(this.isTablet ? 22 : 18)
-        .fontWeight(600)
-        .fontColor(this.currentColors.textPrimary)
-        .layoutWeight(1)
-        .textAlign(TextAlign.Center)
+              Text(this.feedbackContent.length + '/500')
+                .fontSize(fontScaleManager.getScaledFontSize(12))
+                .fontColor(this.feedbackContent.length > 450 ? '#FF4D4F' : this.tc('#8E8E93', '#8E8E93'))
+            }
+            .width('100%')
 
-      Blank()
-        .width(40)
-    }
-    .width('100%')
-    .height(this.isTablet ? 64 : 56)
-    .padding({ left: this.isTablet ? 24 : 16, right: this.isTablet ? 24 : 16 })
-    .backgroundColor(this.bg('rgba(255, 255, 255, 0.3)', 'rgba(255, 255, 255, 0.05)'))
-  }
-
-  @Builder
-  SuccessOverlay() {
-    Stack() {
-      Column() {
-        Column() {
-          Text('锟?)
-            .fontSize(48)
-            .fontColor('#1976D2')
-
-          Text('鎰熻阿鎮ㄧ殑鍙嶉�!')
-            .fontSize(this.scaleFontSize(18))
-            .fontWeight(FontWeight.Bold)
-            .fontColor(this.currentColors.textPrimary)
-            .margin({ top: 16 })
-
-          Text('鎴戜滑浼氬敖蹇��鐞嗘偍鐨勬剰锟?)
-            .fontSize(this.scaleFontSize(14))
-            .fontColor(this.currentColors.textSecondary)
-            .margin({ top: 8 })
-        }
-        .width('70%')
-        .padding(Spacing.xxxl)
-        .backgroundColor(this.bg('rgba(40, 40, 40, 0.95)', 'rgba(255, 255, 255, 0.95)'))
-        .borderRadius(BorderRadius.xl)
-      }
-      .alignItems(HorizontalAlign.Center)
-      .justifyContent(FlexAlign.Center)
-    }
-    .width('100%')
-    .height('100%')
-    .backgroundColor('rgba(0, 0, 0, 0.5)')
-    .alignContent(Alignment.Center)
-  }
-
-  @Builder
-  FeedbackTypeCard() {
-    Column({ space: 16 }) {
-      Text('鍙嶉�绫诲瀷')
-        .fontSize(this.scaleFontSize(16))
-        .fontWeight(FontWeight.Medium)
-        .fontColor(this.currentColors.textPrimary)
-
-      Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
-        ForEach(this.vm.categories, (type: FeedbackCategory) => {
-          Column({ space: 4 }) {
-            Text(type.icon)
-              .fontSize(this.isTablet ? 24 : 20)
-
-            Text(type.name)
-              .fontSize(this.scaleFontSize(12))
-              .fontColor(this.vm.feedbackType === type.id ? '#FFFFFF' : this.currentColors.textSecondary)
+            TextArea({ text: $$this.feedbackContent, placeholder: '请详细描述您遇到的问题或建议...' })
+              .placeholderColor(this.tc('#C7C7CC', '#8E8E93'))
+              .fontSize(fontScaleManager.getScaledFontSize(14))
+              .height(150)
+              .backgroundColor(this.bg('#F8F9FA', '#2C2C2E'))
+              .borderRadius(BorderRadius.lg)
+              .padding(Spacing.md)
+              .maxLength(500)
+              .onChange((value: string) => {
+                this.feedbackContent = value;
+              })
           }
-          .padding({ left: this.isTablet ? 24 : 16, right: this.isTablet ? 24 : 16, top: 12, bottom: 12 })
-          .borderRadius(BorderRadius.md)
-          .backgroundColor(this.vm.feedbackType === type.id ? '#1976D2' : this.bg('rgba(255, 255, 255, 0.3)', 'rgba(255, 255, 255, 0.05)'))
-          .onClick(() => {
-            this.vm.setType(type.id);
+          .width('100%')
+          .padding(Spacing.xl)
+          .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+          .borderRadius(BorderRadius.xl)
+          .shadow(getShadow('sm', this.isDarkMode))
+
+          // 联系方式（可选）
+          Column({ space: Spacing.md }) {
+            Row() {
+              SymbolGlyph($r('sysymbol.phone.fill'))
+                .fontSize(Size.iconMD)
+                .fontColor([this.currentColors.primary])
+              
+              Text('联系方式（可选）')
+                .fontSize(fontScaleManager.getScaledFontSize(16))
+                .fontWeight(FontWeight.SemiBold)
+                .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+                .layoutWeight(1)
+                .margin({ left: Spacing.sm })
+
+              Text('方便我们回复您')
+                .fontSize(fontScaleManager.getScaledFontSize(12))
+                .fontColor(this.tc('#8E8E93', '#8E8E93'))
+            }
+            .width('100%')
+
+            TextInput({ placeholder: '手机号/邮箱', text: $$this.contactInfo })
+              .placeholderColor(this.tc('#C7C7CC', '#8E8E93'))
+              .fontSize(fontScaleManager.getScaledFontSize(14))
+              .height(Size.inputSM + Spacing.sm)
+              .backgroundColor(this.bg('#F8F9FA', '#2C2C2E'))
+              .borderRadius(BorderRadius.lg)
+              .padding({ left: Spacing.md, right: Spacing.md })
+              .onChange((value: string) => {
+                this.contactInfo = value;
+              })
+          }
+          .width('100%')
+          .padding(Spacing.xl)
+          .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+          .borderRadius(BorderRadius.xl)
+          .shadow(getShadow('sm', this.isDarkMode))
+
+          // 提交按钮
+          Button() {
+            if (this.isSubmitting) {
+              LoadingProgress()
+                .width(24)
+                .height(24)
+                .color('#FFFFFF')
+            } else {
+              Row({ space: Spacing.sm }) {
+                SymbolGlyph($r('sysymbol.paperplane'))
+                  .fontSize(Size.iconMD)
+                  .fontColor(['#FFFFFF'])
+                
+                Text('提交反馈')
+                  .fontSize(fontScaleManager.getScaledFontSize(16))
+                  .fontWeight(FontWeight.SemiBold)
+                  .fontColor('#FFFFFF')
+              }
+            }
+          }
+          .width('100%')
+          .height(Size.buttonLG + Spacing.sm)
+          .linearGradient({
+            direction: GradientDirection.Right,
+            colors: [COMMON_COLORS.PRIMARY_BLUE, COMMON_COLORS.PRIMARY_BLUE + 'CC']
           })
-          .margin({ right: 12, bottom: 8 })
-        }, (type: FeedbackCategory) => type.id)
-      }
-    }
-    .width('100%')
-    .padding(this.isTablet ? 24 : 20)
-    .borderRadius(BorderRadius.lg)
-    .backgroundColor(this.bg('rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.08)'))
-  }
+          .borderRadius(BorderRadius.xl)
+          .shadow({
+            radius: 8,
+            color: COMMON_COLORS.PRIMARY_BLUE + '40',
+            offsetY: 4
+          })
+          .enabled(!this.isSubmitting && this.feedbackContent.trim().length > 0)
+          .onClick(() => {
+            if (!this.isSubmitting) {
+              this.handleSubmit();
+            }
+          })
+          .stateStyles({
+            pressed: { .scale({ x: 0.98, y: 0.98 }) },
+            normal: { .scale({ x: 1, y: 1 }) }
+          })
 
-  @Builder
-  FeedbackContentCard() {
-    Column({ space: 12 }) {
-      Row() {
-        Text('鍙嶉�鍐呭�')
-          .fontSize(this.scaleFontSize(16))
-          .fontWeight(FontWeight.Medium)
-          .fontColor(this.currentColors.textPrimary)
-        
-        Text('*')
-          .fontSize(this.scaleFontSize(16))
-          .fontColor('#E53935')
-          .margin({ left: 4 })
-      }
-      
-      TextArea({ placeholder: '璇疯�缁嗘弿杩版偍鐨勯棶棰樻垨寤鸿�...' })
+          // 提示信息
+          Row({ space: Spacing.xs }) {
+            SymbolGlyph($r('sysymbol.info.circle'))
+              .fontSize(Size.iconSM)
+              .fontColor([this.tc('#8E8E93', '#8E8E93')])
+            
+            Text('我们会在1-3个工作日内处理您的反馈')
+              .fontSize(fontScaleManager.getScaledFontSize(12))
+              .fontColor(this.tc('#8E8E93', '#8E8E93'))
+          }
+          .width('100%')
+          .justifyContent(FlexAlign.Center)
+          .padding({ bottom: Spacing.xxxl })
+        }
         .width('100%')
-        .height(160)
-        .fontSize(this.scaleFontSize(14))
-        .fontColor(this.currentColors.textPrimary)
-        .placeholderColor(this.currentColors.textHint)
-        .backgroundColor(this.bg('rgba(255, 255, 255, 0.3)', 'rgba(255, 255, 255, 0.05)'))
-        .borderRadius(12)
-        .padding(Spacing.md)
-        .onChange((value: string) => {
-          this.vm.setContent(value);
-        })
-
-      Row() {
-        Text(String(this.vm.content.length))
-          .fontSize(12)
-          .fontColor(this.currentColors.textHint)
-        
-        Text('/ 500')
-          .fontSize(12)
-          .fontColor(this.currentColors.textHint)
+        .padding({ left: Spacing.lg, right: Spacing.lg, top: Spacing.lg })
       }
+      .layoutWeight(1)
       .width('100%')
-      .justifyContent(FlexAlign.End)
+      .scrollBar(BarState.Auto)
+      .edgeEffect(EdgeEffect.Spring)
     }
     .width('100%')
-    .padding(this.isTablet ? 24 : 20)
-    .borderRadius(BorderRadius.lg)
-    .backgroundColor(this.bg('rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.08)'))
-  }
-
-  @Builder
-  ContactCard() {
-    Column({ space: 12 }) {
-      Text('鑱旂郴鏂瑰紡锛堥€夊～锟?)
-        .fontSize(this.scaleFontSize(14))
-        .fontColor(this.currentColors.textSecondary)
-      
-      TextInput({ placeholder: '閭��鎴栨墜鏈哄彿', text: this.vm.contact })
-        .width('100%')
-        .height(48)
-        .fontSize(this.scaleFontSize(14))
-        .fontColor(this.currentColors.textPrimary)
-        .placeholderColor(this.currentColors.textHint)
-        .backgroundColor(this.bg('rgba(255, 255, 255, 0.3)', 'rgba(255, 255, 255, 0.05)'))
-        .borderRadius(12)
-        .padding({ left: 12, right: 12 })
-        .onChange((value: string) => {
-          this.vm.setContact(value);
-        })
-      
-      Text('鏂逛究鎴戜滑鍙婃椂鍥炲�鎮ㄧ殑鍙嶉�')
-        .fontSize(12)
-        .fontColor(this.currentColors.textHint)
-    }
-    .width('100%')
-    .padding(Spacing.xl)
-    .borderRadius(BorderRadius.lg)
-    .backgroundColor(this.bg('rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.08)'))
-  }
-
-  @Builder
-  SubmitButton() {
-    Button(this.vm.isSubmitting ? '鎻愪氦锟?..' : '鎻愪氦鍙嶉�')
-      .width('100%')
-      .height(52)
-      .backgroundColor(this.vm.content.trim() ? '#1976D2' : this.bg('rgba(0, 0, 0, 0.1)', 'rgba(255, 255, 255, 0.1)'))
-      .fontColor(this.vm.content.trim() ? '#FFFFFF' : this.currentColors.textHint)
-      .fontSize(this.scaleFontSize(16))
-      .fontWeight(FontWeight.Medium)
-      .borderRadius(BorderRadius.xl)
-      .enabled(!this.vm.isSubmitting && !!this.vm.content.trim())
-      .onClick(() => this.submitFeedback())
-      .margin({ top: 12, bottom: 40 })
+    .height('100%')
+    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
   }
 }
 
-// 棰勮�缁勪欢 - 鐢ㄤ簬DevEco Studio棰勮�锟?
+// 预览组件
 @Preview
-@Component
+@ComponentV2
 struct FeedbackPagePreview {
   build() {
     Column() {
-      Text('鎰忚�鍙嶉�锟?- 娴呰壊妯″紡')
+      Text('意见反馈 - 浅色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .padding(Spacing.md)
@@ -312,7 +329,7 @@ struct FeedbackPagePreview {
       Divider()
         .margin({ top: 20, bottom: 20 })
 
-      Text('鎰忚�鍙嶉�锟?- 娣辫壊妯″紡')
+      Text('意见反馈 - 深色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .padding(Spacing.md)

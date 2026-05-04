@@ -1,7 +1,7 @@
-﻿// 鐪煎姩杩借釜鏈嶅姟 - AI 鏅鸿兘缈婚〉
-// Eye Tracking Service - AI Smart Page Turning
-// 浣跨敤鍓嶇疆鎽勫儚澶村拰瑙嗚绠楁硶瀹炵幇鐪煎姩妫€娴?鏀寔鍑濊璇嗗埆缈婚〉
-// 閫傜敤浜庨槄璇诲簲鐢ㄧ殑鎵嬪娍鎺у埗鍦烘櫙
+// 眼动追踪服务 - AI 智能翻页 (使用 Core Vision Kit)
+// Eye Tracking Service v2.0 - Using Huawei Core Vision Kit FaceDetector
+// 通过前置摄像头和视觉算法实现眼动检测，支持凝视识别翻页
+// 适用于阅读应用的手势控制场景
 
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -9,59 +9,72 @@ import { camera } from '@kit.CameraKit';
 import { image } from '@kit.ImageKit';
 import { display } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
+import { faceDetector, FaceDetectionResult, FaceLandmark } from '@kit.CoreVisionKit';
 
 const DOMAIN = 0xFF08;
 
 /**
- * 鐪煎姩杩借釜鐘舵€佹灇涓? */
+ * 眼动追踪状态枚举
+ */
 export enum EyeTrackingState {
-  IDLE = 'idle',           // 绌洪棽
-  TRACKING = 'tracking',   // 姝ｅ湪杩借釜
-  PAUSED = 'paused',       // 鏆傚仠
-  CALIBRATING = 'calibrating'  // 鏍″噯涓?}
+  IDLE = 'idle',           // 空闲
+  TRACKING = 'tracking',   // 正在追踪
+  PAUSED = 'paused',       // 暂停
+  CALIBRATING = 'calibrating'  // 校准中
+}
 
 /**
- * 鍑濊鏂瑰悜鏋氫妇
+ * 凝视方向枚举
  */
 export enum GazeDirection {
-  LEFT = 'left',     // 鍚戝乏鍑濊 -> 涓婁竴椤?  RIGHT = 'right',   // 鍚戝彸鍑濊 -> 涓嬩竴椤?  CENTER = 'center', // 涓棿鍖哄煙
-  UP = 'up',         // 鍚戜笂鍑濊
-  DOWN = 'down'      // 鍚戜笅鍑濊
+  LEFT = 'left',     // 向左凝视 -> 上一页
+  RIGHT = 'right',   // 向右凝视 -> 下一页
+  CENTER = 'center', // 中间区域
+  UP = 'up',         // 向上凝视
+  DOWN = 'down'      // 向下凝视
 }
 
 /**
- * 鍑濊鐐规暟鎹? */
+ * 凝视点数据
+ */
 export interface GazePoint {
-  x: number;         // X鍧愭爣(灞忓箷鐧惧垎姣?0-1)
-  y: number;         // Y鍧愭爣(灞忓箷鐧惧垎姣?0-1)
-  timestamp: number; // 鏃堕棿鎴?  duration: number;  // 鎸佺画鏃堕棿(ms)
-  confidence: number;// 缃俊搴?0-1
+  x: number;         // X坐标(屏幕百分比 0-1)
+  y: number;         // Y坐标(屏幕百分比 0-1)
+  timestamp: number; // 时间戳
+  duration: number;  // 持续时间(ms)
+  confidence: number;// 置信度 0-1
 }
 
 /**
- * 鐪煎姩杩借釜閰嶇疆
+ * 眼动追踪配置
  */
 export interface EyeTrackingConfig {
-  enabled: boolean;              // 鏄惁鍚敤
-  sensitivity: 'low' | 'medium' | 'high'; // 鐏垫晱搴?  dwellTime: number;             // 椹荤暀鏃堕棿(ms),瑙﹀彂缈婚〉闇€瑕佸嚌瑙嗙殑鏃堕棿
-  gazeThreshold: number;         // 缃俊搴﹂槇鍊?  calibrationNeeded: boolean;    // 鏄惁闇€瑕佹牎鍑?}
+  enabled: boolean;              // 是否启用
+  sensitivity: 'low' | 'medium' | 'high'; // 灵敏度
+  dwellTime: number;             // 驻留时间(ms),触发翻页需要凝视的时间
+  gazeThreshold: number;         // 置信度阈值
+  calibrationNeeded: boolean;    // 是否需要校准
+}
 
 /**
- * 鎵嬪娍缁撴灉
+ * 手势结果
  */
 export interface PageGesture {
-  direction: GazeDirection; // 鏂瑰悜
-  confidence: number;        // 缃俊搴?  timestamp: number;        // 鏃堕棿鎴?}
+  direction: GazeDirection; // 方向
+  confidence: number;        // 置信度
+  timestamp: number;        // 时间戳
+}
 
 /**
- * 鏍″噯鐐? */
+ * 校准点
+ */
 export interface CalibrationPoint {
   x: number;
   y: number;
 }
 
 /**
- * 鍑濊缁熻
+ * 凝视统计
  */
 export interface GazeStatistics {
   leftPercentage: number;
@@ -72,7 +85,7 @@ export interface GazeStatistics {
 }
 
 /**
- * 浜鸿劯鍖哄煙
+ * 人脸区域（使用Core Vision Kit的FaceDetector）
  */
 interface FaceRegion {
   x: number;
@@ -83,21 +96,24 @@ interface FaceRegion {
   leftEyeY: number;
   rightEyeX: number;
   rightEyeY: number;
+  confidence: number;
 }
 
 /**
- * 榛樿閰嶇疆
+ * 默认配置
  */
 const DEFAULT_CONFIG: EyeTrackingConfig = {
   enabled: false,
   sensitivity: 'medium',
-  dwellTime: 800,  // 800ms 椹荤暀鏃堕棿
+  dwellTime: 800,  // 800ms 驻留时间
   gazeThreshold: 0.7,
   calibrationNeeded: true
 };
 
 /**
- * 鐪煎姩杩借釜鏈嶅姟绫? * 閫氳繃鍓嶇疆鎽勫儚澶存娴嬬敤鎴疯绾?瀹炵幇鏅鸿兘缈婚〉鍔熻兘
+ * 眼动追踪服务类
+ * 通过前置摄像头检测用户视线，实现智能翻页功能
+ * 使用华为 Core Vision Kit 的人脸检测 API
  */
 class EyeTrackingService {
   private static instance: EyeTrackingService;
@@ -110,23 +126,27 @@ class EyeTrackingService {
   private lastGazeDirection: GazeDirection = GazeDirection.CENTER;
   private listener: ((gesture: PageGesture) => void) | null = null;
 
-  // CameraKit 鐩稿叧
+  // Core Vision Kit 相关
+  private faceDetectorInstance: faceDetector.FaceDetector | null = null;
+  private detectorConfig: faceDetector.DetectorConfig | null = null;
+
+  // CameraKit 相关（用于获取视频帧）
   private cameraManager: camera.CameraManager | null = null;
   private cameraInput: camera.CameraInput | null = null;
   private previewOutput: camera.PreviewOutput | null = null;
   private captureSession: camera.CaptureSession | null = null;
   private cameraDevice: camera.CameraDevice | null = null;
 
-  // 鍥惧儚澶勭悊鐩稿叧
+  // 图像处理相关
   private imageReceiver: image.ImageReceiver | null = null;
   private screenWidth: number = 0;
   private screenHeight: number = 0;
 
-  // 鏍″噯鐩稿叧
+  // 校准相关
   private calibrationData: Map<string, GazePoint> = new Map();
   private isCalibrated: boolean = false;
 
-  // 缁熻鐩稿叧
+  // 统计相关
   private trackingStartTime: number = 0;
   private frameCount: number = 0;
   private gazeStartTime: number = 0;
@@ -134,7 +154,7 @@ class EyeTrackingService {
   private constructor() {}
 
   /**
-   * 鑾峰彇鍗曚緥瀹炰緥
+   * 获取单例实例
    */
   static getInstance(): EyeTrackingService {
     if (!EyeTrackingService.instance) {
@@ -144,20 +164,24 @@ class EyeTrackingService {
   }
 
   /**
-   * 鍒濆鍖栨湇鍔?   */
+   * 初始化服务
+   */
   async init(context: common.Context): Promise<boolean> {
     try {
-      hilog.info(DOMAIN, 'EyeTracking', 'Initializing...');
+      hilog.info(DOMAIN, 'EyeTracking', 'Initializing with Core Vision Kit...');
       this.context = context;
 
-      // 鑾峰彇灞忓箷灏哄
+      // 获取屏幕尺寸
       await this.getScreenSize();
 
-      // 鍒濆鍖?CameraKit
-      await this.initCamera();
+      // 初始化Core Vision Kit的FaceDetector
+      await this.initFaceDetector();
+
+      // 初始化摄像头（用于获取视频帧）
+      await this.initCameraForFrameCapture();
 
       this.isInitialized = true;
-      hilog.info(DOMAIN, 'EyeTracking', 'Initialized successfully');
+      hilog.info(DOMAIN, 'EyeTracking', 'Initialized successfully with Core Vision Kit');
       return true;
     } catch (error) {
       const err = error as BusinessError;
@@ -167,11 +191,10 @@ class EyeTrackingService {
   }
 
   /**
-   * 鑾峰彇灞忓箷灏哄
+   * 获取屏幕尺寸
    */
   private async getScreenSize(): Promise<void> {
     try {
-      // FIX: getAvailableDisplays is deprecated, use getAllDisplays instead
       const displayClass: display.Display[] = await display.getAllDisplays();
       if (displayClass && displayClass.length > 0) {
         this.screenWidth = displayClass[0].width;
@@ -182,37 +205,64 @@ class EyeTrackingService {
     } catch (error) {
       const err = error as BusinessError;
       hilog.error(DOMAIN, 'EyeTracking', 'Get screen size failed: %{public}s', err.message);
-      // 浣跨敤榛樿鍊?      this.screenWidth = 1080;
+      // 使用默认值
+      this.screenWidth = 1080;
       this.screenHeight = 2400;
     }
   }
 
   /**
-   * 鍒濆鍖栨憚鍍忓ご
+   * 初始化Core Vision Kit的人脸检测器
    */
-  private async initCamera(): Promise<void> {
+  private async initFaceDetector(): Promise<void> {
     try {
-      hilog.info(DOMAIN, 'EyeTracking', 'Initializing camera...');
+      hilog.info(DOMAIN, 'EyeTracking', 'Initializing FaceDetector...');
 
-      // 鑾峰彇 CameraManager
+      // 创建人脸检测配置
+      this.detectorConfig = {
+        featureType: faceDetector.FeatureType.FACE_LANDMARK,
+        performanceType: faceDetector.PerformanceType.FAST,
+        isTracingAllowed: true
+      };
+
+      // 创建人脸检测器实例
+      this.faceDetectorInstance = faceDetector.createFaceDetector(this.detectorConfig);
+
+      hilog.info(DOMAIN, 'EyeTracking', 'FaceDetector initialized successfully');
+    } catch (error) {
+      const err = error as BusinessError;
+      hilog.error(DOMAIN, 'EyeTracking', 'Init FaceDetector failed: %{public}s', err.message);
+      throw new Error(`Failed to initialize FaceDetector: ${err.message}`);
+    }
+  }
+
+  /**
+   * 初始化摄像头（仅用于获取视频帧）
+   */
+  private async initCameraForFrameCapture(): Promise<void> {
+    try {
+      hilog.info(DOMAIN, 'EyeTracking', 'Initializing camera for frame capture...');
+
+      // 获取 CameraManager
       this.cameraManager = camera.getCameraManager(this.context!);
 
-      // 鑾峰彇鎽勫儚澶村垪琛?      const cameras: camera.CameraDevice[] = this.cameraManager.getSupportedCameras();
+      // 获取摄像头列表
+      const cameras: camera.CameraDevice[] = this.cameraManager.getSupportedCameras();
       if (!cameras || cameras.length === 0) {
         throw new Error('No cameras available');
       }
 
-      // 鏌ユ壘鍓嶇疆鎽勫儚澶?      let frontCamera: camera.CameraDevice | null = null;
+      // 查找前置摄像头
+      let frontCamera: camera.CameraDevice | null = null;
       for (let i = 0; i < cameras.length; i++) {
         const cam = cameras[i];
-        const cameraType = cam.cameraPosition;
-        if (cameraType === camera.CameraPosition.CAMERA_POSITION_FRONT) {
+        if (cam.cameraPosition === camera.CameraPosition.CAMERA_POSITION_FRONT) {
           frontCamera = cam;
           break;
         }
       }
 
-      // 濡傛灉娌℃湁鍓嶇疆鎽勫儚澶?浣跨敤绗竴涓憚鍍忓ご
+      // 如果没有前置摄像头，使用第一个摄像头
       if (!frontCamera) {
         frontCamera = cameras[0];
         hilog.warn(DOMAIN, 'EyeTracking', 'No front camera found, using first camera');
@@ -221,21 +271,15 @@ class EyeTrackingService {
       this.cameraDevice = frontCamera;
       hilog.info(DOMAIN, 'EyeTracking', 'Camera selected: %{public}s', frontCamera.cameraPosition);
 
-      // 鍒涘缓鎹曡幏浼氳瘽
+      // 创建捕获会话
       this.captureSession = this.cameraManager.createCaptureSession();
-
-      // FIX: createCameraInput is on CameraManager, not on CaptureSession
       this.cameraInput = this.cameraManager.createCameraInput(this.cameraDevice);
-      // CameraInput must be opened before use
       await this.cameraInput.open();
 
-      // FIX: Use compatible format for ImageReceiver (YCBCR_422_SP)
-      // Note: ImageFormat no longer supports RGBA_8888 in API 22+
+      // 创建图像接收器
       this.imageReceiver = image.createImageReceiver(640, 480, image.ImageFormat.YCBCR_422_SP, 8);
-
-      // FIX: receivingSurface is deprecated, use getReceivingSurfaceId() instead
       const surfaceId: string = await this.imageReceiver.getReceivingSurfaceId();
-      // FIX: ensure photo output creation uses CameraManager (not CaptureSession)
+      
       try {
         this.previewOutput = this.cameraManager.createPreviewOutput(surfaceId);
       } catch (photoOutputError) {
@@ -247,13 +291,64 @@ class EyeTrackingService {
     } catch (error) {
       const err = error as BusinessError;
       hilog.error(DOMAIN, 'EyeTracking', 'Init camera failed: %{public}s', err.message);
-      // FIX: throw the typed BusinessError, not the raw catch variable
       throw err instanceof Error ? err : new Error(String(err));
     }
   }
 
   /**
-   * 閰嶇疆骞跺惎鍔ㄦ崟鑾蜂細璇?   * 浣跨敤鏂扮殑浼氳瘽API,甯︽棫API闄嶇骇鍥為€€
+   * 检查服务是否就绪
+   */
+  isReady(): boolean {
+    return this.isInitialized && 
+           this.context !== null && 
+           this.faceDetectorInstance !== null &&
+           this.cameraDevice !== null;
+  }
+
+  // ==================== 眼动追踪 ====================
+
+  /**
+   * 开始追踪
+   */
+  async startTracking(): Promise<boolean> {
+    try {
+      if (!this.isReady()) {
+        throw new Error('EyeTracking service not initialized');
+      }
+
+      if (this.isTracking) {
+        hilog.warn(DOMAIN, 'EyeTracking', 'Already tracking');
+        return true;
+      }
+
+      hilog.info(DOMAIN, 'EyeTracking', 'Starting eye tracking...');
+
+      // 配置并启动捕获会话
+      const sessionStarted: boolean = await this.configureAndStartSession();
+      if (!sessionStarted) {
+        throw new Error('Failed to start capture session');
+      }
+
+      this.isTracking = true;
+      this.currentState = EyeTrackingState.TRACKING;
+      this.trackingStartTime = Date.now();
+      this.frameCount = 0;
+      this.gazePoints = [];
+
+      // 开始处理图像帧
+      this.startProcessingFrames();
+
+      hilog.info(DOMAIN, 'EyeTracking', 'Eye tracking started');
+      return true;
+    } catch (error) {
+      const err = error as BusinessError;
+      hilog.error(DOMAIN, 'EyeTracking', 'Start tracking failed: %{public}s', err.message);
+      return false;
+    }
+  }
+
+  /**
+   * 配置并启动捕获会话
    */
   private async configureAndStartSession(): Promise<boolean> {
     if (!this.captureSession || !this.cameraInput || !this.previewOutput) {
@@ -276,54 +371,7 @@ class EyeTrackingService {
   }
 
   /**
-   * 妫€鏌ユ湇鍔℃槸鍚﹀氨缁?   */
-  isReady(): boolean {
-    return this.isInitialized && this.context !== null && this.cameraDevice !== null;
-  }
-
-  // ==================== 鐪煎姩杩借釜 ====================
-
-  /**
-   * 寮€濮嬭拷韪?   */
-  async startTracking(): Promise<boolean> {
-    try {
-      if (!this.isReady()) {
-        throw new Error('EyeTracking service not initialized');
-      }
-
-      if (this.isTracking) {
-        hilog.warn(DOMAIN, 'EyeTracking', 'Already tracking');
-        return true;
-      }
-
-      hilog.info(DOMAIN, 'EyeTracking', 'Starting eye tracking...');
-
-      // 閰嶇疆骞跺惎鍔ㄦ崟鑾蜂細璇?浣跨敤鏂癆PI)
-      const sessionStarted: boolean = await this.configureAndStartSession();
-      if (!sessionStarted) {
-        throw new Error('Failed to start capture session');
-      }
-
-      this.isTracking = true;
-      this.currentState = EyeTrackingState.TRACKING;
-      this.trackingStartTime = Date.now();
-      this.frameCount = 0;
-      this.gazePoints = [];
-
-      // 寮€濮嬪鐞嗗浘鍍忓抚
-      this.startProcessingFrames();
-
-      hilog.info(DOMAIN, 'EyeTracking', 'Eye tracking started');
-      return true;
-    } catch (error) {
-      const err = error as BusinessError;
-      hilog.error(DOMAIN, 'EyeTracking', 'Start tracking failed: %{public}s', err.message);
-      return false;
-    }
-  }
-
-  /**
-   * 寮€濮嬪鐞嗗浘鍍忓抚
+   * 开始处理图像帧
    */
   private startProcessingFrames(): void {
     if (!this.imageReceiver) {
@@ -331,7 +379,6 @@ class EyeTrackingService {
       return;
     }
 
-    // FIX: 'imageAvailable' is deprecated, use 'imageArrival' instead
     this.imageReceiver.on('imageArrival', (): void => {
       try {
         this.imageReceiver?.readLatestImage().then((img: image.Image) => {
@@ -349,41 +396,38 @@ class EyeTrackingService {
   }
 
   /**
-   * 澶勭悊鍥惧儚甯?- 浣跨敤 YUV  luminance 鏁版嵁杩涜浜鸿劯妫€娴?   */
+   * 处理图像帧 - 使用 Core Vision Kit 进行人脸检测
+   */
   private async processFrame(frame: image.Image): Promise<void> {
     try {
-      // FIX: getComponentMap is deprecated, use getComponent with ComponentType
-      // FIX: RGBA_8888 no longer exists, use YUV_Y for luminance data
-      const component = await frame.getComponent(image.ComponentType.YUV_Y);
-      const byteBuffer: ArrayBuffer = component.byteBuffer;
-      const width: number = frame.size.width;
-      const height: number = frame.size.height;
-
-      if (!byteBuffer || width <= 0 || height <= 0) {
+      if (!this.faceDetectorInstance) {
         return;
       }
 
-      // 浣跨敤 luminance 鏁版嵁绠€鍖栦汉鑴告娴?      const faceRegion: FaceRegion | null = this.detectFaceFromBuffer(byteBuffer, width, height);
+      // 使用 Core Vision Kit 进行人脸检测
+      const faceRegion: FaceRegion | null = await this.detectFaceWithCoreVisionKit(frame);
       if (!faceRegion) {
         return;
       }
 
-      // 浼扮畻鍑濊鐐?      const gazePoint: GazePoint | null = this.estimateGazePoint(faceRegion);
+      // 估算凝视点
+      const gazePoint: GazePoint | null = this.estimateGazePoint(faceRegion);
       if (!gazePoint) {
         return;
       }
 
-      // 搴旂敤鏍″噯
+      // 应用校准
       const calibratedPoint: GazePoint = this.applyCalibration(gazePoint);
 
-      // 娣诲姞鍒板巻鍙?      this.gazePoints.push(calibratedPoint);
+      // 添加到历史
+      this.gazePoints.push(calibratedPoint);
 
-      // 淇濇寔鏈€杩?0涓偣
+      // 保持最近50个点
       if (this.gazePoints.length > 50) {
         this.gazePoints = this.gazePoints.slice(-50);
       }
 
-      // 鍒嗘瀽鍑濊鏂瑰悜
+      // 分析凝视方向
       this.analyzeGazeDirection();
     } catch (error) {
       const err = error as BusinessError;
@@ -394,87 +438,107 @@ class EyeTrackingService {
   }
 
   /**
-   * 鍩轰簬 luminance 鏁版嵁妫€娴嬩汉鑴稿尯鍩?(YUV Y 骞抽潰鏁版嵁)
+   * 使用 Core Vision Kit 进行人脸检测
    */
-  private detectFaceFromBuffer(byteBuffer: ArrayBuffer, width: number, height: number): FaceRegion | null {
+  private async detectFaceWithCoreVisionKit(frame: image.Image): Promise<FaceRegion | null> {
     try {
-      const pixelView = new DataView(byteBuffer);
-      let sumX = 0;
-      let sumY = 0;
-      let brightPixelCount = 0;
+      if (!this.faceDetectorInstance) {
+        return null;
+      }
 
-      // 閲囨牱瀵绘壘浜害閫備腑鐨勫尯鍩?(浜鸿劯鑲よ壊鍖哄煙鍦╕閫氶亾鐨勫吀鍨嬪€?
-      const step = 4;
-      for (let y = Math.floor(height * 0.2); y < Math.floor(height * 0.6); y += step) {
-        for (let x = Math.floor(width * 0.2); x < Math.floor(width * 0.8); x += step) {
-          const luminance = pixelView.getUint8(y * width + x);
-          // 浜鸿劯鍦ㄤ寒搴﹂€氶亾涓€氬父澶勪簬涓瓑浜害鑼冨洿
-          if (luminance > 60 && luminance < 220) {
-            sumX += x;
-            sumY += y;
-            brightPixelCount++;
+      // 将图像转换为 PixelMap
+      const pixelMap = await frame.getImagePixelMap();
+      
+      // 使用 FaceDetector 进行检测
+      const result: FaceDetectionResult = await this.faceDetectorInstance.detect(pixelMap);
+      
+      // 释放 PixelMap
+      pixelMap.release();
+
+      // 检查是否检测到人脸
+      if (!result.faces || result.faces.length === 0) {
+        return null;
+      }
+
+      // 取第一个人脸
+      const face = result.faces[0];
+      
+      // 获取人脸边界框
+      const boundingBox = face.boundingBox;
+      
+      // 获取面部关键点（眼睛位置）
+      const landmarks = face.landmarks;
+      let leftEyeX = 0;
+      let leftEyeY = 0;
+      let rightEyeX = 0;
+      let rightEyeY = 0;
+
+      // 查找左右眼的关键点
+      if (landmarks) {
+        for (let i = 0; i < landmarks.length; i++) {
+          const landmark = landmarks[i];
+          if (landmark.type === faceDetector.LandmarkType.LEFT_EYE) {
+            leftEyeX = landmark.position.x;
+            leftEyeY = landmark.position.y;
+          } else if (landmark.type === faceDetector.LandmarkType.RIGHT_EYE) {
+            rightEyeX = landmark.position.x;
+            rightEyeY = landmark.position.y;
           }
         }
       }
 
-      if (brightPixelCount < 50) {
-        return null; // 鏈娴嬪埌浜鸿劯
+      // 如果没有找到眼睛关键点，估算位置
+      if (leftEyeX === 0 && rightEyeX === 0) {
+        const faceCenterX = boundingBox.left + boundingBox.width / 2;
+        const faceCenterY = boundingBox.top + boundingBox.height / 2;
+        leftEyeX = faceCenterX - boundingBox.width * 0.15;
+        leftEyeY = faceCenterY - boundingBox.height * 0.1;
+        rightEyeX = faceCenterX + boundingBox.width * 0.15;
+        rightEyeY = faceCenterY - boundingBox.height * 0.1;
       }
 
-      // 璁＄畻浜鸿劯涓績
-      const faceX = Math.floor(sumX / brightPixelCount);
-      const faceY = Math.floor(sumY / brightPixelCount);
-      const faceWidth = Math.floor(width * 0.3);
-      const faceHeight = Math.floor(height * 0.4);
-
-      // 浼扮畻鐪奸儴浣嶇疆
-      const leftEyeX = Math.floor(faceX - faceWidth * 0.15);
-      const leftEyeY = Math.floor(faceY - faceHeight * 0.1);
-      const rightEyeX = Math.floor(faceX + faceWidth * 0.15);
-      const rightEyeY = Math.floor(faceY - faceHeight * 0.1);
-
       return {
-        x: faceX,
-        y: faceY,
-        width: faceWidth,
-        height: faceHeight,
+        x: boundingBox.left + boundingBox.width / 2,
+        y: boundingBox.top + boundingBox.height / 2,
+        width: boundingBox.width,
+        height: boundingBox.height,
         leftEyeX: leftEyeX,
         leftEyeY: leftEyeY,
         rightEyeX: rightEyeX,
-        rightEyeY: rightEyeY
+        rightEyeY: rightEyeY,
+        confidence: face.confidenceValue || 0.8
       };
     } catch (error) {
       const err = error as BusinessError;
-      hilog.error(DOMAIN, 'EyeTracking', 'Face detection failed: %{public}s', err.message);
+      hilog.error(DOMAIN, 'EyeTracking', 'Face detection with Core Vision Kit failed: %{public}s', err.message);
       return null;
     }
   }
 
   /**
-   * 浼扮畻鍑濊鐐?   * 鍩轰簬鍙岀溂涓績浣嶇疆浼扮畻娉ㄨ鐐?   */
+   * 估算凝视点
+   * 基于双眼中心位置估算注视点
+   */
   private estimateGazePoint(faceRegion: FaceRegion): GazePoint | null {
     try {
-      // 璁＄畻鍙岀溂涓績
+      // 计算双眼中心
       const centerX = (faceRegion.leftEyeX + faceRegion.rightEyeX) / 2;
       const centerY = (faceRegion.leftEyeY + faceRegion.rightEyeY) / 2;
 
-      // 杞崲涓哄睆骞曠櫨鍒嗘瘮
-      const screenX = centerX / faceRegion.width * 0.5 + 0.25; // 鏄犲皠鍒?0-1
-      const screenY = centerY / faceRegion.height * 0.5 + 0.25;
+      // 转换为屏幕百分比
+      const screenX = centerX / this.screenWidth;
+      const screenY = centerY / this.screenHeight;
 
-      // 纭繚鍦ㄦ湁鏁堣寖鍥村唴
+      // 确保在有效范围内
       const normalizedX = Math.max(0, Math.min(1, screenX));
       const normalizedY = Math.max(0, Math.min(1, screenY));
-
-      // 璁＄畻缃俊搴?鍩轰簬浜鸿劯妫€娴嬭川閲?
-      const confidence = Math.min(1.0, faceRegion.width / 200);
 
       return {
         x: normalizedX,
         y: normalizedY,
         timestamp: Date.now(),
         duration: 0,
-        confidence: confidence
+        confidence: faceRegion.confidence
       };
     } catch (error) {
       const err = error as BusinessError;
@@ -484,17 +548,18 @@ class EyeTrackingService {
   }
 
   /**
-   * 搴旂敤鏍″噯鏁版嵁
+   * 应用校准数据
    */
   private applyCalibration(gazePoint: GazePoint): GazePoint {
     if (!this.isCalibrated || this.calibrationData.size === 0) {
       return gazePoint;
     }
 
-    // 绠€鍗曠殑绾挎€ф牎鍑?    // 瀹為檯椤圭洰涓簲璇ヤ娇鐢ㄦ洿澶嶆潅鐨勬牎鍑嗙畻娉?    let calibratedX = gazePoint.x;
+    // 简单的线性校准
+    let calibratedX = gazePoint.x;
     let calibratedY = gazePoint.y;
 
-    // 搴旂敤鏍″噯鍋忕Щ
+    // 应用校准偏移
     const keys = Array.from(this.calibrationData.keys());
     let offsetX = 0;
     let offsetY = 0;
@@ -525,14 +590,14 @@ class EyeTrackingService {
   }
 
   /**
-   * 鍒嗘瀽鍑濊鏂瑰悜
+   * 分析凝视方向
    */
   private analyzeGazeDirection(): void {
     if (this.gazePoints.length < 10) {
-      return; // 闇€瑕佽冻澶熺殑鏍锋湰
+      return; // 需要足够的样本
     }
 
-    // 璁＄畻骞冲潎浣嶇疆(鏈€杩?0涓偣)
+    // 计算平均位置(最近20个点)
     const recentCount = Math.min(20, this.gazePoints.length);
     let sumX = 0;
     let sumY = 0;
@@ -548,12 +613,12 @@ class EyeTrackingService {
     const avgY = sumY / recentCount;
     const avgConfidence = sumConfidence / recentCount;
 
-    // 妫€鏌ョ疆淇″害
+    // 检查置信度
     if (avgConfidence < this.config.gazeThreshold) {
       return;
     }
 
-    // 纭畾鍑濊鏂瑰悜
+    // 确定凝视方向
     let newDirection: GazeDirection;
     const threshold = this.getThreshold();
 
@@ -569,11 +634,13 @@ class EyeTrackingService {
       newDirection = GazeDirection.CENTER;
     }
 
-    // 妫€鏌ユ槸鍚﹂渶瑕佽Е鍙戝姩浣?    if (newDirection !== this.lastGazeDirection) {
+    // 检查是否需要触发动作
+    if (newDirection !== this.lastGazeDirection) {
       this.lastGazeDirection = newDirection;
       this.gazeStartTime = Date.now();
     } else if (newDirection !== GazeDirection.CENTER) {
-      // 妫€鏌ラ┗鐣欐椂闂?      const dwellTime = Date.now() - this.gazeStartTime;
+      // 检查驻留时间
+      const dwellTime = Date.now() - this.gazeStartTime;
       if (dwellTime >= this.config.dwellTime) {
         this.triggerGesture(newDirection);
       }
@@ -581,7 +648,7 @@ class EyeTrackingService {
   }
 
   /**
-   * 鑾峰彇闃堝€?鏍规嵁鐏垫晱搴?
+   * 获取阈值（根据灵敏度）
    */
   private getThreshold(): number {
     switch (this.config.sensitivity) {
@@ -597,7 +664,7 @@ class EyeTrackingService {
   }
 
   /**
-   * 瑙﹀彂鍔ㄤ綔
+   * 触发动作
    */
   private triggerGesture(direction: GazeDirection): void {
     const gesture: PageGesture = {
@@ -612,11 +679,12 @@ class EyeTrackingService {
       this.listener(gesture);
     }
 
-    // 閲嶇疆鍑濊寮€濮嬫椂闂?    this.gazeStartTime = Date.now();
+    // 重置凝视开始时间
+    this.gazeStartTime = Date.now();
   }
 
   /**
-   * 鍋滄杩借釜
+   * 停止追踪
    */
   async stopTracking(): Promise<void> {
     try {
@@ -626,7 +694,7 @@ class EyeTrackingService {
 
       hilog.info(DOMAIN, 'EyeTracking', 'Stopping eye tracking...');
 
-      // 鍋滄鎹曡幏浼氳瘽 - 灏濊瘯鏂癆PI,鍥為€€鏃PI
+      // 停止捕获会话
       if (this.captureSession) {
         try {
           this.captureSession.stop();
@@ -646,10 +714,10 @@ class EyeTrackingService {
     }
   }
 
-  // ==================== 閰嶇疆绠＄悊 ====================
+  // ==================== 配置管理 ====================
 
   /**
-   * 璁剧疆閰嶇疆
+   * 设置配置
    */
   setConfig(config: Partial<EyeTrackingConfig>): void {
     if (config.enabled !== undefined) {
@@ -671,7 +739,7 @@ class EyeTrackingService {
   }
 
   /**
-   * 鑾峰彇閰嶇疆
+   * 获取配置
    */
   getConfig(): EyeTrackingConfig {
     return {
@@ -683,34 +751,40 @@ class EyeTrackingService {
     };
   }
 
-  // ==================== 鐩戝惉鍣?====================
+  // ==================== 监听器 ====================
 
   /**
-   * 璁剧疆鎵嬪娍鐩戝惉鍣?   */
+   * 设置手势监听器
+   */
   setGestureListener(listener: (gesture: PageGesture) => void): void {
     this.listener = listener;
   }
 
-  // ==================== 鏍″噯 ====================
+  // ==================== 校准 ====================
 
   /**
-   * 寮€濮嬫牎鍑?   */
+   * 开始校准
+   */
   async startCalibration(): Promise<boolean> {
     try {
       hilog.info(DOMAIN, 'EyeTracking', 'Starting calibration...');
       this.currentState = EyeTrackingState.CALIBRATING;
 
-      // 鏍″噯鐐?灞忓箷鐨?涓綅缃?
+      // 校准点：屏幕的5个位置
       const calibrationPoints: CalibrationPoint[] = [
-        { x: 0.5, y: 0.5 },  // 涓績
-        { x: 0.2, y: 0.5 },  // 宸?        { x: 0.8, y: 0.5 },  // 鍙?        { x: 0.5, y: 0.2 },  // 涓?        { x: 0.5, y: 0.8 }   // 涓?      ];
+        { x: 0.5, y: 0.5 },  // 中心
+        { x: 0.2, y: 0.5 },  // 左
+        { x: 0.8, y: 0.5 },  // 右
+        { x: 0.5, y: 0.2 },  // 上
+        { x: 0.5, y: 0.8 }   // 下
+      ];
 
-      // 瀵规瘡涓牎鍑嗙偣杩涜鏍″噯
+      // 对每个校准点进行校准
       for (let i = 0; i < calibrationPoints.length; i++) {
         const point = calibrationPoints[i];
         hilog.info(DOMAIN, 'EyeTracking', 'Calibrating point %{public}d/%{public}d', i + 1, calibrationPoints.length);
 
-        // 绛夊緟鐢ㄦ埛娉ㄨ璇ョ偣
+        // 等待用户注视该点
         await this.calibrateSinglePoint(point);
       }
 
@@ -727,10 +801,12 @@ class EyeTrackingService {
   }
 
   /**
-   * 鏍″噯鍗曚釜鐐?   */
+   * 校准单个点
+   */
   private async calibrateSinglePoint(point: CalibrationPoint): Promise<void> {
     return new Promise<void>((resolve) => {
-      // 绛夊緟鐢ㄦ埛娉ㄨ 3 绉?      const startTime = Date.now();
+      // 等待用户注视 3 秒
+      const startTime = Date.now();
       const duration = 3000;
       const checkInterval = setInterval(() => {
         if (this.gazePoints.length > 0) {
@@ -738,7 +814,7 @@ class EyeTrackingService {
           if (elapsed >= duration) {
             clearInterval(checkInterval);
 
-            // 淇濆瓨鏍″噯鏁版嵁
+            // 保存校准数据
             const key = point.x + '_' + point.y;
             const avgPoint = this.getAverageGazePoint();
             if (avgPoint) {
@@ -752,7 +828,8 @@ class EyeTrackingService {
   }
 
   /**
-   * 鑾峰彇骞冲潎鍑濊鐐?   */
+   * 获取平均凝视点
+   */
   private getAverageGazePoint(): GazePoint | null {
     if (this.gazePoints.length === 0) {
       return null;
@@ -779,7 +856,7 @@ class EyeTrackingService {
   }
 
   /**
-   * 鑾峰彇鍑濊缁熻
+   * 获取凝视统计
    */
   getGazeStatistics(): GazeStatistics {
     if (this.gazePoints.length === 0) {
@@ -820,37 +897,48 @@ class EyeTrackingService {
     };
   }
 
-  // ==================== 鐘舵€佹煡璇?====================
+  // ==================== 状态查询 ====================
 
   /**
-   * 鏄惁姝ｅ湪杩借釜
+   * 是否正在追踪
    */
   isTrackingActive(): boolean {
     return this.isTracking;
   }
 
   /**
-   * 鑾峰彇鏈€鍚庡嚌瑙嗘柟鍚?   */
+   * 获取最后凝视方向
+   */
   getLastGazeDirection(): GazeDirection {
     return this.lastGazeDirection;
   }
 
   /**
-   * 鑾峰彇褰撳墠鐘舵€?   */
+   * 获取当前状态
+   */
   getState(): EyeTrackingState {
     return this.currentState;
   }
 
-  // ==================== 宸ュ叿鏂规硶 ====================
+  // ==================== 工具方法 ====================
 
   /**
-   * 閲婃斁璧勬簮
+   * 释放资源
    */
   async release(): Promise<void> {
-    // FIX: stopTracking is async, must await
     await this.stopTracking();
 
-    // 閲婃斁 CameraKit 璧勬簮
+    // 释放 Core Vision Kit 资源
+    if (this.faceDetectorInstance) {
+      try {
+        this.faceDetectorInstance.release();
+      } catch (e) {
+        hilog.warn(DOMAIN, 'EyeTracking', 'FaceDetector release failed');
+      }
+      this.faceDetectorInstance = null;
+    }
+
+    // 释放 CameraKit 资源
     if (this.captureSession) {
       try {
         this.captureSession.release();
@@ -895,6 +983,6 @@ class EyeTrackingService {
   }
 }
 
-// 瀵煎嚭鍗曚緥
+// 导出单例
 export const eyeTrackingService = EyeTrackingService.getInstance();
 export default eyeTrackingService;

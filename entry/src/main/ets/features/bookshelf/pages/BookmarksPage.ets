@@ -1,7 +1,4 @@
 import { logger } from '../../../common/utils/Logger';
-// 书签管理页面
-// Bookmarks Management Page
-
 import { router, promptAction } from '@kit.ArkUI';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { common } from '@kit.AbilityKit';
@@ -22,21 +19,21 @@ interface BookmarkWithBook {
 }
 
 @Entry
-@Component
+@ComponentV2
 struct BookmarksPage {
-  @State bookmarks: BookmarkWithBook[] = [];
-  @State isDarkMode: boolean = false;
-  @State currentColors: AppColors = themeManager.getColors();
-  @State fontScale: number = 1.0;
-  @State searchText: string = '';
-  @State selectedBookId: string = '';
-  @State isTablet: boolean = false;
-  @State screenInfo: ScreenInfo | null = null;
+  @Local bookmarks: BookmarkWithBook[] = [];
+  @Local isDarkMode: boolean = false;
+  @Local currentColors: AppColors = themeManager.getColors();
+  @Local fontScale: number = 1.0;
+  @Local searchText: string = '';
+  @Local selectedBookId: string = '';
+  @Local isTablet: boolean = false;
+  @Local screenInfo: ScreenInfo | null = null;
   private unsubscribe: (() => void) | null = null;
-  @State private context: common.Context | null = null;
+  @Local private context: common.Context | null = null;
 
-  // LazyForEach 数据源
-  private bookmarksDataSource: LazyDataSource<BookmarkWithBook> = new LazyDataSource<BookmarkWithBook>((item: BookmarkWithBook) => item.bookmark.id);
+  private bookmarksDataSource: LazyDataSource<BookmarkWithBook> = 
+    new LazyDataSource<BookmarkWithBook>((item: BookmarkWithBook) => item.bookmark.id);
 
   aboutToAppear() {
     this.context = this.getUIContext().getHostContext() as common.Context;
@@ -96,7 +93,8 @@ struct BookmarksPage {
       }
     }
 
-    const sortedBookmarks = allBookmarks.slice().sort((a, b) => b.bookmark.createTime - a.bookmark.createTime);
+    const sortedBookmarks = allBookmarks.slice().sort((a, b) => 
+      b.bookmark.createTime - a.bookmark.createTime);
 
     this.bookmarks = sortedBookmarks;
     this.updateDataSource();
@@ -174,21 +172,61 @@ struct BookmarksPage {
     if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
     if (diff < 604800000) return Math.floor(diff / 86400000) + '天前';
 
-    return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+    return date.getFullYear() + '-' + 
+      String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+      String(date.getDate()).padStart(2, '0');
+  }
+
+  build() {
+    Column() {
+      // 顶部导航栏
+      this.Header()
+
+      // 搜索栏
+      this.SearchBar()
+
+      // 书签列表
+      if (this.getFilteredBookmarks().length === 0) {
+        this.EmptyState()
+      } else {
+        List({ space: Spacing.md }) {
+          ForEach(this.getFilteredBookmarks(), (bookmark: BookmarkWithBook) => {
+            ListItem() {
+              this.BookmarkItem(bookmark)
+            }
+          }, (bookmark: BookmarkWithBook) => bookmark.bookmark.id)
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .padding({ 
+          left: Spacing.lg, 
+          right: Spacing.lg,
+          top: Spacing.sm,
+          bottom: Spacing.xxxl
+        })
+        .scrollBar(BarState.Auto)
+        .edgeEffect(EdgeEffect.Spring)
+      }
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
   }
 
   @Builder
   Header() {
     Row() {
-      Button() {
-        Text('<')
-          .fontSize(Size.iconXL)
-          .fontColor(this.currentColors.textPrimary)
+      // 返回按钮
+      Row() {
+        SymbolGlyph($r('sys.symbol.chevron.left'))
+          .fontSize(Size.iconLG)
+          .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
       }
       .width(Size.buttonMD)
       .height(Size.buttonMD)
-      .backgroundColor(this.tc('rgba(255, 255, 255, 0.3)', 'rgba(0, 0, 0, 0.3)'))
       .borderRadius(BorderRadius.full)
+      .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
+      .justifyContent(FlexAlign.Center)
       .onClick(() => {
         try {
           goBack();
@@ -197,103 +235,141 @@ struct BookmarksPage {
           logger.error('[BookmarksPage] back failed:', msg);
         }
       })
+      .stateStyles({
+        pressed: { .scale({ x: 0.9, y: 0.9 }) },
+        normal: { .scale({ x: 1, y: 1 }) }
+      })
 
-      Text(tr('bookmarks_title'))
-        .fontSize(fontScaleManager.getScaledFontSize(20))
-        .fontWeight(FontWeight.Medium)
-        .fontColor(this.currentColors.textPrimary)
-        .layoutWeight(1)
+      Column({ space: Spacing.xs }) {
+        Text(tr('bookmarks_title'))
+          .fontSize(fontScaleManager.getScaledFontSize(18))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
 
-      Text(this.bookmarks.length + '个书签')
-        .fontSize(fontScaleManager.getScaledFontSize(14))
-        .fontColor(this.currentColors.textSecondary)
+        Text(this.bookmarks.length + ' 个书签')
+          .fontSize(fontScaleManager.getScaledFontSize(12))
+          .fontColor(this.tc('#8E8E93', '#8E8E93'))
+      }
+      .layoutWeight(1)
+      .alignItems(HorizontalAlign.Start)
+      .margin({ left: Spacing.md })
+
+      // 筛选按钮
+      Row() {
+        SymbolGlyph($r('sys.symbol.line.horizontal.3.decrease.circle'))
+          .fontSize(Size.iconMD)
+          .fontColor([this.selectedBookId ? COMMON_COLORS.PRIMARY_BLUE : this.tc('#8E8E93', '#8E8E93')])
+      }
+      .width(Size.buttonMD)
+      .height(Size.buttonMD)
+      .borderRadius(BorderRadius.full)
+      .backgroundColor(this.selectedBookId ? COMMON_COLORS.PRIMARY_BLUE + '15' : this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
+      .justifyContent(FlexAlign.Center)
+      .onClick(() => {
+        this.showBookFilterDialog();
+      })
     }
     .width('100%')
-    .height(Size.buttonLG)
-    .padding({ left: Spacing.xs, right: Spacing.lg })
-    .backgroundColor(this.bg('rgba(255, 255, 255, 0.95)', 'rgba(44, 44, 46, 0.95)'))
+    .height(Size.buttonLG + Spacing.sm)
+    .padding({ left: Spacing.lg, right: Spacing.lg })
+    .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
+    .shadow(getShadow('sm', this.isDarkMode))
   }
 
   @Builder
   SearchBar() {
     Column({ space: Spacing.sm }) {
-      // 搜索框和筛选按钮
       Row({ space: Spacing.sm }) {
+        // 搜索图标
+        SymbolGlyph($r('sys.symbol.magnifyingglass'))
+          .fontSize(Size.iconSM)
+          .fontColor([this.tc('#8E8E93', '#8E8E93')])
+          .margin({ left: Spacing.md })
+
         // 搜索输入框
-        TextInput({ placeholder: '搜索书签...' })
-          .layoutWeight(1)
+        TextInput({ placeholder: '搜索书签...', text: $$this.searchText })
+          .placeholderColor(this.tc('#C7C7CC', '#8E8E93'))
+          .fontSize(fontScaleManager.getScaledFontSize(14))
           .height(Size.inputSM)
-          .padding({ left: Spacing.lg, right: Spacing.lg })
-          .backgroundColor(this.bg('#F5F5F5', '#2C2C2E'))
-          .borderRadius(BorderRadius.md)
+          .backgroundColor(Color.Transparent)
+          .layoutWeight(1)
           .onChange((value: string) => {
             this.searchText = value;
             this.updateDataSource();
           })
 
-        // 筛选按钮
-        Button() {
-          Row({ space: Spacing.xs }) {
-            Text('line_horizontal_3_decrease_circle')
-              .fontSize(fontScaleManager.getScaledFontSize(16))
-              .fontColor(this.selectedBookId ? COMMON_COLORS.PRIMARY_BLUE : this.currentColors.textSecondary)
-            if (this.selectedBookId) {
-              Text('●')
-                .fontSize(8)
-                .fontColor(COMMON_COLORS.PRIMARY_BLUE)
-            }
+        // 清空按钮
+        if (this.searchText) {
+          Row() {
+            SymbolGlyph($r('sys.symbol.xmark.circle.fill'))
+              .fontSize(Size.iconSM)
+              .fontColor([this.tc('#8E8E93', '#8E8E93')])
           }
+          .width(Size.buttonSM)
+          .height(Size.buttonSM)
+          .justifyContent(FlexAlign.Center)
+          .onClick(() => {
+            this.searchText = '';
+            this.updateDataSource();
+          })
         }
-        .width(Size.buttonMD)
-        .height(Size.inputSM)
-        .backgroundColor(this.selectedBookId ? COMMON_COLORS.PRIMARY_BLUE + '15' : this.bg('#F5F5F5', '#2C2C2E'))
-        .borderRadius(BorderRadius.md)
-        .onClick(() => {
-          this.showBookFilterDialog();
-        })
       }
       .width('100%')
+      .height(Size.inputSM)
+      .padding({ left: Spacing.sm, right: Spacing.sm })
+      .backgroundColor(this.tc('#F2F2F7', '#2C2C2E'))
+      .borderRadius(BorderRadius.xl)
 
       // 激活的筛选标签
       if (this.selectedBookId) {
         Row({ space: Spacing.sm }) {
-          Text('filter.circle')
-            .fontSize(14)
-            .fontColor(COMMON_COLORS.PRIMARY_BLUE)
+          SymbolGlyph($r('sys.symbol.book.fill'))
+            .fontSize(Size.iconSM)
+            .fontColor([COMMON_COLORS.PRIMARY_BLUE])
           
           Text(bookViewModel.getBookById(this.selectedBookId)?.title || '')
             .fontSize(fontScaleManager.getScaledFontSize(12))
-            .fontColor(this.currentColors.textPrimary)
+            .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
             .maxLines(1)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
             .layoutWeight(1)
 
-          Button() {
-            Text('xmark.circle.fill')
-              .fontSize(16)
-              .fontColor(COMMON_COLORS.PRIMARY_BLUE)
+          Row() {
+            SymbolGlyph($r('sys.symbol.xmark'))
+              .fontSize(Size.iconXS)
+              .fontColor([COMMON_COLORS.PRIMARY_BLUE])
           }
-          .width(24)
-          .height(24)
-          .backgroundColor(Color.Transparent)
+          .width(Size.buttonSM)
+          .height(Size.buttonSM)
+          .justifyContent(FlexAlign.Center)
           .onClick(() => { 
             this.selectedBookId = '';
             this.updateDataSource();
           })
         }
         .width('100%')
-        .padding({ left: Spacing.sm, right: Spacing.sm, top: Spacing.xs, bottom: Spacing.xs })
+        .padding({ 
+          left: Spacing.md, 
+          right: Spacing.md, 
+          top: Spacing.sm, 
+          bottom: Spacing.sm 
+        })
         .backgroundColor(COMMON_COLORS.PRIMARY_BLUE + '10')
-        .borderRadius(BorderRadius.sm)
+        .borderRadius(BorderRadius.lg)
       }
     }
     .width('100%')
-    .padding({ left: Spacing.xl, right: Spacing.xl, top: Spacing.md, bottom: Spacing.sm })
+    .padding({ 
+      left: Spacing.lg, 
+      right: Spacing.lg, 
+      top: Spacing.md, 
+      bottom: Spacing.sm 
+    })
   }
 
   private showBookFilterDialog(): void {
     const allBooks = bookViewModel.getAllBooks();
-    const bookTitles: string[] = [tr('all_books')];
+    const bookTitles: string[] = ['全部书籍'];
     const bookIds: string[] = [''];
     
     for (let i = 0; i < allBooks.length; i++) {
@@ -302,7 +378,7 @@ struct BookmarksPage {
     }
 
     promptAction.showActionMenu({
-      title: tr('filter_by_book'),
+      title: '按书籍筛选',
       buttons: bookTitles.map((title, index) => ({
         text: title,
         action: () => {
@@ -315,127 +391,160 @@ struct BookmarksPage {
 
   @Builder
   BookmarkItem(bookmarkWithBook: BookmarkWithBook) {
-    Row() {
-      Column({ space: Spacing.sm }) {
-        if (bookmarkWithBook.book) {
-          Image(bookmarkWithBook.book.coverPath || '')
-            .width(this.isTablet ? Size.avatarLG + 12 : Size.avatarMD + 10)
-            .height(this.isTablet ? Size.cardSM + 14 : Size.cardXS + 14)
-            .borderRadius(BorderRadius.xs)
+    Row({ space: Spacing.lg }) {
+      // 封面图
+      Stack() {
+        if (bookmarkWithBook.book && bookmarkWithBook.book.coverPath) {
+          Image(bookmarkWithBook.book.coverPath)
+            .width(this.isTablet ? 70 : 60)
+            .height(this.isTablet ? 95 : 80)
+            .borderRadius(BorderRadius.md)
             .objectFit(ImageFit.Cover)
-            .alt($r('app.media.app_icon'))
         } else {
-          Column()
-            .width(this.isTablet ? Size.avatarLG + 12 : Size.avatarMD + 10)
-            .height(this.isTablet ? Size.cardSM + 14 : Size.cardXS + 14)
-            .backgroundColor(this.currentColors.surface)
-            .borderRadius(BorderRadius.xs)
+          Column() {
+            SymbolGlyph($r('sys.symbol.book.fill'))
+              .fontSize(Size.iconXXL)
+              .fontColor([this.currentColors.primary])
+          }
+          .width(this.isTablet ? 70 : 60)
+          .height(this.isTablet ? 95 : 80)
+          .borderRadius(BorderRadius.md)
+          .backgroundColor(this.currentColors.primary + '15')
+          .justifyContent(FlexAlign.Center)
         }
-      }
-      .width(this.isTablet ? Size.avatarLG + 24 : Size.avatarMD + 20)
-      .alignItems(HorizontalAlign.Start)
 
+        // 页码标签
+        Row() {
+          Text('P' + bookmarkWithBook.bookmark.pageNumber)
+            .fontSize(fontScaleManager.getScaledFontSize(10))
+            .fontWeight(FontWeight.Medium)
+            .fontColor('#FFFFFF')
+        }
+        .padding({ 
+          left: Spacing.sm, 
+          right: Spacing.sm, 
+          top: Spacing.xs, 
+          bottom: Spacing.xs 
+        })
+        .backgroundColor('rgba(0,0,0,0.6)')
+        .borderRadius(BorderRadius.xl)
+        .position({ x: 5, y: 5 })
+      }
+
+      // 内容区域
       Column({ space: Spacing.sm }) {
+        // 标题
         Text(bookmarkWithBook.bookmark.title)
-          .fontSize(fontScaleManager.getScaledFontSize(this.isTablet ? 18 : 15))
-          .fontWeight(FontWeight.Medium)
-          .fontColor(this.currentColors.textPrimary)
+          .fontSize(fontScaleManager.getScaledFontSize(this.isTablet ? 16 : 15))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .width('100%')
 
+        // 书籍名称
         if (bookmarkWithBook.book) {
-          Text(bookmarkWithBook.book.title)
-            .fontSize(fontScaleManager.getScaledFontSize(this.isTablet ? 14 : 12))
-            .fontColor(this.currentColors.textSecondary)
-            .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-            .width('100%')
+          Row({ space: Spacing.xs }) {
+            SymbolGlyph($r('sys.symbol.book'))
+              .fontSize(Size.iconXS)
+              .fontColor([this.tc('#8E8E93', '#8E8E93')])
+            
+            Text(bookmarkWithBook.book.title)
+              .fontSize(fontScaleManager.getScaledFontSize(12))
+              .fontColor(this.tc('#8E8E93', '#8E8E93'))
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
+              .layoutWeight(1)
+          }
+          .width('100%')
         }
 
+        // 时间和备注
         Row({ space: Spacing.sm }) {
-          Text(tr('prev_page') + ' ' + bookmarkWithBook.bookmark.pageNumber + ' ' + tr('books_count'))
-            .fontSize(fontScaleManager.getScaledFontSize(this.isTablet ? 13 : 11))
-            .fontColor(this.currentColors.textHint)
-            .padding({ left: Spacing.sm, right: Spacing.sm, top: Spacing.xs / 2, bottom: Spacing.xs / 2 })
-            .backgroundColor('#007DFF20')
-            .borderRadius(BorderRadius.xs)
+          Row({ space: Spacing.xs }) {
+            SymbolGlyph($r('sys.symbol.clock'))
+              .fontSize(Size.iconXS)
+              .fontColor([this.tc('#8E8E93', '#8E8E93')])
+            
+            Text(this.formatTime(bookmarkWithBook.bookmark.createTime))
+              .fontSize(fontScaleManager.getScaledFontSize(11))
+              .fontColor(this.tc('#8E8E93', '#8E8E93'))
+          }
 
-          Text(this.formatTime(bookmarkWithBook.bookmark.createTime))
-            .fontSize(fontScaleManager.getScaledFontSize(this.isTablet ? 13 : 11))
-            .fontColor(this.currentColors.textHint)
+          if (bookmarkWithBook.bookmark.note) {
+            Row({ space: Spacing.xs }) {
+              SymbolGlyph($r('sys.symbol.note.text'))
+                .fontSize(Size.iconXS)
+                .fontColor([this.currentColors.primary])
+              
+              Text(bookmarkWithBook.bookmark.note)
+                .fontSize(fontScaleManager.getScaledFontSize(11))
+                .fontColor(this.currentColors.primary)
+                .maxLines(1)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+            }
+          }
         }
-
-        if (bookmarkWithBook.bookmark.note) {
-          Text(bookmarkWithBook.bookmark.note)
-            .fontSize(fontScaleManager.getScaledFontSize(this.isTablet ? 14 : 12))
-            .fontColor(this.currentColors.textSecondary)
-            .maxLines(2)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-            .width('100%')
-        }
+        .width('100%')
       }
       .layoutWeight(1)
       .alignItems(HorizontalAlign.Start)
-      .margin({ left: this.isTablet ? Spacing.md + 2 : Spacing.md })
+
+      // 跳转箭头
+      SymbolGlyph($r('sys.symbol.chevron.right'))
+        .fontSize(Size.iconSM)
+        .fontColor([this.tc('#C7C7CC', '#48484A')])
     }
     .width('100%')
-    .padding(this.isTablet ? Spacing.xxl : Spacing.lg)
-    .backgroundColor(this.currentColors.surface)
-    .borderRadius(BorderRadius.md)
-    .margin({ left: this.isTablet ? Spacing.xxl : Spacing.xl, right: this.isTablet ? Spacing.xxl : Spacing.xl, bottom: this.isTablet ? Spacing.lg + 2 : Spacing.md })
-    .onClick(() => { this.goToBookmark(bookmarkWithBook); })
+    .padding(Spacing.lg)
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.xl)
+    .shadow(getShadow('sm', this.isDarkMode))
+    .onClick(() => this.goToBookmark(bookmarkWithBook))
+    .stateStyles({
+      pressed: { 
+        .scale({ x: 0.98, y: 0.98 }),
+        .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+      },
+      normal: { 
+        .scale({ x: 1, y: 1 }),
+        .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+      }
+    })
   }
 
   @Builder
-  EmptyView() {
-    Column({ space: Spacing.lg }) {
-      Text(tr('no_bookmarks'))
-        .fontSize(fontScaleManager.getScaledFontSize(64))
-        .fontWeight(FontWeight.Bold)
-
-      Text(tr('no_bookmarks') || tr('no_data'))
-        .fontSize(fontScaleManager.getScaledFontSize(16))
-        .fontColor(this.currentColors.textSecondary)
-
-      Text(tr('no_bookmarks') || tr('no_data'))
-        .fontSize(fontScaleManager.getScaledFontSize(14))
-        .fontColor(this.currentColors.textHint)
-    }
-    .width('100%')
-    .height('100%')
-    .justifyContent(FlexAlign.Center)
-  }
-
-  build() {
-    Column() {
-      this.Header()
-      this.SearchBar()
-
-      if (this.getFilteredBookmarks().length === 0) {
-        this.EmptyView()
-      } else {
-        Scroll() {
-          Column({ space: Spacing.none }) {
-            LazyForEach(this.bookmarksDataSource, (item: BookmarkWithBook) => {
-              this.BookmarkItem(item)
-            }, (item: BookmarkWithBook) => item.bookmark.id)
-          }
-          .padding({ top: Spacing.xs, bottom: Spacing.xl })
-        }
-        .scrollBar(BarState.Off)
-        .layoutWeight(1)
+  EmptyState() {
+    Column({ space: Spacing.xl }) {
+      Column() {
+        SymbolGlyph($r('sys.symbol.bookmark'))
+          .fontSize(Size.iconXXXL * 1.5)
+          .fontColor([this.tc('#D1D1D6', '#48484A')])
       }
+      .width(100)
+      .height(100)
+      .borderRadius(BorderRadius.full)
+      .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+      .justifyContent(FlexAlign.Center)
+
+      Text('暂无书签')
+        .fontSize(fontScaleManager.getScaledFontSize(16))
+        .fontWeight(FontWeight.Medium)
+        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+
+      Text('阅读时添加书签，方便快速跳转')
+        .fontSize(fontScaleManager.getScaledFontSize(13))
+        .fontColor(this.tc('#8E8E93', '#8E8E93'))
     }
     .width('100%')
-    .height('100%')
-    .backgroundColor(this.currentColors.background)
+    .layoutWeight(1)
+    .justifyContent(FlexAlign.Center)
   }
 }
 
-// 预览组件 - 用于DevEco Studio预览
+// 预览组件
 @Preview
-@Component
+@ComponentV2
 struct BookmarksPagePreview {
   build() {
     Column() {
@@ -458,7 +567,6 @@ struct BookmarksPagePreview {
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 
-      // 注意：深色模式需要通过主题管理器设置
       BookmarksPage()
         .height(700)
     }
@@ -466,5 +574,3 @@ struct BookmarksPagePreview {
     .backgroundColor('#FFFFFF')
   }
 }
-
-export default BookmarksPage;

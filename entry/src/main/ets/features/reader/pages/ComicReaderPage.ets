@@ -1,43 +1,36 @@
 import { logger } from '../../../common/utils/Logger';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
-/**
- * 婕�敾闃呰�椤甸潰 - v6.0
- * Comic Reader Page - Full Featured Comic Reader
- */
-
 import { comicReaderService as comicReader, ComicPage, ComicInfo, ComicReadMode, ComicScaleMode } from '../core/services/reader/ComicReaderService';
 import { ComicReaderViewModel, comicReaderViewModel } from '../viewmodels/ComicReaderViewModel';
-import { uiDesignKitService as uiDesignKit, LIGHT_THEME, ThemeColors, FontSize, SpacingSize, BorderRadius } from '../core/services/reader/UIDesignKitService';
 import { router, window } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { DeviceUtils } from '../core/utils/DeviceUtils';
 import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../core/utils/AppTheme';
 import { fontScaleManager } from '../core/utils/FontScaleManager';
 import { tr } from '../core/utils/LocalizationUtil';
+import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
 @Entry
-@Component
+@ComponentV2
 struct ComicReaderPage {
-  @State isDarkMode: boolean = false;
-  @State comicInfo: ComicInfo | null = null;
-  @State showSettings: boolean = false;
-  @State showToolbar: boolean = true;
-  @State isLandscape: boolean = false;
-  @State isTablet: boolean = false;
-  @State readMode: ComicReadMode = ComicReadMode.SINGLE_PAGE;
-  @State scaleMode: ComicScaleMode = ComicScaleMode.FIT_WIDTH;
-  @State doublePages: [ComicPage | null, ComicPage | null] = [null, null];
-  @State fontScale: number = 1.0;
-  @State currentColors: AppColors = themeManager.getColors();
+  @Local isDarkMode: boolean = false;
+  @Local comicInfo: ComicInfo | null = null;
+  @Local showSettings: boolean = false;
+  @Local showToolbar: boolean = true;
+  @Local isLandscape: boolean = false;
+  @Local isTablet: boolean = false;
+  @Local readMode: ComicReadMode = ComicReadMode.SINGLE_PAGE;
+  @Local scaleMode: ComicScaleMode = ComicScaleMode.FIT_WIDTH;
+  @Local doublePages: [ComicPage | null, ComicPage | null] = [null, null];
+  @Local fontScale: number = 1.0;
+  @Local currentColors: AppColors = themeManager.getColors();
+  @Local screenInfo: ScreenInfo | null = null;
+  
   comicVM: ComicReaderViewModel = comicReaderViewModel;
-
-  private theme: ThemeColors = LIGHT_THEME;
   private bookId: string = '';
   private bookPath: string = '';
-
-  @State private context: common.Context | null = null;
-  @State screenInfo: ScreenInfo | null = null;
+  private context: common.Context | null = null;
 
   aboutToAppear() {
     this.context = this.getUIContext().getHostContext() as common.Context;
@@ -47,7 +40,6 @@ struct ComicReaderPage {
 
   private initData(): void {
     this.isDarkMode = appTheme.isDarkMode();
-    this.theme = uiDesignKit.getThemeColors();
     this.currentColors = themeManager.getColors();
     this.isTablet = DeviceUtils.isTablet();
     this.isLandscape = DeviceUtils.isLandscape();
@@ -62,7 +54,6 @@ struct ComicReaderPage {
     DeviceUtils.init();
     this.isTablet = DeviceUtils.isTablet() || (this.screenInfo?.isTablet ?? false);
 
-    // 鑾峰彇鍙傛暟
     const params = this.getUIContext().getRouter()?.getParams() as Record<string, string>;
     this.bookId = params?.bookId || '';
     this.bookPath = params?.bookPath || '';
@@ -83,9 +74,6 @@ struct ComicReaderPage {
     return this.isDarkMode ? dark : light;
   }
 
-  /**
-   * 鍔犺浇婕�敾
-   */
   async loadComic(): Promise<void> {
     this.comicVM.isLoading = true;
 
@@ -97,7 +85,6 @@ struct ComicReaderPage {
         this.comicVM.totalPages = info.totalPages;
         this.comicVM.currentPage = 0;
 
-        // 鏍规嵁璁惧�璁剧疆闃呰�妯″紡
         if (this.isTablet && this.isLandscape) {
           this.readMode = ComicReadMode.DOUBLE_PAGE;
           await comicReader.updateConfig({ readMode: this.readMode });
@@ -112,9 +99,6 @@ struct ComicReaderPage {
     }
   }
 
-  /**
-   * 鏇存柊鍙岄〉鏄剧ず
-   */
   updateDoublePages(): void {
     if (this.readMode === ComicReadMode.DOUBLE_PAGE) {
       this.doublePages = comicReader.getDoublePages();
@@ -122,9 +106,6 @@ struct ComicReaderPage {
     }
   }
 
-  /**
-   * 涓嬩竴)
-   */
   async nextPage(): Promise<void> {
     if (this.readMode === ComicReadMode.DOUBLE_PAGE) {
       await comicReader.goToPage(this.comicVM.currentPage + 2);
@@ -134,9 +115,6 @@ struct ComicReaderPage {
     this.updatePageState();
   }
 
-  /**
-   * 涓婁竴)
-   */
   async previousPage(): Promise<void> {
     if (this.readMode === ComicReadMode.DOUBLE_PAGE) {
       await comicReader.goToPage(this.comicVM.currentPage - 2);
@@ -146,25 +124,16 @@ struct ComicReaderPage {
     this.updatePageState();
   }
 
-  /**
-   * 鏇存柊椤甸潰锟?
-   */
   updatePageState(): void {
     this.comicVM.currentPage = comicReader.getCurrentPageIndex();
     this.updateDoublePages();
   }
 
-  /**
-   * 鍒囨崲灞忓箷鏂瑰悜
-   */
   async toggleOrientation(): Promise<void> {
     try {
-      // TODO: Use window.setPreferredOrientation if available
-      // For now, just toggle the flag
       this.isLandscape = !this.isLandscape;
       logger.info('[ComicReaderPage] Orientation toggled to:', this.isLandscape ? 'landscape' : 'portrait');
 
-      // 鏍规嵁灞忓箷鏂瑰悜璋冩暣闃呰�妯″紡
       if (this.isTablet) {
         if (this.isLandscape) {
           this.readMode = ComicReadMode.DOUBLE_PAGE;
@@ -180,9 +149,6 @@ struct ComicReaderPage {
     }
   }
 
-  /**
-   * 鍒囨崲宸ュ叿鏍忔樉)
-   */
   toggleToolbar(): void {
     this.showToolbar = !this.showToolbar;
     this.showSettings = false;
@@ -190,387 +156,358 @@ struct ComicReaderPage {
 
   build() {
     Stack() {
-      // 涓诲唴瀹瑰尯)
       Column() {
-        // 椤堕儴宸ュ叿)
+        // 顶部工具栏
         if (this.showToolbar) {
           this.buildTopToolbar()
         }
 
-        // 婕�敾鍐呭�)
-        this.buildComicContent()
+        // 漫画内容区
+        Column() {
+          if (this.comicVM.isLoading) {
+            // 加载状态
+            Column({ space: Spacing.lg }) {
+              LoadingProgress()
+                .width(50)
+                .height(50)
+                .color(this.currentColors.primary)
+              
+              Text('加载中...')
+                .fontSize(fontScaleManager.getScaledFontSize(14))
+                .fontColor(this.tc('#8E8E93', '#8E8E93'))
+            }
+            .width('100%')
+            .layoutWeight(1)
+            .justifyContent(FlexAlign.Center)
+          } else if (this.comicInfo) {
+            // 漫画显示区
+            this.ComicDisplayArea()
+          } else {
+            // 空状态
+            Column({ space: Spacing.xl }) {
+              SymbolGlyph($r('sys.symbol.photo'))
+                .fontSize(Size.iconXXXL * 1.5)
+                .fontColor([this.tc('#D1D1D6', '#48484A')])
+              
+              Text('暂无漫画内容')
+                .fontSize(fontScaleManager.getScaledFontSize(16))
+                .fontWeight(FontWeight.Medium)
+                .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+            }
+            .width('100%')
+            .layoutWeight(1)
+            .justifyContent(FlexAlign.Center)
+          }
+        }
+        .layoutWeight(1)
+        .width('100%')
+        .backgroundColor(this.bg('#000000', '#000000'))
+        .onClick(() => this.toggleToolbar())
 
-        // 搴曢儴鎺у埗)
-        if (this.showToolbar) {
-          this.buildBottomBar()
+        // 底部进度条
+        if (this.showToolbar && this.comicInfo) {
+          this.buildBottomProgress()
         }
       }
       .width('100%')
       .height('100%')
-      .backgroundColor(this.bg('#000000', '#000000'))
 
-      // 璁剧疆闈㈡澘
+      // 设置面板
       if (this.showSettings) {
-        this.buildSettingsPanel()
-      }
-
-      // 鍔犺浇鎸囩ず)
-      if (this.comicVM.isLoading) {
-        Column({ space: 16 }) {
-          LoadingProgress()
-            .width(48)
-            .height(48)
-            .color('#FFFFFF')
-
-          Text(tr('loading'))
-            .fontSize(FontSize.MD)
-            .fontColor('#FFFFFF')
-        }
-        .width('100%')
-        .height('100%')
-        .backgroundColor('#000000')
-        .justifyContent(FlexAlign.Center)
+        this.SettingsPanel()
       }
     }
     .width('100%')
     .height('100%')
-    .onClick(() => this.toggleToolbar())
+    .backgroundColor(this.bg('#000000', '#000000'))
   }
 
-  /**
-   * 鏋勫缓椤堕儴宸ュ叿)
-   */
   @Builder
   buildTopToolbar() {
     Row() {
-      Button('<')
-        .width(40)
-        .height(40)
-        .backgroundColor('rgba(0,0,0,0.5)')
-        .fontColor('#FFFFFF')
-        .fontSize(20)
-        .borderRadius(BorderRadius.xl)
-        .onClick(() => goBack())
+      // 返回按钮
+      Row() {
+        SymbolGlyph($r('sys.symbol.chevron.left'))
+          .fontSize(Size.iconLG)
+          .fontColor(['#FFFFFF'])
+      }
+      .width(Size.buttonMD)
+      .height(Size.buttonMD)
+      .borderRadius(BorderRadius.full)
+      .backgroundColor('rgba(255,255,255,0.2)')
+      .justifyContent(FlexAlign.Center)
+      .onClick(() => {
+        try {
+          goBack();
+        } catch (error) {
+          const msg = error instanceof Error ? error.message : String(error);
+          logger.error('[ComicReaderPage] back failed:', msg);
+        }
+      })
+      .stateStyles({
+        pressed: { .scale({ x: 0.9, y: 0.9 }) },
+        normal: { .scale({ x: 1, y: 1 }) }
+      })
 
-      // 鏍囬�
-      Text(this.comicInfo?.title || '婕�敾闃呰�')
-        .fontSize(FontSize.LG)
-        .fontWeight(FontWeight.Bold)
+      // 标题
+      Text(this.comicInfo?.title || '漫画阅读')
+        .fontSize(fontScaleManager.getScaledFontSize(16))
+        .fontWeight(FontWeight.Medium)
         .fontColor('#FFFFFF')
-        .layoutWeight(1)
-        .margin({ left: 12 })
         .maxLines(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .layoutWeight(1)
+        .margin({ left: Spacing.md })
 
-      Button(this.isLandscape ? 'V' : 'H')
-        .width(40)
-        .height(40)
-        .backgroundColor('rgba(0,0,0,0.5)')
-        .fontColor('#FFFFFF')
-        .fontSize(18)
-        .borderRadius(BorderRadius.xl)
-        .margin({ right: 8 })
-        .onClick(() => this.toggleOrientation())
-
-      // 璁剧疆鎸夐挳
-      Button('gearshape')
-        .width(40)
-        .height(40)
-        .backgroundColor('rgba(0,0,0,0.5)')
-        .fontColor('#FFFFFF')
-        .fontSize(18)
-        .borderRadius(BorderRadius.xl)
-        .onClick(() => {
-          this.showSettings = !this.showSettings;
-        })
+      // 设置按钮
+      Row() {
+        SymbolGlyph($r('sys.symbol.gearshape'))
+          .fontSize(Size.iconMD)
+          .fontColor(['#FFFFFF'])
+      }
+      .width(Size.buttonMD)
+      .height(Size.buttonMD)
+      .borderRadius(BorderRadius.full)
+      .backgroundColor('rgba(255,255,255,0.2)')
+      .justifyContent(FlexAlign.Center)
+      .onClick(() => {
+        this.showSettings = !this.showSettings;
+      })
     }
     .width('100%')
-    .height(56)
-    .padding({ left: 16, right: 16 })
-    .backgroundColor('rgba(0,0,0,0.7)')
+    .height(Size.buttonLG + Spacing.sm)
+    .padding({ left: Spacing.lg, right: Spacing.lg })
+    .linearGradient({
+      direction: GradientDirection.Bottom,
+      colors: ['rgba(0,0,0,0.7)', 'rgba(0,0,0,0)']
+    })
+    .position({ top: 0 })
+    .zIndex(100)
   }
 
-  /**
-   * 鏋勫缓婕�敾鍐呭�)
-   */
   @Builder
-  buildComicContent() {
-    if (this.readMode === ComicReadMode.DOUBLE_PAGE && this.isTablet && this.doublePages.length >= 2) {
-      // 双页模式平锟?
-      Row() {
-        // 页
-        this.buildComicPage(this.doublePages[0])
-
-        Divider()
-          .vertical(true)
-          .color('#333333')
-          .strokeWidth(1)
-
-        // 页
-        this.buildComicPage(this.doublePages[1])
+  ComicDisplayArea() {
+    if (this.readMode === ComicReadMode.DOUBLE_PAGE) {
+      // 双页模式
+      Row({ space: Spacing.xs }) {
+        if (this.doublePages[0]) {
+          Image(this.doublePages[0].imagePath)
+            .width('50%')
+            .height('100%')
+            .objectFit(ImageFit.Contain)
+        }
+        if (this.doublePages[1]) {
+          Image(this.doublePages[1].imagePath)
+            .width('50%')
+            .height('100%')
+            .objectFit(ImageFit.Contain)
+        }
       }
-      .layoutWeight(1)
       .width('100%')
+      .height('100%')
     } else {
-      // 页模式
-      this.buildComicPage(this.comicVM.currentPage >= 0 && this.comicVM.currentPage < this.comicVM.totalPages ?
-        comicReader.getCurrentPage() : null)
-    }
-  }
-
-  /**
-   * 鏋勫缓鍗曢〉婕�敾
-   */
-  @Builder
-  buildComicPage(page: ComicPage | null) {
-    if (page && page.imageUri) {
-      Stack() {
-        Image(page.imageUri)
+      // 单页模式
+      if (this.comicVM.currentPage < this.comicVM.totalPages) {
+        Image(this.comicVM.pages[this.comicVM.currentPage]?.imagePath || '')
           .width('100%')
           .height('100%')
           .objectFit(ImageFit.Contain)
-
-        // 椤电爜鏄剧ず
-        if (comicReader.getConfig().showPageNumber) {
-          Text((this.comicVM.currentPage + 1) + ' / ' + this.comicVM.totalPages)
-            .fontSize(FontSize.SM)
-            .fontColor('#FFFFFF')
-            .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-            .backgroundColor('rgba(0,0,0,0.5)')
-            .borderRadius(BorderRadius.md)
-            .position({ x: '50%', y: '90%' })
-            .translate({ x: '-50%' })
-        }
       }
-      .layoutWeight(1)
-      .onClick(() => this.toggleToolbar())
-    } else {
-      Column() {
-        LoadingProgress()
-          .width(40)
-          .height(40)
-          .color('#FFFFFF')
-      }
-      .layoutWeight(1)
-      .justifyContent(FlexAlign.Center)
     }
   }
 
-  /**
-   * 鏋勫缓搴曢儴鎺у埗)
-   */
   @Builder
-  buildBottomBar() {
-    Column({ space: 12 }) {
-      // 杩涘害)
+  buildBottomProgress() {
+    Column() {
+      // 进度信息
       Row() {
-        Text((this.comicVM.currentPage + 1) + '')
-          .fontSize(FontSize.XS)
+        Text(`${this.comicVM.currentPage + 1} / ${this.comicVM.totalPages}`)
+          .fontSize(fontScaleManager.getScaledFontSize(13))
           .fontColor('#FFFFFF')
-          .width(30)
+        
+        Blank()
 
-        Slider({
-          value: this.comicVM.currentPage,
-          min: 0,
-          max: this.comicVM.totalPages - 1,
-          style: SliderStyle.OutSet
+        Text(`${Math.floor((this.comicVM.currentPage + 1) / this.comicVM.totalPages * 100)}%`)
+          .fontSize(fontScaleManager.getScaledFontSize(13))
+          .fontColor('#FFFFFF')
+      }
+      .width('100%')
+      .padding({ left: Spacing.lg, right: Spacing.lg, bottom: Spacing.sm })
+
+      // 进度条
+      Progress({ 
+        value: this.comicVM.currentPage + 1, 
+        total: this.comicVM.totalPages, 
+        type: ProgressType.Linear 
+      })
+        .width('100%')
+        .height(4)
+        .borderRadius(BorderRadius.xl)
+        .color(COMMON_COLORS.PRIMARY_BLUE)
+        .backgroundColor('rgba(255,255,255,0.2)')
+
+      // 翻页按钮
+      Row() {
+        // 上一页
+        Button() {
+          SymbolGlyph($r('sys.symbol.chevron.left'))
+            .fontSize(Size.iconXL)
+            .fontColor(['#FFFFFF'])
+        }
+        .width(Size.buttonLG)
+        .height(Size.buttonLG)
+        .borderRadius(BorderRadius.full)
+        .backgroundColor('rgba(255,255,255,0.2)')
+        .enabled(this.comicVM.currentPage > 0)
+        .onClick(() => this.previousPage())
+        .stateStyles({
+          pressed: { .scale({ x: 0.9, y: 0.9 }) },
+          normal: { .scale({ x: 1, y: 1 }) }
         })
-          .layoutWeight(1)
-          .selectedColor('#007DFF')
-          .trackColor('#333333')
-          .blockColor('#FFFFFF')
-          .onChange((value: number) => {
-            this.comicVM.goToPage(Math.round(value));
-            comicReader.goToPage(Math.round(value));
-            this.updatePageState();
-          })
 
-        Text(this.comicVM.totalPages + '')
-          .fontSize(FontSize.XS)
-          .fontColor('#FFFFFF')
-          .width(30)
-          .textAlign(TextAlign.End)
+        Blank()
+
+        // 下一页
+        Button() {
+          SymbolGlyph($r('sys.symbol.chevron.right'))
+            .fontSize(Size.iconXL)
+            .fontColor(['#FFFFFF'])
+        }
+        .width(Size.buttonLG)
+        .height(Size.buttonLG)
+        .borderRadius(BorderRadius.full)
+        .backgroundColor('rgba(255,255,255,0.2)')
+        .enabled(this.comicVM.currentPage < this.comicVM.totalPages - 1)
+        .onClick(() => this.nextPage())
+        .stateStyles({
+          pressed: { .scale({ x: 0.9, y: 0.9 }) },
+          normal: { .scale({ x: 1, y: 1 }) }
+        })
       }
-
-      // 鎺у埗鎸夐挳
-      Row({ space: 16 }) {
-        Button('Prev')
-          .layoutWeight(1)
-          .height(40)
-          .backgroundColor('rgba(255,255,255,0.2)')
-          .fontColor('#FFFFFF')
-          .fontSize(FontSize.SM)
-          .borderRadius(BorderRadius.xl)
-          .onClick(() => this.previousPage())
-
-        Button('Next')
-          .layoutWeight(1)
-          .height(40)
-          .backgroundColor('rgba(0,125,255,0.8)')
-          .fontColor('#FFFFFF')
-          .fontSize(FontSize.SM)
-          .borderRadius(BorderRadius.xl)
-          .onClick(() => this.nextPage())
-      }
+      .width('100%')
+      .padding({ left: Spacing.xl, right: Spacing.xl, top: Spacing.md, bottom: Spacing.lg })
     }
     .width('100%')
-    .padding({ left: 16, right: 16, top: 12, bottom: 24 })
-    .backgroundColor('rgba(0,0,0,0.7)')
+    .linearGradient({
+      direction: GradientDirection.Top,
+      colors: ['rgba(0,0,0,0.7)', 'rgba(0,0,0,0)']
+    })
+    .position({ bottom: 0 })
+    .zIndex(100)
   }
 
-  /**
-   * 鏋勫缓璁剧疆闈㈡澘
-   */
   @Builder
-  buildSettingsPanel() {
+  SettingsPanel() {
     Column() {
-      // 闈㈡澘鏍囬�
+      // 头部
       Row() {
-        Text('闃呰�璁剧疆')
-          .fontSize(FontSize.H4)
-          .fontWeight(FontWeight.Bold)
-          .fontColor(this.theme.textPrimary)
+        Text('阅读设置')
+          .fontSize(fontScaleManager.getScaledFontSize(17))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
           .layoutWeight(1)
 
-        Button('锟?)
-          .width(32)
-          .height(32)
-          .fontSize(FontSize.LG)
-          .onClick(() => this.showSettings = false)
-      }
-      .width('100%')
-
-      // 闃呰�妯″紡
-      Column({ space: 12 }) {
-        Text('闃呰�妯″紡')
-          .fontSize(FontSize.MD)
-          .fontWeight(FontWeight.Medium)
-          .fontColor(this.theme.textPrimary)
-
-        Row({ space: 8 }) {
-          Button('鍗曢〉')
-            .height(32)
-            .backgroundColor(this.readMode === ComicReadMode.SINGLE_PAGE ? this.theme.primary : this.theme.backgroundSecondary)
-            .fontColor(this.readMode === ComicReadMode.SINGLE_PAGE ? '#FFFFFF' : this.theme.textSecondary)
-            .fontSize(FontSize.SM)
-            .borderRadius(BorderRadius.lg)
-            .onClick(async () => {
-              this.readMode = ComicReadMode.SINGLE_PAGE;
-              await comicReader.updateConfig({ readMode: this.readMode });
-            })
-
-          Button('鍙岄〉')
-            .height(32)
-            .backgroundColor(this.readMode === ComicReadMode.DOUBLE_PAGE ? this.theme.primary : this.theme.backgroundSecondary)
-            .fontColor(this.readMode === ComicReadMode.DOUBLE_PAGE ? '#FFFFFF' : this.theme.textSecondary)
-            .fontSize(FontSize.SM)
-            .borderRadius(BorderRadius.lg)
-            .onClick(async () => {
-              this.readMode = ComicReadMode.DOUBLE_PAGE;
-              await comicReader.updateConfig({ readMode: this.readMode });
-              this.updateDoublePages();
-            })
-
-          Button('闀挎潯')
-            .height(32)
-            .backgroundColor(this.readMode === ComicReadMode.WEBTOON ? this.theme.primary : this.theme.backgroundSecondary)
-            .fontColor(this.readMode === ComicReadMode.WEBTOON ? '#FFFFFF' : this.theme.textSecondary)
-            .fontSize(FontSize.SM)
-            .borderRadius(BorderRadius.lg)
-            .onClick(async () => {
-              this.readMode = ComicReadMode.WEBTOON;
-              await comicReader.updateConfig({ readMode: this.readMode });
-            })
+        Row() {
+          SymbolGlyph($r('sys.symbol.xmark'))
+            .fontSize(Size.iconMD)
+            .fontColor([this.tc('#8E8E93', '#8E8E93')])
         }
+        .width(Size.buttonSM)
+        .height(Size.buttonSM)
+        .justifyContent(FlexAlign.Center)
+        .onClick(() => {
+          this.showSettings = false;
+        })
       }
       .width('100%')
-      .padding({ bottom: 16 })
+      .padding(Spacing.lg)
 
-      // 缂╂斁妯″紡
-      Column({ space: 12 }) {
-        Text('缂╂斁妯″紡')
-          .fontSize(FontSize.MD)
-          .fontWeight(FontWeight.Medium)
-          .fontColor(this.theme.textPrimary)
+      Divider()
+        .color(this.tc('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.06)'))
+        .strokeWidth(0.5)
 
-        Row({ space: 8 }) {
-          Button('閫傚簲瀹藉害')
-            .height(32)
-            .backgroundColor(this.scaleMode === ComicScaleMode.FIT_WIDTH ? this.theme.primary : this.theme.backgroundSecondary)
-            .fontColor(this.scaleMode === ComicScaleMode.FIT_WIDTH ? '#FFFFFF' : this.theme.textSecondary)
-            .fontSize(FontSize.SM)
-            .borderRadius(BorderRadius.lg)
-            .onClick(async () => {
-              this.scaleMode = ComicScaleMode.FIT_WIDTH;
-              await comicReader.updateConfig({ scaleMode: this.scaleMode });
-            })
+      // 设置选项
+      Scroll() {
+        Column({ space: Spacing.lg }) {
+          // 阅读模式
+          this.SettingSection('阅读模式', [
+            { label: '单页模式', value: ComicReadMode.SINGLE_PAGE },
+            { label: '双页模式', value: ComicReadMode.DOUBLE_PAGE }
+          ], this.readMode, (value) => {
+            this.readMode = value as ComicReadMode;
+            comicReader.updateConfig({ readMode: this.readMode });
+            this.updateDoublePages();
+          })
 
-          Button('閫傚簲楂樺害')
-            .height(32)
-            .backgroundColor(this.scaleMode === ComicScaleMode.FIT_HEIGHT ? this.theme.primary : this.theme.backgroundSecondary)
-            .fontColor(this.scaleMode === ComicScaleMode.FIT_HEIGHT ? '#FFFFFF' : this.theme.textSecondary)
-            .fontSize(FontSize.SM)
-            .borderRadius(BorderRadius.lg)
-            .onClick(async () => {
-              this.scaleMode = ComicScaleMode.FIT_HEIGHT;
-              await comicReader.updateConfig({ scaleMode: this.scaleMode });
-            })
+          // 缩放模式
+          this.SettingSection('缩放模式', [
+            { label: '适应宽度', value: ComicScaleMode.FIT_WIDTH },
+            { label: '适应高度', value: ComicScaleMode.FIT_HEIGHT },
+            { label: '原始大小', value: ComicScaleMode.ORIGINAL }
+          ], this.scaleMode, (value) => {
+            this.scaleMode = value as ComicScaleMode;
+            comicReader.updateConfig({ scaleMode: this.scaleMode });
+          })
         }
+        .width('100%')
+        .padding(Spacing.lg)
       }
+      .layoutWeight(1)
       .width('100%')
-      .padding({ bottom: 16 })
+    }
+    .width(this.isTablet ? '40%' : '80%')
+    .height('100%')
+    .position({ right: 0 })
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .shadow(getShadow('xl', this.isDarkMode))
+    .transition(TransitionEffect.OPACITY.animation({ duration: 200 }))
+  }
 
-      // 鏄剧ず椤电爜寮€)
-      Row() {
-        Text('鏄剧ず椤电爜')
-          .fontSize(FontSize.MD)
-          .fontColor(this.theme.textPrimary)
-          .layoutWeight(1)
+  @Builder
+  SettingSection(title: string, options: Array<{label: string, value: any}>, currentValue: any, onSelect: (value: any) => void) {
+    Column({ space: Spacing.md }) {
+      Text(title)
+        .fontSize(fontScaleManager.getScaledFontSize(15))
+        .fontWeight(FontWeight.Medium)
+        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+        .width('100%')
 
-        Toggle({ type: ToggleType.Switch, isOn: comicReader.getConfig().showPageNumber })
-          .onChange(async (isOn: boolean) => {
-            await comicReader.updateConfig({ showPageNumber: isOn });
-          })
-      }
-      .width('100%')
-      .padding({ bottom: 16 })
-
-      // 棰勫姞杞借�)
-      Row() {
-        Text('Preload')
-          .fontSize(FontSize.MD)
-          .fontColor(this.theme.textPrimary)
-          .layoutWeight(1)
-
-        Toggle({ type: ToggleType.Switch, isOn: comicReader.getConfig().enablePreload })
-          .onChange(async (isOn: boolean) => {
-            await comicReader.updateConfig({ enablePreload: isOn });
-          })
+      Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
+        ForEach(options, (option) => {
+          Text(option.label)
+            .fontSize(fontScaleManager.getScaledFontSize(13))
+            .padding({ 
+              left: Spacing.md, 
+              right: Spacing.md, 
+              top: Spacing.sm, 
+              bottom: Spacing.sm 
+            })
+            .backgroundColor(currentValue === option.value ? 
+              this.currentColors.primary : this.bg('#F2F2F7', '#2C2C2E'))
+            .fontColor(currentValue === option.value ? 
+              '#FFFFFF' : this.tc('#1A1A1A', '#FFFFFF'))
+            .borderRadius(BorderRadius.xl)
+            .onClick(() => onSelect(option.value))
+            .stateStyles({
+              pressed: { .scale({ x: 0.95, y: 0.95 }) },
+              normal: { .scale({ x: 1, y: 1 }) }
+            })
+            .margin({ right: Spacing.sm, bottom: Spacing.sm })
+        }, (option) => option.label)
       }
       .width('100%')
     }
-    .width('90%')
-    .padding(Spacing.xl)
-    .backgroundColor(this.theme.background)
-    .borderRadius(uiDesignKit.getBorderRadius(BorderRadius.XL))
-    .shadow({
-      radius: 20,
-      color: 'rgba(0,0,0,0.3)',
-      offsetX: 0,
-      offsetY: 8
-    })
-    .position({ x: '50%', y: '50%' })
-    .translate({ x: '-50%', y: '-50%' })
+    .width('100%')
   }
 }
 
-// 棰勮�缁勪欢 - 鐢ㄤ簬DevEco Studio棰勮�锟?
+// 预览组件
 @Preview
-@Component
+@ComponentV2
 struct ComicReaderPagePreview {
   build() {
     Column() {
-      Text('婕�敾闃呰�锟?- 娴呰壊妯″紡')
+      Text('漫画阅读器 - 浅色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .padding(Spacing.md)
@@ -582,7 +519,7 @@ struct ComicReaderPagePreview {
       Divider()
         .margin({ top: 20, bottom: 20 })
 
-      Text('婕�敾闃呰�锟?- 娣辫壊妯″紡')
+      Text('漫画阅读器 - 深色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .padding(Spacing.md)
@@ -596,7 +533,3 @@ struct ComicReaderPagePreview {
     .backgroundColor('#FFFFFF')
   }
 }
-
-
-
-

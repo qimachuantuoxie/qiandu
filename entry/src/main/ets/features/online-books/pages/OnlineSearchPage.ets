@@ -1,17 +1,7 @@
 import { logger } from '../../../common/utils/Logger';
-/**
- * 鍦ㄧ嚎涔︾睄鎼滅储椤甸潰 - 浼樺寲锟?
- * 鏀�寔澶氫功婧愬苟琛屾悳绱€€佺粨鏋滃睍绀恒€佽�鎯呮煡锟?
- * 浼樺寲锛歎I 缇庡寲銆侀�鏋跺睆銆佸垎绫荤瓫閫夈€佹帓搴忓姛锟?
- *
- * @since 3.0.0
- */
-
-
 import { toast } from '../core/utils/ToastHelper';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { common } from '@kit.AbilityKit';
-import { preferences } from '@kit.ArkData';
 import { onlineBookService } from '../core/services/book/OnlineBookService';
 import { OnlineSearchResult } from '../core/models/OnlineBookModel';
 import { themeManager, COMMON_COLORS, AppColors } from '../core/utils/AppTheme';
@@ -23,24 +13,23 @@ import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 const PREFERENCES_NAME = 'search_preferences';
 
 @Entry
-@Component
-export struct OnlineSearchPage {
-  @State isDarkMode: boolean = false;
-  @State currentColors: AppColors = themeManager.getColors();
-  @State fontScale: number = 1.0;
-  @State searchKeyword: string = '';
-  @State searchResults: OnlineSearchResult[] = [];
-  @State isSearching: boolean = false;
-  @State showHistory: boolean = false;
-  @State searchHistory: string[] = [];
-  @State isLoading: boolean = false;
-  @State sortBy: string = 'relevance'; // relevance, name, author
-  @State filterSource: string = 'all';
-  @State showFilterPanel: boolean = false;
-  @State screenInfo: ScreenInfo | null = null;
+@ComponentV2
+struct OnlineSearchPage {
+  @Local isDarkMode: boolean = false;
+  @Local currentColors: AppColors = themeManager.getColors();
+  @Local fontScale: number = 1.0;
+  @Local searchKeyword: string = '';
+  @Local searchResults: OnlineSearchResult[] = [];
+  @Local isSearching: boolean = false;
+  @Local showHistory: boolean = false;
+  @Local searchHistory: string[] = [];
+  @Local isLoading: boolean = false;
+  @Local sortBy: string = 'relevance';
+  @Local filterSource: string = 'all';
+  @Local showFilterPanel: boolean = false;
+  @Local screenInfo: ScreenInfo | null = null;
 
-  // 鐑�棬鎼滅储锟?
-  private readonly hotSearches: string[] = ['涓変綋', '鏂楃牬鑻嶇┕', '鍑′汉淇�粰锟?, '閬�ぉ', '瀹岀編涓栫晫'];
+  private readonly hotSearches: string[] = ['三体', '斗破苍穹', '凡人修仙传', '遮天', '完美世界'];
 
   aboutToAppear() {
     this.isDarkMode = false;
@@ -58,55 +47,136 @@ export struct OnlineSearchPage {
     await this.loadSearchHistory();
   }
 
+  private tc(light: string, dark: string): string {
+    return this.isDarkMode ? dark : light;
+  }
+
+  private bg(light: string, dark: string): string {
+    return this.isDarkMode ? dark : light;
+  }
+
+  private async loadSearchHistory(): Promise<void> {
+    try {
+      const context = this.getUIContext().getHostContext();
+      if (!context) return;
+      
+      const dataPreferences = await preferences.getPreferences(context, PREFERENCES_NAME);
+      const history = await dataPreferences.get('search_history', '[]');
+      this.searchHistory = JSON.parse(history as string);
+    } catch (error) {
+      logger.error('Load search history failed:', error);
+    }
+  }
+
+  private async saveSearchHistory(keyword: string): Promise<void> {
+    try {
+      const context = this.getUIContext().getHostContext();
+      if (!context) return;
+      
+      const index = this.searchHistory.indexOf(keyword);
+      if (index > -1) {
+        this.searchHistory.splice(index, 1);
+      }
+      this.searchHistory.unshift(keyword);
+      if (this.searchHistory.length > 10) {
+        this.searchHistory = this.searchHistory.slice(0, 10);
+      }
+      
+      const dataPreferences = await preferences.getPreferences(context, PREFERENCES_NAME);
+      await dataPreferences.put('search_history', JSON.stringify(this.searchHistory));
+      await dataPreferences.flush();
+    } catch (error) {
+      logger.error('Save search history failed:', error);
+    }
+  }
+
+  private async performSearch(): Promise<void> {
+    if (!this.searchKeyword.trim()) return;
+    
+    this.isSearching = true;
+    this.isLoading = true;
+    
+    try {
+      await this.saveSearchHistory(this.searchKeyword);
+      
+      const results = await onlineBookService.searchBooks(this.searchKeyword);
+      this.searchResults = this.sortResults(results);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logger.error('[OnlineSearch] Search failed:', message);
+      toast('搜索失败，请重试');
+    } finally {
+      this.isSearching = false;
+      this.isLoading = false;
+    }
+  }
+
+  private sortResults(results: OnlineSearchResult[]): OnlineSearchResult[] {
+    switch (this.sortBy) {
+      case 'name':
+        return results.sort((a, b) => a.name.localeCompare(b.name));
+      case 'author':
+        return results.sort((a, b) => a.author.localeCompare(b.author));
+      default:
+        return results;
+    }
+  }
+
   build() {
     Column() {
-      // 椤堕儴鎼滅储锟?
-      this.buildSearchBar()
+      // 顶部搜索栏
+      this.SearchBar()
 
-      // 涓诲唴瀹瑰尯
+      // 主内容区
       if (this.isLoading) {
-        // 楠ㄦ灦灞忓姞锟?
-        this.buildSkeletonLoading()
+        this.SkeletonLoading()
       } else if (this.isSearching) {
-        // 鎼滅储锟?
-        this.buildLoadingView()
+        this.LoadingView()
       } else if (this.searchResults.length > 0) {
-        // 鎼滅储缁撴灉
-        this.buildSearchResults()
+        this.SearchResults()
       } else if (this.searchKeyword.length > 0) {
-        // 鏃犵粨锟?
-        this.buildEmptyView()
+        this.EmptyView()
       } else {
-        // 榛樿�椤甸潰 - 鎼滅储鍘嗗彶 + 鐑�棬鎼滅储
-        this.buildDefaultView()
+        this.DefaultView()
       }
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.currentColors.background)
-    .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM])
+    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
   }
 
   @Builder
-  buildSearchBar() {
+  SearchBar() {
     Row() {
-      // 杩斿洖鎸夐挳
-      SymbolGlyph($r('sys.symbol.arrow_left'))
-        .fontSize(20)
-        .fontColor([this.currentColors.onSurface])
-        .onClick(() => {
-          try { goBack(); } catch (e) { logger.error('[OnlineSearch] back failed', e); }
-        })
-        .margin({ right: 12 })
+      // 返回按钮
+      Row() {
+        SymbolGlyph($r('sys.symbol.chevron.left'))
+          .fontSize(Size.iconLG)
+          .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
+      }
+      .width(Size.buttonMD)
+      .height(Size.buttonMD)
+      .borderRadius(BorderRadius.full)
+      .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
+      .justifyContent(FlexAlign.Center)
+      .onClick(() => {
+        try { goBack(); } 
+        catch (e) { logger.error('[OnlineSearch] back failed', e); }
+      })
+      .stateStyles({
+        pressed: { .scale({ x: 0.9, y: 0.9 }) },
+        normal: { .scale({ x: 1, y: 1 }) }
+      })
 
-      // 鎼滅储锟?
-      TextInput({ placeholder: tr('search_books_hint'), text: this.searchKeyword })
+      // 搜索框
+      TextInput({ placeholder: '搜索书籍、作者...', text: this.searchKeyword })
         .layoutWeight(1)
         .height(40)
-        .backgroundColor(this.currentColors.surfaceVariant)
-        .fontColor(this.currentColors.onSurface)
-        .fontSize(16 * this.fontScale)
+        .backgroundColor(this.tc('#F2F2F7', '#2C2C2E'))
+        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+        .fontSize(fontScaleManager.getScaledFontSize(14))
         .borderRadius(BorderRadius.xl)
+        .margin({ left: Spacing.md })
         .onChange((value: string) => {
           this.searchKeyword = value;
         })
@@ -116,88 +186,162 @@ export struct OnlineSearchPage {
           }
         })
 
-      // 绛涢€夋寜锟?
-      SymbolGlyph($r('sys.symbol.line_3_horizontal'))
-        .fontSize(20)
-        .fontColor([this.currentColors.onSurface])
-        .margin({ left: 12 })
-        .onClick(() => {
-          this.showFilterPanel = !this.showFilterPanel;
-        })
-    }
-    .width('100%')
-    .padding(Spacing.md)
-    .backgroundColor(this.currentColors.surface)
-  }
-
-  @Builder
-  buildDefaultView() {
-    Scroll() {
-      Column({ space: 24 }) {
-        // 鐑�棬鎼滅储
-        this.buildHotSearches()
-
-        // 鎼滅储鍘嗗彶
-        this.buildHistoryView()
-      }
-      .padding(Spacing.lg)
-      .width('100%')
-    }
-    .layoutWeight(1)
-    .width('100%')
-  }
-
-  @Builder
-  buildHotSearches() {
-    Column() {
+      // 筛选按钮
       Row() {
-        SymbolGlyph($r('sys.symbol.flame_fill'))
-          .fontSize(18)
+        SymbolGlyph($r('sys.symbol.line.3.horizontal'))
+          .fontSize(Size.iconMD)
+          .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
+      }
+      .width(Size.buttonMD)
+      .height(Size.buttonMD)
+      .borderRadius(BorderRadius.full)
+      .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
+      .justifyContent(FlexAlign.Center)
+      .margin({ left: Spacing.sm })
+      .onClick(() => {
+        this.showFilterPanel = !this.showFilterPanel;
+      })
+    }
+    .width('100%')
+    .padding(Spacing.lg)
+    .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
+    .shadow(getShadow('sm', this.isDarkMode))
+  }
+
+  @Builder
+  DefaultView() {
+    Scroll() {
+      Column({ space: Spacing.xxl }) {
+        // 热门搜索
+        this.HotSearches()
+
+        // 搜索历史
+        this.HistoryView()
+      }
+      .width('100%')
+      .padding(Spacing.lg)
+    }
+    .width('100%')
+    .layoutWeight(1)
+  }
+
+  @Builder
+  HotSearches() {
+    Column({ space: Spacing.md }) {
+      Row() {
+        SymbolGlyph($r('sys.symbol.flame.fill'))
+          .fontSize(Size.iconMD)
           .fontColor([COMMON_COLORS.ERROR_RED])
 
-        Text('鐑�棬鎼滅储')
-          .fontSize(18 * this.fontScale)
+        Text('热门搜索')
+          .fontSize(fontScaleManager.getScaledFontSize(18))
           .fontWeight(FontWeight.Bold)
-          .fontColor(this.currentColors.onSurface)
-          .margin({ left: 8 })
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .margin({ left: Spacing.sm })
       }
-      .alignSelf(ItemAlign.Start)
-      .margin({ bottom: 16 })
+      .width('100%')
 
-      Flex({ wrap: FlexWrap.Wrap }) {
+      Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
         ForEach(this.hotSearches, (keyword: string) => {
           Text(keyword)
-            .fontSize(14 * this.fontScale)
-            .fontColor(this.currentColors.onSurface)
-            .padding({ left: 16, right: 16, top: 8, bottom: 8 })
-            .margin(4)
-            .backgroundColor(this.currentColors.surface)
-            .borderRadius(BorderRadius.lg)
+            .fontSize(fontScaleManager.getScaledFontSize(14))
+            .padding({ left: Spacing.lg, right: Spacing.lg, top: Spacing.sm, bottom: Spacing.sm })
+            .backgroundColor(this.tc('#F2F2F7', '#2C2C2E'))
+            .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+            .borderRadius(BorderRadius.xl)
             .onClick(() => {
               this.searchKeyword = keyword;
               this.performSearch();
             })
+            .stateStyles({
+              pressed: { .scale({ x: 0.95, y: 0.95 }) },
+              normal: { .scale({ x: 1, y: 1 }) }
+            })
+            .margin({ right: Spacing.sm, bottom: Spacing.sm })
         }, (keyword: string) => keyword)
       }
+      .width('100%')
     }
     .width('100%')
-    .padding(16)
-    .backgroundColor(this.currentColors.surface)
-    .borderRadius(BorderRadius.md)
+    .padding(Spacing.xl)
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.xl)
+    .shadow(getShadow('sm', this.isDarkMode))
   }
 
   @Builder
-  buildLoadingView() {
-    Column() {
+  HistoryView() {
+    if (this.searchHistory.length > 0) {
+      Column({ space: Spacing.md }) {
+        Row() {
+          SymbolGlyph($r('sys.symbol.clock'))
+            .fontSize(Size.iconMD)
+            .fontColor([this.currentColors.primary])
+
+          Text('搜索历史')
+            .fontSize(fontScaleManager.getScaledFontSize(18))
+            .fontWeight(FontWeight.Bold)
+            .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+            .layoutWeight(1)
+            .margin({ left: Spacing.sm })
+
+          Text('清空')
+            .fontSize(fontScaleManager.getScaledFontSize(13))
+            .fontColor(COMMON_COLORS.ERROR_RED)
+            .onClick(async () => {
+              this.searchHistory = [];
+              const context = this.getUIContext().getHostContext();
+              if (context) {
+                const dataPreferences = await preferences.getPreferences(context, PREFERENCES_NAME);
+                await dataPreferences.put('search_history', '[]');
+                await dataPreferences.flush();
+              }
+            })
+        }
+        .width('100%')
+
+        Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
+          ForEach(this.searchHistory, (keyword: string) => {
+            Row({ space: Spacing.xs }) {
+              SymbolGlyph($r('sys.symbol.clock'))
+                .fontSize(Size.iconXS)
+                .fontColor([this.tc('#8E8E93', '#8E8E93')])
+              
+              Text(keyword)
+                .fontSize(fontScaleManager.getScaledFontSize(13))
+                .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+            }
+            .padding({ left: Spacing.md, right: Spacing.md, top: Spacing.sm, bottom: Spacing.sm })
+            .backgroundColor(this.tc('#F2F2F7', '#2C2C2E'))
+            .borderRadius(BorderRadius.xl)
+            .onClick(() => {
+              this.searchKeyword = keyword;
+              this.performSearch();
+            })
+            .margin({ right: Spacing.sm, bottom: Spacing.sm })
+          }, (keyword: string) => keyword)
+        }
+        .width('100%')
+      }
+      .width('100%')
+      .padding(Spacing.xl)
+      .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+      .borderRadius(BorderRadius.xl)
+      .shadow(getShadow('sm', this.isDarkMode))
+    }
+  }
+
+  @Builder
+  LoadingView() {
+    Column({ space: Spacing.lg }) {
       LoadingProgress()
         .width(50)
         .height(50)
-        .margin({ top: 50 })
+        .color(this.currentColors.primary)
 
-      Text(tr('searching_hint'))
-        .fontSize(14 * this.fontScale)
-        .fontColor(this.currentColors.onSurfaceVariant)
-        .margin({ top: 16 })
+      Text('搜索中...')
+        .fontSize(fontScaleManager.getScaledFontSize(14))
+        .fontColor(this.tc('#8E8E93', '#8E8E93'))
     }
     .width('100%')
     .layoutWeight(1)
@@ -205,349 +349,205 @@ export struct OnlineSearchPage {
   }
 
   @Builder
-  buildSkeletonLoading() {
-    List({ space: 12 }) {
-      ForEach([1, 2, 3, 4, 5], (item: number) => {
-        ListItem() {
-          Row() {
-            // 灏侀潰楠ㄦ灦
-            Rect()
-              .width(80)
-              .height(110)
-              .fill(this.currentColors.surfaceVariant)
+  SkeletonLoading() {
+    Column({ space: Spacing.md }) {
+      ForEach([1, 2, 3, 4, 5], (_: number, index: number) => {
+        Row({ space: Spacing.lg }) {
+          Column()
+            .width(60)
+            .height(80)
+            .backgroundColor(this.tc('#E5E5EA', '#3A3A3C'))
+            .borderRadius(BorderRadius.md)
+
+          Column({ space: Spacing.sm }) {
+            Column()
+              .width('60%')
+              .height(16)
+              .backgroundColor(this.tc('#E5E5EA', '#3A3A3C'))
               .borderRadius(BorderRadius.sm)
 
-            Column({ space: 8 }) {
-              Rect()
-                .width('60%')
-                .height(18)
-                .fill(this.currentColors.surfaceVariant)
-                .borderRadius(BorderRadius.xs)
-
-              Rect()
-                .width('40%')
-                .height(14)
-                .fill(this.currentColors.surfaceVariant)
-                .borderRadius(BorderRadius.xs)
-
-              Rect()
-                .width('30%')
-                .height(12)
-                .fill(this.currentColors.surfaceVariant)
-                .borderRadius(BorderRadius.xs)
-            }
-            .alignItems(HorizontalAlign.Start)
-            .layoutWeight(1)
-            .margin({ left: 12 })
+            Column()
+              .width('40%')
+              .height(14)
+              .backgroundColor(this.tc('#E5E5EA', '#3A3A3C'))
+              .borderRadius(BorderRadius.sm)
           }
-          .width('100%')
-          .padding(Spacing.md)
-          .backgroundColor(this.currentColors.surface)
-          .borderRadius(BorderRadius.md)
+          .alignItems(HorizontalAlign.Start)
+          .layoutWeight(1)
         }
-      })
+        .width('100%')
+        .padding(Spacing.lg)
+        .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+        .borderRadius(BorderRadius.xl)
+      }, (item: number) => item.toString())
     }
-    .layoutWeight(1)
-    .padding(Spacing.md)
     .width('100%')
+    .layoutWeight(1)
+    .padding(Spacing.lg)
   }
 
   @Builder
-  buildSearchResults() {
+  SearchResults() {
     Column() {
-      // 缁撴灉缁熻�
+      // 结果统计
       Row() {
-        Text('鎵惧埌 ' + this.searchResults.length + ' 涓�粨锟?)
-          .fontSize(14 * this.fontScale)
-          .fontColor(this.currentColors.onSurfaceVariant)
+        Text(`找到 ${this.searchResults.length} 个结果`)
+          .fontSize(fontScaleManager.getScaledFontSize(14))
+          .fontColor(this.tc('#8E8E93', '#8E8E93'))
 
         Blank()
 
-        // 鎺掑簭閫夐」
-        Text(this.sortBy === 'relevance' ? '鐩稿叧锟? : this.sortBy === 'name' ? '涔﹀悕' : '浣滐拷?)
-          .fontSize(14 * this.fontScale)
+        // 排序选择
+        Text(this.sortBy === 'relevance' ? '相关度' : this.sortBy === 'name' ? '书名' : '作者')
+          .fontSize(fontScaleManager.getScaledFontSize(13))
           .fontColor(this.currentColors.primary)
-          .onClick(() => this.toggleSort())
+          .onClick(() => {
+            const sorts = ['relevance', 'name', 'author'];
+            const currentIndex = sorts.indexOf(this.sortBy);
+            this.sortBy = sorts[(currentIndex + 1) % sorts.length];
+            this.searchResults = this.sortResults(this.searchResults);
+          })
       }
       .width('100%')
-      .padding({ left: 16, right: 16, top: 8, bottom: 8 })
+      .padding({ left: Spacing.lg, right: Spacing.lg, top: Spacing.md, bottom: Spacing.sm })
 
-      // 缁撴灉鍒楄〃
-      List({ space: 8 }) {
-        ForEach(this.getFilteredResults(), (result: OnlineSearchResult) => {
+      // 结果列表
+      List({ space: Spacing.md }) {
+        ForEach(this.searchResults, (result: OnlineSearchResult) => {
           ListItem() {
-            this.buildSearchResultItem(result)
+            this.ResultItem(result)
           }
-        }, (result: OnlineSearchResult) => result.bookUrl + result.sourceId)
+        }, (result: OnlineSearchResult) => result.id)
       }
-      .layoutWeight(1)
-      .padding(Spacing.md)
       .width('100%')
+      .layoutWeight(1)
+      .padding({ left: Spacing.lg, right: Spacing.lg, bottom: Spacing.xxxl })
+      .scrollBar(BarState.Auto)
+      .edgeEffect(EdgeEffect.Spring)
     }
-    .layoutWeight(1)
     .width('100%')
+    .height('100%')
   }
 
   @Builder
-  buildSearchResultItem(result: OnlineSearchResult) {
-    Row() {
-      // 灏侀潰鍗犱綅
+  ResultItem(result: OnlineSearchResult) {
+    Row({ space: Spacing.lg }) {
+      // 封面
       Column() {
-        SymbolGlyph($r('sys.symbol.book'))
-          .fontSize(32)
-          .fontColor([this.currentColors.onSurfaceVariant])
+        if (result.coverUrl) {
+          Image(result.coverUrl)
+            .width(60)
+            .height(80)
+            .borderRadius(BorderRadius.md)
+            .objectFit(ImageFit.Cover)
+        } else {
+          SymbolGlyph($r('sys.symbol.book.fill'))
+            .fontSize(Size.iconXL)
+            .fontColor([this.currentColors.primary])
+        }
       }
-      .width(80)
-      .height(110)
+      .width(60)
+      .height(80)
+      .borderRadius(BorderRadius.md)
+      .backgroundColor(this.currentColors.primary + '15')
       .justifyContent(FlexAlign.Center)
-      .backgroundColor(this.currentColors.surfaceVariant)
-      .borderRadius(8)
 
-      Column({ space: 8 }) {
-        Text(result.bookName)
-          .fontSize(16 * this.fontScale)
+      // 信息
+      Column({ space: Spacing.sm }) {
+        Text(result.name)
+          .fontSize(fontScaleManager.getScaledFontSize(15))
           .fontWeight(FontWeight.Medium)
-          .fontColor(this.currentColors.onSurface)
-          .maxLines(2)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
 
-        Row({ space: 4 }) {
-          SymbolGlyph($r('sys.symbol.person'))
-            .fontSize(12)
-            .fontColor([this.currentColors.onSurfaceVariant])
+        Text(result.author)
+          .fontSize(fontScaleManager.getScaledFontSize(13))
+          .fontColor(this.tc('#8E8E93', '#8E8E93'))
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
 
-          Text(result.author || tr('unknown_author'))
-            .fontSize(12 * this.fontScale)
-            .fontColor(this.currentColors.onSurfaceVariant)
-        }
-        .alignSelf(ItemAlign.Start)
-
-        Row({ space: 4 }) {
-          SymbolGlyph($r('sys.symbol.bookmark'))
-            .fontSize(12)
-            .fontColor([this.currentColors.primary])
-
-          Text(result.sourceName)
-            .fontSize(11 * this.fontScale)
+        Row({ space: Spacing.sm }) {
+          Text(result.sourceName || '未知书源')
+            .fontSize(fontScaleManager.getScaledFontSize(11))
+            .padding({ left: Spacing.sm, right: Spacing.sm, top: Spacing.xs, bottom: Spacing.xs })
+            .backgroundColor(this.currentColors.primary + '15')
             .fontColor(this.currentColors.primary)
+            .borderRadius(BorderRadius.xl)
+
+          if (result.chapterCount) {
+            Text(`${result.chapterCount}章`)
+              .fontSize(fontScaleManager.getScaledFontSize(11))
+              .fontColor(this.tc('#8E8E93', '#8E8E93'))
+          }
         }
-        .alignSelf(ItemAlign.Start)
       }
       .layoutWeight(1)
       .alignItems(HorizontalAlign.Start)
-      .margin({ left: 12 })
 
-      // 鍙崇�锟?
-      SymbolGlyph($r('sys.symbol.chevron_right'))
-        .fontSize(16)
-        .fontColor([this.currentColors.onSurfaceVariant])
+      // 箭头
+      SymbolGlyph($r('sys.symbol.chevron.right'))
+        .fontSize(Size.iconSM)
+        .fontColor([this.tc('#C7C7CC', '#48484A')])
     }
     .width('100%')
-    .padding(Spacing.md)
-    .backgroundColor(this.currentColors.surface)
-    .borderRadius(BorderRadius.md)
+    .padding(Spacing.lg)
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.xl)
+    .shadow(getShadow('sm', this.isDarkMode))
     .onClick(() => {
-      this.openBookDetail(result);
+      const params: Record<string, Object> = {};
+      params['result'] = result;
+      navigateTo('pages/OnlineBookDetailPage', params);
+    })
+    .stateStyles({
+      pressed: { 
+        .scale({ x: 0.98, y: 0.98 }),
+        .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+      },
+      normal: { 
+        .scale({ x: 1, y: 1 }),
+        .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+      }
     })
   }
 
   @Builder
-  buildEmptyView() {
-    Column() {
-      SymbolGlyph($r('sys.symbol.book'))
-        .fontSize(64)
-        .fontColor([this.currentColors.onSurfaceVariant])
-        .opacity(0.3)
+  EmptyView() {
+    Column({ space: Spacing.xl }) {
+      Column() {
+        SymbolGlyph($r('sysymbol.magnifyingglass'))
+          .fontSize(Size.iconXXXL * 1.5)
+          .fontColor([this.tc('#D1D1D6', '#48484A')])
+      }
+      .width(100)
+      .height(100)
+      .borderRadius(BorderRadius.full)
+      .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+      .justifyContent(FlexAlign.Center)
 
-      Text(tr('no_results_hint'))
-        .fontSize(16 * this.fontScale)
-        .fontColor(this.currentColors.onSurfaceVariant)
-        .margin({ top: 16 })
+      Text('未找到相关书籍')
+        .fontSize(fontScaleManager.getScaledFontSize(16))
+        .fontWeight(FontWeight.Medium)
+        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
 
-      Text('璇曡瘯鍏朵粬鍏抽敭璇嶅惂')
-        .fontSize(14 * this.fontScale)
-        .fontColor(this.currentColors.onSurfaceVariant)
-        .margin({ top: 8 })
+      Text('试试其他关键词吧')
+        .fontSize(fontScaleManager.getScaledFontSize(13))
+        .fontColor(this.tc('#8E8E93', '#8E8E93'))
     }
+    .width('100%')
     .layoutWeight(1)
     .justifyContent(FlexAlign.Center)
-    .width('100%')
-  }
-
-  @Builder
-  buildHistoryView() {
-    Column() {
-      Row() {
-        SymbolGlyph($r('sys.symbol.clock'))
-          .fontSize(18)
-          .fontColor([this.currentColors.onSurfaceVariant])
-
-        Text(tr('search_history_title'))
-          .fontSize(18 * this.fontScale)
-          .fontWeight(FontWeight.Bold)
-          .fontColor(this.currentColors.onSurface)
-          .margin({ left: 8 })
-          .layoutWeight(1)
-
-        if (this.searchHistory.length > 0) {
-          Text('娓呯┖')
-            .fontSize(14 * this.fontScale)
-            .fontColor(this.currentColors.primary)
-            .onClick(() => this.clearHistory())
-        }
-      }
-      .width('100%')
-      .margin({ bottom: 16 })
-
-      if (this.searchHistory.length > 0) {
-        Flex({ wrap: FlexWrap.Wrap }) {
-          ForEach(this.searchHistory, (keyword: string) => {
-            Text(keyword)
-              .fontSize(14 * this.fontScale)
-              .fontColor(this.currentColors.onSurface)
-              .padding({ left: 16, right: 16, top: 8, bottom: 8 })
-              .margin(4)
-              .backgroundColor(this.currentColors.surface)
-              .borderRadius(BorderRadius.lg)
-              .onClick(() => {
-                this.searchKeyword = keyword;
-                this.performSearch();
-              })
-          }, (keyword: string) => keyword)
-        }
-      } else {
-        Text('鏆傛棤鎼滅储鍘嗗彶')
-          .fontSize(14 * this.fontScale)
-          .fontColor(this.currentColors.onSurfaceVariant)
-          .width('100%')
-          .textAlign(TextAlign.Center)
-          .padding(Spacing.xl)
-      }
-    }
-    .width('100%')
-    .padding(16)
-    .backgroundColor(this.currentColors.surface)
-    .borderRadius(BorderRadius.md)
-  }
-
-  private async performSearch(): Promise<void> {
-    if (this.searchKeyword.trim().length === 0) {
-      return;
-    }
-
-    this.isLoading = true;
-    this.isSearching = true;
-    this.searchResults = [];
-
-    try {
-      const results = await onlineBookService.searchOnlineBooks(this.searchKeyword.trim());
-      this.searchResults = results;
-
-      // 淇濆瓨鍒板巻锟?
-      await this.saveToHistory(this.searchKeyword.trim());
-    } catch (e) {
-      const message = e instanceof Error ? e.message : 'Unknown error';
-      logger.error('[OnlineSearch] Search failed:', message);
-    } finally {
-      this.isSearching = false;
-      this.isLoading = false;
-    }
-  }
-
-  private openBookDetail(result: OnlineSearchResult): void {
-    const params: Record<string, string> = {};
-    params['bookUrl'] = result.bookUrl;
-    params['sourceId'] = result.sourceId;
-    params['bookName'] = result.bookName;
-    navigateTo('pages/OnlineBookDetailPage', params);
-  }
-
-  private toggleSort(): void {
-    if (this.sortBy === 'relevance') {
-      this.sortBy = 'name';
-    } else if (this.sortBy === 'name') {
-      this.sortBy = 'author';
-    } else {
-      this.sortBy = 'relevance';
-    }
-  }
-
-  private getFilteredResults(): OnlineSearchResult[] {
-    let results = this.searchResults.slice();
-
-    // 绛涢€変功锟?
-    if (this.filterSource !== 'all') {
-      results = results.filter(r => r.sourceId === this.filterSource);
-    }
-
-    // 鎺掑簭
-    if (this.sortBy === 'name') {
-      results.sort((a, b) => a.bookName.localeCompare(b.bookName, 'zh-CN'));
-    } else if (this.sortBy === 'author') {
-      results.sort((a, b) => {
-        const authorA = a.author || '';
-        const authorB = b.author || '';
-        return authorA.localeCompare(authorB, 'zh-CN');
-      });
-    }
-
-    return results;
-  }
-
-  // ==================== 鎼滅储鍘嗗彶绠＄悊 ====================
-  @State private pageContext: common.Context | null = null;
-
-  private async loadSearchHistory(): Promise<void> {
-    try {
-      const context = this.getUIContext().getHostContext()!;
-      const pref: preferences.Preferences = await preferences.getPreferences(context, PREFERENCES_NAME);
-      const historyJson: string = await pref.get('search_history', '[]') as string;
-      this.searchHistory = JSON.parse(historyJson) as string[];
-    } catch (e) {
-      const message = e instanceof Error ? e.message : 'Unknown error';
-      logger.error('[OnlineSearch] Load history failed:', message);
-      this.searchHistory = [];
-    }
-  }
-
-  private async saveToHistory(keyword: string): Promise<void> {
-    this.searchHistory = this.searchHistory.filter(k => k !== keyword);
-    this.searchHistory.unshift(keyword);
-    if (this.searchHistory.length > 20) {
-      this.searchHistory = this.searchHistory.slice(0, 20);
-    }
-    try {
-      const context = this.getUIContext().getHostContext()!;
-      const pref: preferences.Preferences = await preferences.getPreferences(context, PREFERENCES_NAME);
-      await pref.put('search_history', JSON.stringify(this.searchHistory));
-      await pref.flush();
-    } catch (e) {
-      const message = e instanceof Error ? e.message : 'Unknown error';
-      logger.error('[OnlineSearch] Save history failed:', message);
-    }
-  }
-
-  private async clearHistory(): Promise<void> {
-    this.searchHistory = [];
-    try {
-      const context = this.getUIContext().getHostContext()!;
-      const pref: preferences.Preferences = await preferences.getPreferences(context, PREFERENCES_NAME);
-      await pref.put('search_history', '[]');
-      await pref.flush();
-    } catch (e) {
-      const message = e instanceof Error ? e.message : 'Unknown error';
-      logger.error('[OnlineSearch] Clear history failed:', message);
-    }
   }
 }
 
-// 棰勮�缁勪欢 - 鐢ㄤ簬DevEco Studio棰勮�锟?
+// 预览组件
 @Preview
-@Component
+@ComponentV2
 struct OnlineSearchPagePreview {
   build() {
     Column() {
-      Text('鍦ㄧ嚎鎼滅储锟?- 娴呰壊妯″紡')
+      Text('在线搜索 - 浅色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .padding(Spacing.md)
@@ -559,7 +559,7 @@ struct OnlineSearchPagePreview {
       Divider()
         .margin({ top: 20, bottom: 20 })
 
-      Text('鍦ㄧ嚎鎼滅储锟?- 娣辫壊妯″紡')
+      Text('在线搜索 - 深色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .padding(Spacing.md)

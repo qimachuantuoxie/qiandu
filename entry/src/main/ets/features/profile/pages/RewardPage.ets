@@ -1,27 +1,77 @@
 import { logger } from '../../../common/utils/Logger';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { router, promptAction } from '@kit.ArkUI';
-import { themeManager, AppColors } from '../core/utils/AppTheme';
+import { common } from '@kit.AbilityKit';
+import { preferenceManager } from '../core/utils/PreferenceManager';
+import { themeManager, AppColors, COMMON_COLORS } from '../core/utils/AppTheme';
 import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { rewardViewModel, RewardViewModel, RewardItem } from '../viewmodels/RewardViewModel';
-import { BackButton } from '../components/common/BackButton';
+import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
-@Entry
-@Component
-struct RewardPage {
-  @State isDarkMode: boolean = false;
-  @State currentColors: AppColors = themeManager.getColors();
-  @State fontScale: number = 1.0;
-  @State showSuccessDialog: boolean = false;
-  @State showCustomInput: boolean = false;
-  @State customAmount: number = 0;
-  @State screenInfo: ScreenInfo | null = null;
+interface RewardItem {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  points: number;
+  color: string;
+}
 
-  private vm: RewardViewModel = rewardViewModel;
+@Entry
+@ComponentV2
+struct RewardPage {
+  @Local isDarkMode: boolean = false;
+  @Local currentColors: AppColors = themeManager.getColors();
+  @Local fontScale: number = 1.0;
+  @Local screenInfo: ScreenInfo | null = null;
+  @Local userPoints: number = 1250;
+  private context: common.Context | null = null;
+
+  private rewardList: RewardItem[] = [
+    {
+      id: '1',
+      title: '连续阅读7天',
+      description: '保持阅读习惯，获得奖励',
+      icon: 'calendar.badge.clock',
+      points: 100,
+      color: '#52C41A'
+    },
+    {
+      id: '2',
+      title: '完成一本书',
+      description: '读完一本完整的书籍',
+      icon: 'book.fill',
+      points: 200,
+      color: COMMON_COLORS.PRIMARY_BLUE
+    },
+    {
+      id: '3',
+      title: '添加10个书签',
+      description: '收藏精彩段落',
+      icon: 'bookmark.fill',
+      points: 50,
+      color: '#FA8C16'
+    },
+    {
+      id: '4',
+      title: '撰写5篇笔记',
+      description: '记录阅读心得',
+      icon: 'note.text',
+      points: 150,
+      color: '#722ED1'
+    },
+    {
+      id: '5',
+      title: '分享应用',
+      description: '邀请好友使用',
+      icon: 'square.and.arrow.up',
+      points: 300,
+      color: '#FF6B6B'
+    }
+  ];
 
   async aboutToAppear(): Promise<void> {
+    this.context = this.getUIContext().getHostContext() as common.Context;
     this.isDarkMode = themeManager.isDarkMode();
     this.currentColors = themeManager.getColors();
     this.fontScale = await fontScaleManager.getFontScale();
@@ -29,12 +79,11 @@ struct RewardPage {
   }
 
   private async initData(): Promise<void> {
-    const context = this.getUIContext().getHostContext();
-    if (context) {
-      await layoutHelper.init(context);
+    if (this.context) {
+      await layoutHelper.init(this.context);
       this.screenInfo = layoutHelper.getScreenInfo();
+      await preferenceManager.init(this.context);
     }
-    await this.vm.init();
   }
 
   private tc(light: string, dark: string): string {
@@ -45,264 +94,254 @@ struct RewardPage {
     return this.isDarkMode ? dark : light;
   }
 
-  private async handleReward(): Promise<void> {
-    if (!this.vm.selectedReward && !this.showCustomInput) {
-      try { promptAction.showToast({ message: '璇烽€夋嫨鎵撹祻閲戦�', duration: 2000 }); } catch(e) { logger.error('showToast error:', e); }
-      return;
-    }
-
-    if (this.showCustomInput && this.customAmount <= 0) {
-      try { promptAction.showToast({ message: '璇疯緭鍏ユ湁鏁堥噾锟?, duration: 2000 }); } catch(e) { logger.error('showToast error:', e); }
-      return;
-    }
-
-    const success: boolean = await this.vm.processPayment();
-    if (success) {
-      this.showSuccessDialog = true;
-    } else {
-      try { promptAction.showToast({ message: '鎵撹祻澶辫触锛岃�閲嶈瘯', duration: 2000 }); } catch(e) { logger.error('showToast error:', e); }
-    }
-  }
-
-  @Builder
-  buildRewardOption(item: RewardItem, isSelected: boolean) {
-    Column({ space: 8 }) {
-      Text(item.icon)
-        .fontSize(32)
-      Text(item.name)
-        .fontSize(14)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(this.tc('#333333', '#FFFFFF'))
-      Text(`楼${item.price}`)
-        .fontSize(16)
-        .fontWeight(FontWeight.Bold)
-        .fontColor(this.currentColors.primary)
-    }
-    .width('100%')
-    .padding(Spacing.md)
-    .backgroundColor(isSelected ? this.currentColors.primary + '20' : this.bg('#FFFFFF', '#2C2C2E'))
-    .border({
-      width: 2,
-      color: isSelected ? this.currentColors.primary : 'transparent'
-    })
-    .borderRadius(12)
-    .onClick(() => {
-      this.vm.selectReward(item);
-      this.showCustomInput = false;
-    })
-  }
-
-  @Builder
-  buildSuccessDialog() {
-    Column() {
-      Column({ space: 20 }) {
-        Text('馃帀')
-          .fontSize(64)
-        Text('鎵撹祻鎴愬姛')
-          .fontSize(24)
-          .fontWeight(FontWeight.Bold)
-          .fontColor(this.tc('#333333', '#FFFFFF'))
-        Text('鎰熻阿鎮ㄧ殑鏀�寔锟?)
-          .fontSize(16)
-          .fontColor(this.tc('#666666', '#AAAAAA'))
-          .textAlign(TextAlign.Center)
-        Button('鐭ラ亾锟?)
-          .width('100%')
-          .height(44)
-          .backgroundColor(this.currentColors.primary)
-          .fontColor('#FFFFFF')
-          .fontSize(16)
-          .borderRadius(12)
-          .onClick(() => {
-            this.showSuccessDialog = false;
-            try { goBack(); } catch(e) { logger.error('back error:', e); }
-          })
-      }
-      .width('85%')
-      .padding(24)
-      .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
-      .borderRadius(16)
-    }
-    .width('100%')
-    .height('100%')
-    .backgroundColor('rgba(0,0,0,0.5)')
-    .justifyContent(FlexAlign.Center)
-    .onClick(() => { this.showSuccessDialog = false; })
-  }
-
   build() {
-    Stack() {
-      Column() {
+    Column() {
+      // 顶部导航栏
+      Row() {
         Row() {
-          BackButton({ isDarkMode: this.isDarkMode })
-
-          Text('鎵撹祻鏀�寔')
-            .fontSize(20)
-            .fontWeight(FontWeight.Bold)
-            .fontColor(this.tc('#333333', '#FFFFFF'))
-            .layoutWeight(1)
-            .textAlign(TextAlign.Center)
+          SymbolGlyph($r('sys.symbol.chevron.left'))
+            .fontSize(Size.iconLG)
+            .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
         }
-        .width('100%')
-        .height(56)
-        .padding({ left: 16, right: 16 })
-        .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
-
-        Scroll() {
-          Column({ space: 20 }) {
-            Column({ space: 12 }) {
-              Text('锟?)
-                .fontSize(64)
-              Text('鎰熻阿鎮ㄧ殑鏀�寔')
-                .fontSize(22)
-                .fontWeight(FontWeight.Bold)
-                .fontColor(this.tc('#333333', '#FFFFFF'))
-              Text('鎮ㄧ殑鎵撹祻鏄�垜浠�寔缁�洿鏂扮殑鏈€澶у姩锟?)
-                .fontSize(14)
-                .fontColor(this.tc('#666666', '#AAAAAA'))
-                .textAlign(TextAlign.Center)
-            }
-            .width('100%')
-            .padding({ top: 24, bottom: 16 })
-
-            if (this.vm.totalRewards > 0) {
-              Row({ space: 16 }) {
-                Column() {
-                  Text(this.vm.totalRewards.toString())
-                    .fontSize(28)
-                    .fontWeight(FontWeight.Bold)
-                    .fontColor(this.currentColors.primary)
-                  Text('鎵撹祻娆℃暟')
-                    .fontSize(12)
-                    .fontColor(this.tc('#666666', '#AAAAAA'))
-                }
-                .layoutWeight(1)
-                Column() {
-                  Text(`楼${this.vm.totalRewardAmount}`)
-                    .fontSize(28)
-                    .fontWeight(FontWeight.Bold)
-                    .fontColor('#4CAF50')
-                  Text('鎵撹祻鎬婚�')
-                    .fontSize(12)
-                    .fontColor(this.tc('#666666', '#AAAAAA'))
-                }
-                .layoutWeight(1)
-              }
-              .width('100%')
-              .padding(Spacing.lg)
-              .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
-              .borderRadius(12)
-            }
-
-            Column({ space: 12 }) {
-              Text('閫夋嫨鎵撹祻閲戦�')
-                .fontSize(16)
-                .fontWeight(FontWeight.Medium)
-                .fontColor(this.tc('#333333', '#FFFFFF'))
-
-              Grid() {
-                ForEach(this.vm.rewardItems, (item: RewardItem) => {
-                  GridItem() {
-                    this.buildRewardOption(item, this.vm.selectedReward?.id === item.id)
-                  }
-                })
-              }
-              .columnsTemplate('1fr 1fr')
-              .columnsGap(12)
-              .rowsGap(12)
-              .margin({ top: 8 })
-
-              Row({ space: 12 }) {
-                Text('鑷�畾涔夐噾锟?)
-                  .fontSize(14)
-                  .fontColor(this.tc('#666666', '#AAAAAA'))
-                  .onClick(() => {
-                    this.showCustomInput = !this.showCustomInput;
-                  })
-              }
-              .width('100%')
-              .justifyContent(FlexAlign.Start)
-              .margin({ top: 8 })
-
-              if (this.showCustomInput) {
-                Column({ space: 12 }) {
-                  TextInput({ placeholder: '杈撳叆閲戦�', text: this.customAmount.toString() })
-                    .type(InputType.Number)
-                    .width('100%')
-                    .height(44)
-                    .backgroundColor(this.bg('#F5F5F5', '#3C3C3E'))
-                    .onChange((value: string) => {
-                      const num = parseInt(value, 10);
-                      this.customAmount = isNaN(num) ? 0 : num;
-                    })
-                }
-                .width('100%')
-                .margin({ top: 8 })
-              }
-            }
-            .width('100%')
-            .padding(Spacing.lg)
-            .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
-            .borderRadius(12)
-
-            Column({ space: 12 }) {
-              Text('鎵撹祻鐣欒█')
-                .fontSize(16)
-                .fontWeight(FontWeight.Medium)
-                .fontColor(this.tc('#333333', '#FFFFFF'))
-              TextArea({ placeholder: '鐣欎笅鎮ㄧ殑榧撳姳鍜屽缓锟?..' })
-                .width('100%')
-                .height(80)
-                .backgroundColor(this.bg('#F5F5F5', '#3C3C3E'))
-            }
-            .width('100%')
-            .padding(Spacing.lg)
-            .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
-            .borderRadius(12)
-
-            Button(this.vm.isProcessing ? '澶勭悊锟?..' : '纭��鎵撹祻')
-              .width('100%')
-              .height(50)
-              .backgroundColor(this.vm.isProcessing ? '#CCCCCC' : this.currentColors.primary)
-              .fontColor('#FFFFFF')
-              .fontSize(18)
-              .fontWeight(FontWeight.Medium)
-              .borderRadius(25)
-              .enabled(!this.vm.isProcessing)
-              .onClick(() => { this.handleReward(); })
-
-            Text('鎵€鏈夋敹鐩婂皢鐢ㄤ簬搴旂敤寮€鍙戝拰缁存姢')
-              .fontSize(12)
-              .fontColor(this.tc('#999999', '#888888'))
-              .textAlign(TextAlign.Center)
-              .margin({ top: 8 })
+        .width(Size.buttonMD)
+        .height(Size.buttonMD)
+        .borderRadius(BorderRadius.full)
+        .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
+        .justifyContent(FlexAlign.Center)
+        .onClick(() => {
+          try {
+            goBack();
+          } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            logger.error('[RewardPage] back failed:', msg);
           }
-          .width('100%')
-          .padding(16)
-        }
-        .layoutWeight(1)
-        .width('100%')
+        })
+        .stateStyles({
+          pressed: { .scale({ x: 0.9, y: 0.9 }) },
+          normal: { .scale({ x: 1, y: 1 }) }
+        })
+
+        Text('积分奖励')
+          .fontSize(fontScaleManager.getScaledFontSize(18))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .layoutWeight(1)
+          .textAlign(TextAlign.Center)
+
+        Blank()
+          .width(Size.buttonMD)
       }
       .width('100%')
-      .height('100%')
-      .backgroundColor(this.bg('#F5F5F5', '#141414'))
+      .height(Size.buttonLG + Spacing.sm)
+      .padding({ left: Spacing.lg, right: Spacing.lg })
+      .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
+      .shadow(getShadow('sm', this.isDarkMode))
 
-      if (this.showSuccessDialog) {
-        this.buildSuccessDialog()
+      // 内容区域
+      Scroll() {
+        Column({ space: Spacing.lg }) {
+          // 积分卡片
+          Column({ space: Spacing.md }) {
+            Row({ space: Spacing.lg }) {
+              // 积分图标
+              Column() {
+                SymbolGlyph($r('sys.symbol.star.fill'))
+                  .fontSize(Size.iconXXXL)
+                  .fontColor(['#FFD700'])
+              }
+              .width(80)
+              .height(80)
+              .borderRadius(BorderRadius.full)
+              .linearGradient({
+                direction: GradientDirection.Top,
+                colors: ['rgba(255,215,0,0.2)', 'rgba(255,165,0,0.1)']
+              })
+              .justifyContent(FlexAlign.Center)
+
+              Column({ space: Spacing.sm }) {
+                Text('我的积分')
+                  .fontSize(fontScaleManager.getScaledFontSize(14))
+                  .fontColor(this.tc('#8E8E93', '#8E8E93'))
+
+                Text(this.userPoints.toString())
+                  .fontSize(fontScaleManager.getScaledFontSize(36))
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor('#FFD700')
+
+                Text('积分可用于兑换奖励')
+                  .fontSize(fontScaleManager.getScaledFontSize(12))
+                  .fontColor(this.tc('#8E8E93', '#8E8E93'))
+              }
+              .alignItems(HorizontalAlign.Start)
+              .layoutWeight(1)
+            }
+            .width('100%')
+
+            // 积分规则提示
+            Row({ space: Spacing.xs }) {
+              SymbolGlyph($r('sys.symbol.info.circle'))
+                .fontSize(Size.iconSM)
+                .fontColor([this.tc('#8E8E93', '#8E8E93')])
+              
+              Text('完成任务即可获得积分奖励')
+                .fontSize(fontScaleManager.getScaledFontSize(12))
+                .fontColor(this.tc('#8E8E93', '#8E8E93'))
+            }
+            .width('100%')
+            .justifyContent(FlexAlign.Center)
+          }
+          .width('100%')
+          .padding(Spacing.xl)
+          .linearGradient({
+            direction: GradientDirection.Right,
+            colors: this.isDarkMode 
+              ? ['rgba(255,215,0,0.15)', 'rgba(255,165,0,0.08)']
+              : ['rgba(255,215,0,0.2)', 'rgba(255,165,0,0.1)']
+          })
+          .borderRadius(BorderRadius.xl)
+          .border({ 
+            width: 1.5, 
+            color: this.isDarkMode ? 'rgba(255,215,0,0.3)' : 'rgba(255,215,0,0.4)' 
+          })
+          .shadow({
+            radius: 12,
+            color: 'rgba(255,215,0,0.2)',
+            offsetY: 6
+          })
+
+          // 任务列表标题
+          Row() {
+            SymbolGlyph($r('sys.symbol.list.bullet'))
+              .fontSize(Size.iconLG)
+              .fontColor([this.currentColors.primary])
+            
+            Text('积分任务')
+              .fontSize(fontScaleManager.getScaledFontSize(17))
+              .fontWeight(FontWeight.SemiBold)
+              .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+              .layoutWeight(1)
+              .margin({ left: Spacing.sm })
+
+            Text('查看全部')
+              .fontSize(fontScaleManager.getScaledFontSize(13))
+              .fontColor(this.currentColors.primary)
+          }
+          .width('100%')
+
+          // 任务列表
+          List({ space: Spacing.md }) {
+            ForEach(this.rewardList, (reward: RewardItem) => {
+              ListItem() {
+                this.RewardItem(reward)
+              }
+            }, (reward: RewardItem) => reward.id)
+          }
+          .width('100%')
+          .scrollBar(BarState.Off)
+        }
+        .width('100%')
+        .padding({ 
+          left: Spacing.lg, 
+          right: Spacing.lg, 
+          top: Spacing.lg,
+          bottom: Spacing.xxxl
+        })
       }
+      .layoutWeight(1)
+      .width('100%')
+      .scrollBar(BarState.Auto)
+      .edgeEffect(EdgeEffect.Spring)
     }
     .width('100%')
     .height('100%')
+    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
+  }
+
+  @Builder
+  RewardItem(reward: RewardItem) {
+    Row({ space: Spacing.lg }) {
+      // 图标容器
+      Column() {
+        SymbolGlyph($r(`sys.symbol.${reward.icon}`))
+          .fontSize(Size.iconXL)
+          .fontColor([reward.color])
+      }
+      .width(Size.avatarLG)
+      .height(Size.avatarLG)
+      .borderRadius(BorderRadius.lg)
+      .backgroundColor(reward.color + '15')
+      .justifyContent(FlexAlign.Center)
+
+      // 内容
+      Column({ space: Spacing.xs }) {
+        Text(reward.title)
+          .fontSize(fontScaleManager.getScaledFontSize(15))
+          .fontWeight(FontWeight.Medium)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+
+        Text(reward.description)
+          .fontSize(fontScaleManager.getScaledFontSize(12))
+          .fontColor(this.tc('#8E8E93', '#8E8E93'))
+      }
+      .alignItems(HorizontalAlign.Start)
+      .layoutWeight(1)
+
+      // 积分徽章
+      Column({ space: Spacing.xs }) {
+        Row({ space: Spacing.xs }) {
+          SymbolGlyph($r('sys.symbol.star.fill'))
+            .fontSize(Size.iconXS)
+            .fontColor(['#FFD700'])
+          
+          Text('+' + reward.points)
+            .fontSize(fontScaleManager.getScaledFontSize(14))
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#FFD700')
+        }
+
+        Button('领取')
+          .height(Size.buttonSM)
+          .fontSize(fontScaleManager.getScaledFontSize(12))
+          .fontColor('#FFFFFF')
+          .backgroundColor(reward.color)
+          .borderRadius(BorderRadius.xl)
+          .padding({ left: Spacing.md, right: Spacing.md })
+          .onClick(() => {
+            promptAction.showToast({ message: `已领取 ${reward.points} 积分`, duration: 1500 });
+            this.userPoints += reward.points;
+          })
+          .stateStyles({
+            pressed: { .scale({ x: 0.95, y: 0.95 }) },
+            normal: { .scale({ x: 1, y: 1 }) }
+          })
+      }
+      .alignItems(HorizontalAlign.End)
+    }
+    .width('100%')
+    .padding(Spacing.lg)
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.xl)
+    .shadow(getShadow('sm', this.isDarkMode))
+    .stateStyles({
+      pressed: { 
+        .scale({ x: 0.98, y: 0.98 }),
+        .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+      },
+      normal: { 
+        .scale({ x: 1, y: 1 }),
+        .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+      }
+    })
   }
 }
 
-// 棰勮�缁勪欢 - 鐢ㄤ簬DevEco Studio棰勮�锟?
+// 预览组件
 @Preview
-@Component
+@ComponentV2
 struct RewardPagePreview {
   build() {
     Column() {
-      Text('鎵撹祻鏀�寔锟?- 娴呰壊妯″紡')
+      Text('积分奖励 - 浅色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .padding(Spacing.md)
@@ -314,7 +353,7 @@ struct RewardPagePreview {
       Divider()
         .margin({ top: 20, bottom: 20 })
 
-      Text('鎵撹祻鏀�寔锟?- 娣辫壊妯″紡')
+      Text('积分奖励 - 深色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .padding(Spacing.md)

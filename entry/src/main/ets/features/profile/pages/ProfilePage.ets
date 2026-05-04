@@ -1,5 +1,4 @@
 import { logger } from '../../../common/utils/Logger';
-// 濞戞搩浜欏Ч澶嬬▔椤撶偟濡囧�銈囨暬閿?- 閻忕偞娲滈妵姘舵偨閵婏箑鐓曞ǎ鍥ｅ墲娴煎懘宕�畝鍕�潐閻犲洨绮�弳鐔煎箲?
 import { router, promptAction } from '@kit.ArkUI';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { preferenceManager } from '../core/utils/PreferenceManager';
@@ -17,17 +16,16 @@ interface ProfileMenuItem {
   subtitleKey?: string;
   subtitle?: string;
   action: () => void;
+  color?: string;
 }
 
 @Entry
-@Component
+@ComponentV2
 struct ProfilePage {
-  // UI 闁硅矇鍐ㄧ厬闁绘ǹ鍩栭敓?
-  @State isDarkMode: boolean = false;
-  @State currentColors: AppColors = themeManager.getColors();
-  @State fontScale: number = 1.0;
-  @State screenInfo: ScreenInfo | null = null;
-  // ViewModel (閻╁瓨甯村�鏇犳暏@ObservedV2閸楁洑绶?ViewModel)
+  @Local isDarkMode: boolean = false;
+  @Local currentColors: AppColors = themeManager.getColors();
+  @Local fontScale: number = 1.0;
+  @Local screenInfo: ScreenInfo | null = null;
   private vm: ProfileViewModel = profileViewModel;
 
   aboutToAppear() {
@@ -46,16 +44,17 @@ struct ProfilePage {
     await this.vm.loadProfile();
   }
 
-  private getFontSize(base: number): number {
-    return fontScaleManager.getScaledFontSize(base);
+  private tc(light: string, dark: string): string {
+    return this.isDarkMode ? dark : light;
   }
 
-  /**
-   * 闁哄洤鐡ㄩ弻濠囨偨閵婏箑鐓曞�鑸垫綑閿?
-   */
+  private bg(light: string, dark: string): string {
+    return this.isDarkMode ? dark : light;
+  }
+
   private updateAvatar(): void {
     promptAction.showToast({
-      message: '濠㈣埖娼欓崕姘跺即鐎涙ɑ鐓€闁告梻鍠曢崗妯侯嚕閳ь剟宕ｉ幋婊嗗幀',
+      message: '更换头像功能开发中',
       duration: 1500
     });
   }
@@ -63,25 +62,29 @@ struct ProfilePage {
   build() {
     Stack() {
       Column() {
-        // 濡炪倕鐖奸崕鎾�嚄鐏炵偓鐝?
+        // 渐变背景头部
         this.HeaderBackground()
 
         Scroll() {
-          Column({ space: 16 }) {
-            // 闁活潿鍔嶉崺娑欑┍閳╁啩绱栭柛妤嬬磿閿?
+          Column({ space: Spacing.lg }) {
+            // 用户信息卡片
             this.UserInfoCard()
 
-            // 闂傚啫鎳撻�鎵�磼閻旀椿鍚€闁告�绱曢敓?
+            // 阅读统计卡片
             this.ReadingStatsCard()
 
-            // 闁告梻鍠曢崗姗€鎳ｅ⿰鍐ㄧ�闁告帗顨夐敓?
+            // 功能菜单列表
             this.MenuList()
 
-            // 閹煎瓨娲熼崕鎾�⒒绾惧�鐛?
-            Column().height(40)
+            // 底部留白
+            Column().height(Spacing.xxxl)
           }
           .width('100%')
-          .padding(Spacing.lg)
+          .padding({ 
+            left: Spacing.lg, 
+            right: Spacing.lg, 
+            top: Spacing.xxl 
+          })
         }
         .layoutWeight(1)
         .scrollBar(BarState.Auto)
@@ -89,7 +92,7 @@ struct ProfilePage {
       }
       .width('100%')
       .height('100%')
-      .backgroundColor(this.isDarkMode ? '#141414' : '#FAFAFA')
+      .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
     }
     .width('100%')
     .height('100%')
@@ -99,12 +102,12 @@ struct ProfilePage {
   HeaderBackground() {
     Column()
       .width('100%')
-      .height(200)
+      .height(this.screenInfo?.isTablet ? 240 : 200)
       .linearGradient({
         direction: GradientDirection.Bottom,
         colors: this.isDarkMode 
-          ? [['#1C1C1E', 0.0], ['#2C2C2E', 1.0]]
-          : [[COMMON_COLORS.PRIMARY_BLUE, 0.0], ['#5B8DEF', 1.0]]
+          ? [['#1A1A2E', 0.0], ['#16213E', 0.5], ['#0F3460', 1.0]]
+          : [[COMMON_COLORS.PRIMARY_BLUE, 0.0], ['#667EEA', 0.5], ['#764BA2', 1.0]]
       })
       .position({ top: 0 })
   }
@@ -113,56 +116,98 @@ struct ProfilePage {
   UserInfoCard() {
     Column() {
       if (this.vm.userInfo) {
-        Row({ space: Spacing.lg }) {
-          // 濠㈣埖娼欓敓?
+        Row({ space: Spacing.xl }) {
+          // 头像 - 带光环效果
           Stack() {
+            // 外圈光环
+            Circle()
+              .width(Size.avatarXXL + Spacing.md)
+              .height(Size.avatarXXL + Spacing.md)
+              .fill(this.isDarkMode ? 'rgba(102, 126, 234, 0.2)' : 'rgba(102, 126, 234, 0.15)')
+
+            // 头像本身
             if (this.vm.userInfo.avatar && this.vm.userInfo.avatar.length > 0) {
               Image(this.vm.userInfo.avatar)
-                .width(Size.avatarXL)
-                .height(Size.avatarXL)
+                .width(Size.avatarXXL)
+                .height(Size.avatarXXL)
                 .borderRadius(BorderRadius.full)
                 .objectFit(ImageFit.Cover)
+                .border({
+                  width: 3,
+                  color: this.isDarkMode ? '#1A1A2E' : '#FFFFFF'
+                })
             } else {
               Column() {
-                Text('妫ｅ啯鍣?)
-                  .fontSize(Size.iconXXL)
+                SymbolGlyph($r('sys.symbol.person.fill'))
+                  .fontSize(Size.iconXXXL)
+                  .fontColor([this.isDarkMode ? '#667EEA' : '#FFFFFF'])
               }
-              .width(Size.avatarXL)
-              .height(Size.avatarXL)
+              .width(Size.avatarXXL)
+              .height(Size.avatarXXL)
               .justifyContent(FlexAlign.Center)
-              .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.3)')
+              .linearGradient({
+                direction: GradientDirection.Top,
+                colors: this.isDarkMode 
+                  ? [['#667EEA', 0.0], ['#764BA2', 1.0]]
+                  : [['rgba(255,255,255,0.3)', 0.0], ['rgba(255,255,255,0.1)', 1.0]]
+              })
               .borderRadius(BorderRadius.full)
             }
 
-            // 缂傚倹鐗炵欢顐﹀炊閻愵剛鍨?
-            Column() {
-              Text('妫ｅ啯鎳?)
+            // 编辑按钮
+            Row() {
+              SymbolGlyph($r('sys.symbol.camera.fill'))
                 .fontSize(Size.iconSM)
+                .fontColor(['#FFFFFF'])
             }
-            .width(Size.iconLG)
-            .height(Size.iconLG)
-            .justifyContent(FlexAlign.Center)
-            .backgroundColor('rgba(0,0,0,0.6)')
+            .width(Size.buttonSM)
+            .height(Size.buttonSM)
             .borderRadius(BorderRadius.full)
-            .position({ x: 50, y: 50 })
+            .backgroundColor('rgba(0,0,0,0.6)')
+            .justifyContent(FlexAlign.Center)
+            .position({ x: Size.avatarXXL - 5, y: Size.avatarXXL - 5 })
           }
           .onClick(() => this.updateAvatar())
 
-          // 闁活潿鍔嶉崺娑欑┍閳╁啩绱?
+          // 用户信息
           Column({ space: Spacing.sm }) {
             Text(this.vm.userInfo.nickname || this.vm.userInfo.username)
-              .fontSize(20)
+              .fontSize(fontScaleManager.getScaledFontSize(22))
               .fontWeight(FontWeight.Bold)
-              .fontColor(this.isDarkMode ? '#FFFFFF' : '#FFFFFF')
+              .fontColor(this.tc('#FFFFFF', '#FFFFFF'))
+              .maxLines(1)
+              .textOverflow({ overflow: TextOverflow.Ellipsis })
 
-            Row({ space: 8 }) {
-              Text('ID: ')
-                .fontSize(12)
-                .fontColor('rgba(255,255,255,0.7)')
+            Row({ space: Spacing.xs }) {
+              SymbolGlyph($r('sys.symbol.tag.fill'))
+                .fontSize(Size.iconXS)
+                .fontColor(['rgba(255,255,255,0.7)'])
+              
+              Text('ID: ' + this.vm.userInfo.userId)
+                .fontSize(fontScaleManager.getScaledFontSize(13))
+                .fontColor('rgba(255,255,255,0.85)')
+            }
 
-              Text(this.vm.userInfo.userId)
-                .fontSize(12)
-                .fontColor('rgba(255,255,255,0.9)')
+            // 会员标识（如果有）
+            if (this.vm.userInfo.isVip) {
+              Row({ space: Spacing.xs }) {
+                SymbolGlyph($r('sys.symbol.star.fill'))
+                  .fontSize(Size.iconXS)
+                  .fontColor(['#FFD700'])
+                
+                Text('VIP会员')
+                  .fontSize(fontScaleManager.getScaledFontSize(11))
+                  .fontWeight(FontWeight.Medium)
+                  .fontColor('#FFD700')
+              }
+              .padding({ 
+                left: Spacing.sm, 
+                right: Spacing.sm, 
+                top: Spacing.xs, 
+                bottom: Spacing.xs 
+              })
+              .backgroundColor('rgba(255,215,0,0.15)')
+              .borderRadius(BorderRadius.xl)
             }
           }
           .alignItems(HorizontalAlign.Start)
@@ -173,89 +218,102 @@ struct ProfilePage {
       }
     }
     .width('100%')
-    // 婵�絾绋撻獮鎾绘偣閸愨晜娅忛敓?
-    .backgroundColor(this.isDarkMode ? 'rgba(44,44,46,0.7)' : 'rgba(255,255,255,0.75)')
-    .backdropBlur(20)
-    .borderRadius(BorderRadius.lg)
+    // 毛玻璃效果卡片
+    .backgroundColor(this.isDarkMode ? 'rgba(30,30,50,0.75)' : 'rgba(255,255,255,0.85)')
+    .backdropBlur(30)
+    .borderRadius(BorderRadius.xl)
     .border({
       width: 1,
-      color: this.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)'
+      color: this.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)'
     })
-    .shadow({
-      radius: 16,
-      color: 'rgba(0,0,0,0.12)',
-      offsetY: 6
-    })
-    .offset({ y: -40 })
+    .shadow(getShadow('xl', this.isDarkMode))
+    .offset({ y: -50 })
   }
 
   @Builder
   ReadingStatsCard() {
-    Column({ space: 16 }) {
-      Text('闂傚啫鎳撻�鎵�磼閻旀椿鍚€')
-        .fontSize(16)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(this.isDarkMode ? '#FFFFFF' : '#1A1A1A')
-        .width('100%')
+    Column({ space: Spacing.lg }) {
+      Row() {
+        SymbolGlyph($r('sys.symbol.chart.bar.xaxis'))
+          .fontSize(Size.iconLG)
+          .fontColor([this.currentColors.primary])
+        
+        Text('阅读数据统计')
+          .fontSize(fontScaleManager.getScaledFontSize(17))
+          .fontWeight(FontWeight.SemiBold)
+          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .layoutWeight(1)
+          .margin({ left: Spacing.sm })
 
+        Text('查看更多')
+          .fontSize(fontScaleManager.getScaledFontSize(13))
+          .fontColor(this.currentColors.primary)
+          .onClick(() => navigateTo('pages/StatisticsPage'))
+      }
+      .width('100%')
+
+      // 统计数据网格
       Grid() {
         GridItem() {
-          this.StatItem('Bks', this.vm.totalBooks.toString(), '閹��鍔熼敓?)
+          this.StatItem('book.fill', this.vm.totalBooks.toString(), '藏书', COMMON_COLORS.PRIMARY_BLUE)
         }
         GridItem() {
-          this.StatItem('Time', this.vm.formatReadingTime(this.vm.totalReadingTime), '闂冨懓顕伴弮鍫曟毐')
+          this.StatItem('clock.fill', this.vm.formatReadingTime(this.vm.totalReadingTime), '时长', '#FF6B6B')
         }
         GridItem() {
-          this.StatItem('Marks', this.vm.totalBookmarks.toString(), '娑旓妇顒?)
+          this.StatItem('bookmark.fill', this.vm.totalBookmarks.toString(), '书签', '#52C41A')
         }
         GridItem() {
-          this.StatItem('Notes', this.vm.totalNotes.toString(), '缁楁棁顔?)
+          this.StatItem('note.text', this.vm.totalNotes.toString(), '笔记', '#722ED1')
         }
       }
       .columnsTemplate('1fr 1fr')
       .rowsTemplate('1fr 1fr')
-      .columnsGap(12)
-      .rowsGap(12)
+      .columnsGap(Spacing.md)
+      .rowsGap(Spacing.md)
       .width('100%')
-      .height(180)
+      .height(this.screenInfo?.isTablet ? 200 : 180)
     }
     .width('100%')
     .padding(Spacing.xl)
-    // 婵�絾绋撻獮鎾绘偣閸愨晜娅忛敓?
-    .backgroundColor(this.isDarkMode ? 'rgba(44,44,46,0.6)' : 'rgba(255,255,255,0.7)')
-    .backdropBlur(15)
-    .borderRadius(BorderRadius.lg)
-    .border({
-      width: 1,
-      color: this.isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.4)'
-    })
-    .shadow({
-      radius: 12,
-      color: 'rgba(0,0,0,0.08)',
-      offsetY: 4
-    })
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.xl)
+    .shadow(getShadow('md', this.isDarkMode))
   }
 
   @Builder
-  StatItem(icon: string, value: string, label: string) {
+  StatItem(iconName: string, value: string, label: string, color: string) {
     Column({ space: Spacing.sm }) {
-      Text(icon)
-        .fontSize(Size.iconXL)
+      // 图标容器 - 渐变色背景
+      Column() {
+        SymbolGlyph($r(`sys.symbol.${iconName}`))
+          .fontSize(this.screenInfo?.isTablet ? Size.iconXXL : Size.iconXL)
+          .fontColor([color])
+      }
+      .width(this.screenInfo?.isTablet ? Size.avatarLG : Size.avatarMD)
+      .height(this.screenInfo?.isTablet ? Size.avatarLG : Size.avatarMD)
+      .borderRadius(BorderRadius.lg)
+      .linearGradient({
+        direction: GradientDirection.Top,
+        colors: [
+          [color + '20', 0.0],
+          [color + '10', 1.0]
+        ]
+      })
+      .justifyContent(FlexAlign.Center)
 
       Text(value)
         .fontSize(fontScaleManager.getScaledFontSize(20))
         .fontWeight(FontWeight.Bold)
-        .fontColor(this.isDarkMode ? '#FFFFFF' : '#1A1A1A')
+        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
 
       Text(label)
         .fontSize(fontScaleManager.getScaledFontSize(12))
-        .fontColor(this.isDarkMode ? '#888888' : '#999999')
+        .fontColor(this.tc('#8E8E93', '#8E8E93'))
     }
     .width('100%')
     .height('100%')
     .justifyContent(FlexAlign.Center)
-    .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)')
-    .borderRadius(BorderRadius.md)
   }
 
   @Builder
@@ -264,23 +322,32 @@ struct ProfilePage {
       ForEach(this.getMenuItems(), (item: ProfileMenuItem, index: number) => {
         Column() {
           Row({ space: Spacing.lg }) {
-            Text(item.icon)
-              .fontSize(Size.iconMD)
+            // 图标容器
+            Column() {
+              SymbolGlyph($r(`sys.symbol.${item.icon}`))
+                .fontSize(Size.iconLG)
+                .fontColor([item.color || this.currentColors.primary])
+            }
+            .width(Size.avatarMD)
+            .height(Size.avatarMD)
+            .borderRadius(BorderRadius.lg)
+            .backgroundColor((item.color || this.currentColors.primary) + '15')
+            .justifyContent(FlexAlign.Center)
 
-            Text(item.title)
-              .fontSize(15)
-              .fontColor(this.isDarkMode ? '#E8E8E8' : '#1A1A1A')
+            Text(item.title || tr(item.titleKey))
+              .fontSize(fontScaleManager.getScaledFontSize(15))
+              .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
               .layoutWeight(1)
 
             if (item.subtitle) {
               Text(item.subtitle)
-                .fontSize(13)
-                .fontColor(this.isDarkMode ? '#888888' : '#999999')
+                .fontSize(fontScaleManager.getScaledFontSize(13))
+                .fontColor(this.tc('#8E8E93', '#8E8E93'))
             }
 
-            Text('>')
+            SymbolGlyph($r('sys.symbol.chevron.right'))
               .fontSize(Size.iconSM)
-              .fontColor(this.isDarkMode ? '#555555' : '#CCCCCC')
+              .fontColor([this.tc('#C7C7CC', '#48484A')])
           }
           .width('100%')
           .padding(Spacing.lg)
@@ -296,37 +363,29 @@ struct ProfilePage {
             }
           })
 
-          // 闁告帒妫濆▓褏鐥�崠锛勭�闁哄牃鍋撻柛姘�凹缁斿瓨銇勯柅娑氱憹闁哄嫬澧介妵姘舵晬?
+          // 分割线
           if (index < this.getMenuItems().length - 1) {
             Divider()
-              .color(this.isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')
-              .padding({ left: 52 })
+              .color(this.tc('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.06)'))
+              .strokeWidth(0.5)
+              .margin({ left: Size.avatarMD + Spacing.lg * 2 })
           }
         }
       })
     }
     .width('100%')
-    // 婵�絾绋撻獮鎾绘偣閸愨晜娅忛敓?
-    .backgroundColor(this.isDarkMode ? 'rgba(44,44,46,0.6)' : 'rgba(255,255,255,0.7)')
-    .backdropBlur(15)
-    .borderRadius(BorderRadius.lg)
-    .border({
-      width: 1,
-      color: this.isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.4)'
-    })
-    .shadow({
-      radius: 12,
-      color: 'rgba(0,0,0,0.08)',
-      offsetY: 4
-    })
+    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .borderRadius(BorderRadius.xl)
+    .shadow(getShadow('sm', this.isDarkMode))
   }
 
   private getMenuItems(): ProfileMenuItem[] {
     return [
       {
-        icon: '妫ｅ啯鎲?,
+        icon: 'books.vertical.fill',
         titleKey: 'my_bookshelf',
         subtitleKey: 'book_count',
+        color: COMMON_COLORS.PRIMARY_BLUE,
         action: (): void => {
           try {
             goBack();
@@ -336,38 +395,43 @@ struct ProfilePage {
         }
       },
       {
-        icon: '妫ｅ啯鎯?,
+        icon: 'chart.bar.fill',
         titleKey: 'reading_stats',
+        color: '#FF6B6B',
         action: (): void => {
           navigateTo('pages/StatisticsPage');
         }
       },
       {
-        icon: '妫ｅ啯鎲?,
+        icon: 'note.text',
         titleKey: 'reading_notes',
         subtitleKey: 'note_count',
+        color: '#52C41A',
         action: (): void => {
           navigateTo('pages/NotesPage');
         }
       },
       {
-        icon: '妫ｅ啯鏅?,
+        icon: 'bookmark.fill',
         titleKey: 'bookmark_manage',
         subtitleKey: 'bookmark_count',
+        color: '#FA8C16',
         action: (): void => {
           navigateTo('pages/BookmarksPage');
         }
       },
       {
-        icon: '閿?,
+        icon: 'checkmark.circle.fill',
         titleKey: 'todo_items',
+        color: '#722ED1',
         action: (): void => {
           navigateTo('pages/TodoPage');
         }
       },
       {
-        icon: '閿?,
+        icon: 'gearshape.fill',
         titleKey: 'read_settings',
+        color: '#13C2C2',
         action: (): void => {
           const params: Record<string, number> = {};
           params['tab'] = 0;
@@ -375,8 +439,9 @@ struct ProfilePage {
         }
       },
       {
-        icon: '閿?,
+        icon: 'paintbrush.fill',
         titleKey: 'display_settings',
+        color: '#EB2F96',
         action: (): void => {
           const params: Record<string, number> = {};
           params['tab'] = 1;
@@ -384,15 +449,17 @@ struct ProfilePage {
         }
       },
       {
-        icon: '棣冩暋',
+        icon: 'questionmark.circle.fill',
         titleKey: 'help_feedback',
+        color: '#F5222D',
         action: (): void => {
           navigateTo('pages/HelpPage');
         }
       },
       {
-        icon: '妫ｅ啯鎲?,
+        icon: 'shield.checkered',
         titleKey: 'privacy_policy',
+        color: '#8E8E93',
         action: (): void => {
           navigateTo('pages/PrivacyPolicyPage');
         }
@@ -401,13 +468,13 @@ struct ProfilePage {
   }
 }
 
-// 妫板嫯顫嶇紒鍕�� - 閻€劋绨珼evEco Studio妫板嫯顫嶉敓?
+// 预览组件
 @Preview
-@Component
+@ComponentV2
 struct ProfilePagePreview {
   build() {
     Column() {
-      Text('娑擃亙姹夌挧鍕�灐閿?- 濞村懓澹婂Ο鈥崇础')
+      Text('个人主页 - 浅色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .padding(Spacing.md)
@@ -419,7 +486,7 @@ struct ProfilePagePreview {
       Divider()
         .margin({ top: 20, bottom: 20 })
 
-      Text('娑擃亙姹夌挧鍕�灐閿?- 濞ｈ精澹婂Ο鈥崇础')
+      Text('个人主页 - 深色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .padding(Spacing.md)
@@ -433,4 +500,3 @@ struct ProfilePagePreview {
     .backgroundColor('#FFFFFF')
   }
 }
-

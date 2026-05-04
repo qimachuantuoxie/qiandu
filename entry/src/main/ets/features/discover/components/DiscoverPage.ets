@@ -1,6 +1,8 @@
-// 鍙戠幇椤电粍锟?- 鍔熻兘鍙戠幇鍏ュ彛
+// 发现页组件 - 功能发现入口
 
 import { navigateTo } from '../../../../common/utils/NavigationHelper';
+import { Spacing, Size, BorderRadius } from '../../../../core/utils/LayoutConstants';
+import { layoutHelper } from '../../../../core/utils/LayoutHelper';
 
 interface DiscoverItem {
   icon: string;
@@ -10,20 +12,20 @@ interface DiscoverItem {
   action?: () => void;
 }
 
-@Component
+@ComponentV2
 export struct DiscoverContent {
-  @Prop isDarkMode: boolean = false;
+  @Param isDarkMode: boolean = false;
   onOpenFolderScanner?: () => void;
 
   private readonly discoverItems: DiscoverItem[] = [
-    { icon: '\ud83d\udcda', title: '涔︽簮甯傚満', desc: '娴忚�鍜屽�鍏ュ湪绾夸功婧?, url: 'features/source-market/pages/SourceMarketPage' },
-    { icon: '\ud83d\udce6', title: '鍦ㄧ嚎涔︽簮', desc: '鍙戠幇鏇村�浼樿川涔︽簮', url: 'features/source-market/pages/OnlineSourceMarketPage' },
-    { icon: '\ud83d\udcca', title: '闃呰�缁熻�', desc: '鏌ョ湅鎮ㄧ殑闃呰�鏁版嵁', url: 'features/settings/pages/StatisticsPage' },
-    { icon: '\ud83d\udcc9', title: '闃呰�璁板綍', desc: '鍥為【闃呰�鍘嗗彶', url: 'features/settings/pages/ReadRecordPage' },
-    { icon: '\ud83d\udd16', title: '涔︾�绠＄悊', desc: '绠＄悊鎮ㄧ殑涔︾�', url: 'features/bookshelf/pages/BookmarksPage' },
-    { icon: '\ud83d\udcdd', title: '绗旇�绠＄悊', desc: '鏌ョ湅鎮ㄧ殑璇讳功绗旇�', url: 'features/bookshelf/pages/NotesPage' },
-    { icon: '\u2705', title: '寰呭姙浜嬮」', desc: '绠＄悊闃呰�璁″垝鍜屼换鍔?, url: 'features/profile/pages/TodoPage' },
-    { icon: '\ud83d\udcd6', title: '鐢熻瘝鏈?, desc: '绉�疮鎮ㄧ殑璇嶆眹搴?, url: 'features/reader/pages/WordBookPage' },
+    { icon: 'book.fill', title: '书源市场', desc: '浏览和导入在线书源', url: 'features/source-market/pages/SourceMarketPage' },
+    { icon: 'globe', title: '在线书源', desc: '发现更多优质书源', url: 'features/source-market/pages/OnlineSourceMarketPage' },
+    { icon: 'chart.bar.fill', title: '阅读统计', desc: '查看您的阅读数据', url: 'features/settings/pages/StatisticsPage' },
+    { icon: 'clock.fill', title: '阅读记录', desc: '回顾阅读历史', url: 'features/settings/pages/ReadRecordPage' },
+    { icon: 'bookmark.fill', title: '书签管理', desc: '管理您的书签', url: 'features/bookshelf/pages/BookmarksPage' },
+    { icon: 'note.text', title: '笔记管理', desc: '查看您的读书笔记', url: 'features/bookshelf/pages/NotesPage' },
+    { icon: 'checkmark.circle.fill', title: '待办事项', desc: '管理阅读计划和任务', url: 'features/profile/pages/TodoPage' },
+    { icon: 'character.book.closed', title: '生词本', desc: '积累您的词汇量', url: 'features/reader/pages/WordBookPage' },
   ];
 
   private navigateTo(url: string): void {
@@ -32,10 +34,10 @@ export struct DiscoverContent {
 
   build() {
     Column() {
-      // 椤堕儴瀵艰埅锟?
+      // 顶部导航栏
       this.HeaderBar()
 
-      // 鍔熻兘鍒楄〃
+      // 功能列表
       this.DiscoverList()
     }
     .width('100%')
@@ -45,26 +47,27 @@ export struct DiscoverContent {
   @Builder
   HeaderBar() {
     Row() {
-      Text('鍙戠幇')
-        .fontSize(22)
+      Text('发现')
+        .fontSize(layoutHelper.getResponsiveFontSize(22))
         .fontWeight(FontWeight.Bold)
         .fontColor(this.isDarkMode ? '#FFFFFF' : '#1A1A1A')
         .layoutWeight(1)
 
-      Text('\ud83d\udd0d')
-        .fontSize(20)
+      SymbolGlyph($r('sys.symbol.magnifyingglass'))
+        .fontSize(Size.iconMD)
+        .fontColor([this.isDarkMode ? '#FFFFFF' : '#1A1A1A'])
         .padding(Spacing.sm)
     }
     .width('100%')
     .height(60)
-    .padding({ left: 20, right: 20 })
+    .padding({ left: Spacing.xl, right: Spacing.xl })
     .backgroundColor(this.isDarkMode ? '#1C1C1E' : '#FFFFFF')
   }
 
   @Builder
   DiscoverList() {
     Scroll() {
-      Column({ space: 16 }) {
+      Column({ space: Spacing.lg }) {
         ForEach(this.discoverItems, (item: DiscoverItem) => {
           this.DiscoverCard(item.icon, item.title, item.desc, () => {
             if (item.url) {
@@ -75,8 +78,8 @@ export struct DiscoverContent {
           })
         })
 
-        // 鎵�弿鏂囦欢澶瑰叆锟?
-        this.DiscoverCard('\ud83d\udcc2', '鎵�弿鏂囦欢锟?, '鎵归噺瀵煎叆鏈�湴涔︾睄', () => {
+        // 扫描文件夹入口
+        this.DiscoverCard('folder.fill', '扫描文件夹', '批量导入本地书籍', () => {
           navigateTo('pages/FolderScannerPage');
         })
       }
@@ -93,8 +96,9 @@ export struct DiscoverContent {
   @Builder
   DiscoverCard(icon: string, title: string, desc: string, action: () => void) {
     Row({ space: Spacing.lg }) {
-      Text(icon)
+      SymbolGlyph($r(`sys.symbol.${icon}`))
         .fontSize(Size.iconXXL)
+        .fontColor([this.isDarkMode ? '#007DFF' : '#007DFF'])
     
       Column({ space: Spacing.xs }) {
         Text(title)
@@ -109,9 +113,9 @@ export struct DiscoverContent {
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
     
-      Text('→')
-        .fontSize(Size.iconLG)
-        .fontColor(this.isDarkMode ? '#555555' : '#CCCCCC')
+      SymbolGlyph($r('sys.symbol.chevron.right'))
+        .fontSize(Size.iconMD)
+        .fontColor([this.isDarkMode ? '#555555' : '#CCCCCC'])
     }
     .width('100%')
     .padding(Spacing.lg)
