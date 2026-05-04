@@ -261,11 +261,4 @@ struct BookPage {
 
 欢迎提交 Issue 和 Pull Request！
 
-## 📄 许可证
 
-Copyright © 2026 千读阅界团队
-
----
-
-*最后更新：2026年4月11日*  
-*版本：v3.0 (V2状态管理重构版)*
