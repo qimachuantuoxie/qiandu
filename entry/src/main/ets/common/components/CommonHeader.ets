@@ -3,7 +3,7 @@
  * @deprecated 使用UnifiedHeader替代
  */
 
-import { fontScaleManager } from '../../core/utils/FontScaleManager';
+import { fontScaleManager } from '../../common/utils/FontScaleManager';
 import { AppColors } from '../constants/AppTheme';
 import { UnifiedHeader, HeaderAction } from './UnifiedHeader';
 import { goBack } from '../utils/NavigationHelper';

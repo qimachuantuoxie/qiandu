@@ -15,7 +15,7 @@ import { logger } from '../../../utils/Logger';
 
 import { fileIo } from '@kit.CoreFileKit';
 import { common } from '@kit.AbilityKit';
-import { preferenceManager } from '../../utils/PreferenceManager';
+import { preferenceManager } from '../utils/PreferenceManager';
 
 export interface EnhancedBookMetadata {
   title: string;

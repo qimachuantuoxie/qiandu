@@ -1,7 +1,7 @@
 import { logger } from '../../utils/Logger';
 // 闃呰�缁熻�涓庢垚灏辩郴缁?- 瀵规爣寰�俊璇讳功鐨勭粺璁′綋绯?
 import { ReadingStatistics, AchievementBadge } from './AdvancedReading';
-import { preferenceManager } from '../utils/PreferenceManager';
+import { preferenceManager } from './PreferenceManager';
 
 export function generateBookId(): string {
   return 'book_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);

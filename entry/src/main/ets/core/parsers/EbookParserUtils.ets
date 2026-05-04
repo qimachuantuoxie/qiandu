@@ -10,7 +10,7 @@ import { logger } from '../../utils/Logger';
  */
 
 import { fileIo } from '@kit.CoreFileKit';
-import { BookFormat } from '../models/book/CoreBookModel';
+import { BookFormat } from '../models/CoreBookModel';
 import { BookMetadata } from '../models/EbookTypes';
 
 /**

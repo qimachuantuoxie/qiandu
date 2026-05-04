@@ -3,7 +3,7 @@
  * 支持图片、文字头像、多种尺寸和圆形/方形
  */
 
-import { COMMON_COLORS } from '../../utils/AppTheme';
+import { COMMON_COLORS } from '../../common/constants/AppTheme';
 
 /**
  * AppAvatar 组件属性

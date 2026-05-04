@@ -7,8 +7,8 @@
 import { BookSource, ReplaceRule } from '../models/CoreSourceModel';
 import { bookSourceViewModel, ImportResult, SourceFilterState } from './BookSourceViewModel';
 import { OnlineSourceInfo } from '../utils/BookSourceImporter';
-import { appTheme, themeManager, AppColors } from '../utils/AppTheme';
-import { fontScaleManager } from '../utils/FontScaleManager';
+import { appTheme, themeManager, AppColors } from '../../../common/constants/AppTheme';
+import { fontScaleManager } from '../../../common/utils/FontScaleManager';
 import { DeviceUtils } from '../utils/DeviceUtils';
 
 @ObservedV2

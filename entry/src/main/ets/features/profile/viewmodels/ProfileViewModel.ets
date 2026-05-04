@@ -7,8 +7,8 @@
 import { loginStateManager, UserInfo } from '../services/auth/LoginStateManager';
 import { preferenceManager } from '../utils/PreferenceManager';
 import { bookViewModel } from './BookViewModel';
-import { appTheme, themeManager, AppColors } from '../utils/AppTheme';
-import { fontScaleManager } from '../utils/FontScaleManager';
+import { appTheme, themeManager, AppColors } from '../../../common/constants/AppTheme';
+import { fontScaleManager } from '../../../common/utils/FontScaleManager';
 import { tr } from '../utils/LocalizationUtil';
 
 interface ProfileMenuItem {

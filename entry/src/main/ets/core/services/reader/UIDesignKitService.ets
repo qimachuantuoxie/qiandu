@@ -9,7 +9,7 @@ import { logger } from '../../../utils/Logger';
  */
 
 import { common } from '@kit.AbilityKit';
-import { preferenceManager } from '../../utils/PreferenceManager';
+import { preferenceManager } from '../utils/PreferenceManager';
 import { appTheme } from '../../utils/AppTheme';
 
 // ==================== 妫版粏澹婄化鑽ょ埠 ====================

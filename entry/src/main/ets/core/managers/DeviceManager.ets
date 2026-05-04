@@ -18,7 +18,7 @@ import { logger } from '../../utils/Logger';
  * const fontSize = DeviceUtils.getFontSize(14); // 鑷�姩閫傞厤
  */
 
-import { displayHelper } from '../utils/DisplayHelper';
+import { displayHelper } from './DisplayHelper';
 
 /**
  * 璁惧�宸ュ叿绫?

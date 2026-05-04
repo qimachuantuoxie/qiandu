@@ -3,7 +3,7 @@
  * 支持自动播放、指示器和无障碍访问
  */
 
-import { COMMON_COLORS } from '../../utils/AppTheme';
+import { COMMON_COLORS } from '../../common/constants/AppTheme';
 
 /**
  * AppSwiper 组件属性

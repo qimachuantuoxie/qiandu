@@ -11,7 +11,7 @@ import { promptAction } from '@kit.ArkUI';
 // TODO: @kit.InAppPurchasesKit not available in this SDK version
 // import { iap, ProductInfo, PurchaseInfo, PurchaseResult } from '@kit.InAppPurchasesKit';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { preferenceManager } from '../../utils/PreferenceManager';
+import { preferenceManager } from '../utils/PreferenceManager';
 
 // Stub types for InAppPurchasesKit (replace when SDK supports)
 interface StubProductInfo { productId: string; name: string; price: string; currency: string; description: string; }

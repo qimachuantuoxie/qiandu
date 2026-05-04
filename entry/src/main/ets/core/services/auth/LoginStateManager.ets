@@ -4,7 +4,7 @@ import { logger } from '../../../utils/Logger';
  * Login State Management Service
  */
 
-import { preferenceManager } from '../../utils/PreferenceManager';
+import { preferenceManager } from '../utils/PreferenceManager';
 
 /**
  * 鐢ㄦ埛淇℃伅鎺ュ彛

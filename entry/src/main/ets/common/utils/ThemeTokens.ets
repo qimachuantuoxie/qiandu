@@ -6,7 +6,7 @@
  * @since 3.0.0
  */
 
-import { themeManager } from '../utils/AppTheme';
+import { themeManager } from './AppTheme';
 import { ShadowOptions } from '@kit.ArkUI';
 
 /**

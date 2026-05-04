@@ -6,10 +6,10 @@ import { logger } from '../../../utils/Logger';
  */
 
 import { http } from '@kit.NetworkKit';
-import { BookSource, BookSourceType, SearchRule, BookInfoRule, ContentRule, TocRule } from '../../models/BookSourceModel';
+import { BookSource, BookSourceType, SearchRule, BookInfoRule, ContentRule, TocRule } from '../models/BookSourceModel';
 import { bookSourceService } from './BookSourceService';
-import { OnlineSearchResult, OnlineBookDetail, OnlineChapterInfo } from '../../models/OnlineBookModel';
-import { errorHandler, ErrorLevel } from '../../utils/ErrorHandler';
+import { OnlineSearchResult, OnlineBookDetail, OnlineChapterInfo } from '../models/OnlineBookModel';
+import { errorHandler, ErrorLevel } from '../utils/ErrorHandler';
 
 /**
  * 鍦ㄧ嚎涔︾睄鏈嶅姟

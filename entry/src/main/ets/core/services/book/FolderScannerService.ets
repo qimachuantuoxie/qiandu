@@ -11,11 +11,11 @@ import { logger } from '../../../utils/Logger';
 import { fileIo } from '@kit.CoreFileKit';
 import { picker } from '@kit.CoreFileKit';
 import { common } from '@kit.AbilityKit';
-import { preferenceManager } from '../../utils/PreferenceManager';
+import { preferenceManager } from '../utils/PreferenceManager';
 import { enhancedParser } from '../reader/EnhancedDocumentParser';
 import { DocumentFormat } from '../models/DocumentModels';
 import { promptAction } from '@kit.ArkUI';
-import { BookInfo } from '../../models/CoreBookModel';
+import { BookInfo } from '../models/CoreBookModel';
 
 /**
  * 文档信息

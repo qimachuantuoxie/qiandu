@@ -3,7 +3,7 @@
  * 支持多种样式、尺寸、可关闭和无障碍访问
  */
 
-import { COMMON_COLORS } from '../../utils/AppTheme';
+import { COMMON_COLORS } from '../../common/constants/AppTheme';
 
 /**
  * AppTag 组件属性

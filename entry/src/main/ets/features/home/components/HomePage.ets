@@ -1,7 +1,7 @@
 // 首页组件 - 展示阅读进度、快捷入口、最近添�?
-import { navigateTo } from '../../utils/NavigationHelper';
-import { BookInfo } from '../../models/CoreBookModel';
-import { CommonHeader } from '../../components/common';
+import { navigateTo } from '../../../common/utils/NavigationHelper';
+import { BookInfo } from '../../../core/models/CoreBookModel';
+import { CommonHeader } from '../../../common/components/CommonHeader';
 import { AppCard, ElevationLevel } from '../../components/cards/AppCard';
 
 interface ShortcutItem {

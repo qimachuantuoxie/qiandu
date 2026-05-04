@@ -10,9 +10,9 @@
  * @since 4.0.0
  */
 
-import { displayHelper, FoldStatus } from '../../utils/DisplayHelper';
-import { DeviceUtils } from '../../utils/DeviceUtils';
-import { BookInfo } from '../../models/CoreBookModel';
+import { displayHelper, FoldStatus } from '../../common/utils/DisplayHelper';
+import { DeviceUtils } from '../../common/utils/DeviceUtils';
+import { BookInfo } from '../../core/models/CoreBookModel';
 import { window } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { tr } from '../../core/utils/LocalizationUtil';

@@ -1,9 +1,9 @@
-﻿/**
+/**
  * SettingsPage ViewModel - V2閻楀牊婀?
  */
 import { preferenceManager } from '../utils/PreferenceManager';
-import { fontScaleManager } from '../utils/FontScaleManager';
-import { themeManager, AppColors } from '../utils/AppTheme';
+import { fontScaleManager } from '../../../common/utils/FontScaleManager';
+import { themeManager, AppColors } from '../../../common/constants/AppTheme';
 import { loginStateManager } from '../services/auth/LoginStateManager';
 
 export enum SettingTab {

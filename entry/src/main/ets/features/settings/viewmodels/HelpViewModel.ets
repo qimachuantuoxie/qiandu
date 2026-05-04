@@ -1,9 +1,9 @@
-﻿/**
+/**
  * HelpPage ViewModel - V2 version
  */
 import { preferenceManager } from '../utils/PreferenceManager';
-import { fontScaleManager } from '../utils/FontScaleManager';
-import { appTheme, themeManager, AppColors } from '../utils/AppTheme';
+import { fontScaleManager } from '../../../common/utils/FontScaleManager';
+import { appTheme, themeManager, AppColors } from '../../../common/constants/AppTheme';
 
 interface HelpItem {
   id: string;

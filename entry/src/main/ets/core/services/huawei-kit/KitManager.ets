@@ -9,8 +9,8 @@ import { logger } from '../../../utils/Logger';
  */
 
 import { common } from '@kit.AbilityKit';
-import { preferenceManager } from '../../utils/PreferenceManager';
-import { errorHandler, ErrorLevel } from '../../utils/ErrorHandler';
+import { preferenceManager } from '../utils/PreferenceManager';
+import { errorHandler, ErrorLevel } from '../utils/ErrorHandler';
 import { enhancedReaderKitService as enhancedReaderKit } from '../reader/EnhancedReaderKitService';
 import { shareKitService } from './ShareKitService';
 import { fileManagerKitService as fileManagerKit } from '../book/FileManagerKitService';

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 闃呰鍣ㄨ矾鐢辨湇鍔?- 鏍规嵁涔︾睄鏍煎紡閫夋嫨鍚堥€傜殑闃呰寮曟搸
  * 
  * - Reader Kit: txt, epub, mobi, azw, azw3
@@ -8,7 +8,7 @@
 
 import { readerKitService } from './ReaderKitService';
 import { pdfKitService } from './PdfKitService';
-import { BookFormat } from '../../models/CoreBookModel';
+import { BookFormat } from '../models/CoreBookModel';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const LOG_TAG = 'ReaderRouter';

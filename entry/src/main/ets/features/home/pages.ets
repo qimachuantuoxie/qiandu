@@ -1,10 +1,10 @@
 import { router } from '@kit.ArkUI';
-import { themeManager, AppColors } from '../../../core/utils/AppTheme';
-import { fontScaleManager } from '../../../core/utils/FontScaleManager';
-import { DeviceUtils } from '../../../core/utils/DeviceUtils';
-import { BackButton } from '../components/common/BackButton';
-import { featuresViewModel, FeatureItem, FeaturesViewModel } from '../../../core/viewmodels/FeaturesViewModel';
-import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
+import { themeManager, AppColors } from '../../common/constants/AppTheme';
+import { fontScaleManager } from '../../common/utils/FontScaleManager';
+import { DeviceUtils } from '../../common/utils/DeviceUtils';
+import { BackButton } from '../../common/components/BackButton';
+import { featuresViewModel, FeatureItem, FeaturesViewModel } from '../../core/viewmodels/FeaturesViewModel';
+import { layoutHelper, ScreenInfo } from '../../common/utils/LayoutHelper';
 import { ThemeTokens } from '../../common/utils/ThemeTokens';
 
 @Entry

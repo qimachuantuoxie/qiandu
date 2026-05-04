@@ -5,10 +5,10 @@
  * @since 7.0.0
  */
 
-import { themeManager, AppColors } from '../../core/utils/AppTheme';
-import { fontScaleManager } from '../../core/utils/FontScaleManager';
-import { Spacing, Size, BorderRadius, getShadow } from '../../core/utils/LayoutConstants';
-import { layoutHelper } from '../../core/utils/LayoutHelper';
+import { themeManager, AppColors } from '../../common/constants/AppTheme';
+import { fontScaleManager } from '../../common/utils/FontScaleManager';
+import { Spacing, Size, BorderRadius, getShadow } from '../../common/constants/LayoutConstants';
+import { layoutHelper } from '../../common/utils/LayoutHelper';
 
 export interface TabBarItem {
   icon: string;  // 系统图标名称，如 'house.fill'

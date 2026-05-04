@@ -3,7 +3,7 @@
  * 支持水平/垂直、带文本和无障碍访问
  */
 
-import { COMMON_COLORS } from '../../utils/AppTheme';
+import { COMMON_COLORS } from '../../common/constants/AppTheme';
 
 /**
  * AppDivider 组件属性

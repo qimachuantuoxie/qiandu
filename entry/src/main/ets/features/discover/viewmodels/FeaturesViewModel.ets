@@ -1,9 +1,9 @@
-﻿/**
+/**
  * FeaturesPage ViewModel - V2閻楀牊婀?
  */
 import { preferenceManager } from '../utils/PreferenceManager';
-import { fontScaleManager } from '../utils/FontScaleManager';
-import { appTheme, themeManager, AppColors } from '../utils/AppTheme';
+import { fontScaleManager } from '../../../common/utils/FontScaleManager';
+import { appTheme, themeManager, AppColors } from '../../../common/constants/AppTheme';
 
 export interface FeatureItem {
   id: string;

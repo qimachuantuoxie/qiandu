@@ -4,7 +4,7 @@
  */
 import { BusinessError } from '@kit.BasicServicesKit';
 import { NavPathStack } from '@kit.ArkUI';
-import { logger } from '../../utils/Logger';
+import { logger } from '../utils/Logger';
 
 const TAG = '[NavigationHelper]';
 

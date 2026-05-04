@@ -5,10 +5,10 @@
  * @since 7.0.0
  */
 
-import { UnifiedHeader, HeaderAction } from '../components/common/UnifiedHeader';
-import { Spacing, BorderRadius, getShadow } from '../../core/utils/LayoutConstants';
-import { layoutHelper, ScreenInfo } from '../../core/utils/LayoutHelper';
-import { themeManager, AppColors } from '../../core/utils/AppTheme';
+import { UnifiedHeader, HeaderAction } from './UnifiedHeader';
+import { Spacing, BorderRadius, getShadow } from '../../common/constants/LayoutConstants';
+import { layoutHelper, ScreenInfo } from '../../common/utils/LayoutHelper';
+import { themeManager, AppColors } from '../../common/constants/AppTheme';
 import { tr } from '../../core/utils/LocalizationUtil';
 
 export interface PageLayoutConfig {

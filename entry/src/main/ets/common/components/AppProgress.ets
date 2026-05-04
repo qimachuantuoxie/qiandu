@@ -3,9 +3,10 @@
  * 支持线性/环形进度、自定义颜色和无障碍访问
  */
 
-import { COMMON_COLORS } from '../../utils/AppTheme';
-import { MaterialProgressBar, MaterialModel } from '../feedback/MaterialProgressBar';
 import { COMMON_COLORS } from '../../common/constants/AppTheme';
+import { MaterialProgressBar, MaterialModel } from '../feedback/MaterialProgressBar';
+
+/**
  * AppProgress 组件属性
  * @value - 当前进度值
  * @max - 进度最大值

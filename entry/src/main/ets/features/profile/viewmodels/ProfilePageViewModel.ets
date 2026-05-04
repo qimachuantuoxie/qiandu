@@ -1,10 +1,10 @@
-﻿/**
+/**
  * ProfilePage ViewModel - V2閻楀牊婀?
  */
 import { loginStateManager, UserInfo } from '../services/auth/LoginStateManager';
 import { bookViewModel } from './BookViewModel';
-import { appTheme, themeManager, AppColors } from '../utils/AppTheme';
-import { fontScaleManager } from '../utils/FontScaleManager';
+import { appTheme, themeManager, AppColors } from '../../../common/constants/AppTheme';
+import { fontScaleManager } from '../../../common/utils/FontScaleManager';
 
 @ObservedV2
 export class ProfilePageViewModel {

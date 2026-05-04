@@ -13,7 +13,7 @@ import { logger } from '../../../utils/Logger';
 
 import { http } from '@kit.NetworkKit';
 import { common } from '@kit.AbilityKit';
-import { preferenceManager } from '../../utils/PreferenceManager';
+import { preferenceManager } from '../utils/PreferenceManager';
 import {
   BookSource,
   BookSourceType,
@@ -24,7 +24,7 @@ import {
   TocRule,
   generateSourceId,
   validateBookSource
-} from '../../models/BookSourceModel';
+} from '../models/BookSourceModel';
 
 interface ImportResult {
   success: number;

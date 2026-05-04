@@ -1,4 +1,4 @@
-﻿// 灏忚壓鏅鸿兘浣撴湇鍔?- 鍗庝负鏅烘収鍔╂墜闆嗘垚
+// 灏忚壓鏅鸿兘浣撴湇鍔?- 鍗庝负鏅烘収鍔╂墜闆嗘垚
 // Xiaoyi Agent Service - Huawei Smart Assistant Integration
 // 浣跨敤璇煶璇嗗埆鍜孉I鑳藉姏锛屾彁渚涙櫤鑳介槄璇昏緟鍔╁姛鑳?
 // 鏀寔璇煶鎸囦护鎺у埗銆丄I闂瓟銆侀槄璇绘帹鑽愮瓑
@@ -6,10 +6,10 @@
 
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { preferenceManager } from '../../utils/PreferenceManager';
+import { preferenceManager } from '../utils/PreferenceManager';
 import { ttsService } from './TTSService';
-import { BookInfo, Bookmark, Note } from '../../models/CoreBookModel';
-import { ReadStatus } from '../../models/BookModel';
+import { BookInfo, Bookmark, Note } from '../models/CoreBookModel';
+import { ReadStatus } from '../models/BookModel';
 
 // ===== Stub types for SpeechKit (TODO: Replace when SpeechKit is available) =====
 interface StubSpeechRecognitionResult {

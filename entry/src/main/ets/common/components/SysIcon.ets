@@ -5,8 +5,8 @@
  * @since 3.0.0
  */
 
-import { themeManager, AppColors } from '../../core/utils/AppTheme';
-import { fontScaleManager } from '../../core/utils/FontScaleManager';
+import { themeManager, AppColors } from '../../common/constants/AppTheme';
+import { fontScaleManager } from '../../common/utils/FontScaleManager';
 
 /**
  * 系统符号图标组件

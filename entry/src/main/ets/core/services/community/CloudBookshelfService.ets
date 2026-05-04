@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Local Backup Service - Cloud Bookshelf Sync
  * 浜戠涔︽灦鍚屾鏈嶅姟
  *
@@ -12,8 +12,8 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { fileIo } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
-import { preferenceManager } from '../../utils/PreferenceManager';
-import { BookInfo, Bookmark, Note, ReadRecord } from '../../models/CoreBookModel';
+import { preferenceManager } from '../utils/PreferenceManager';
+import { BookInfo, Bookmark, Note, ReadRecord } from '../models/CoreBookModel';
 
 const DOMAIN = 0xFF05;
 const BACKUP_DIR = '/data/storage/el2/base/backup/';

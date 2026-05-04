@@ -1,7 +1,7 @@
 import { logger } from '../../../utils/Logger';
 import { common } from '@kit.AbilityKit';
 import { fileIo } from '@kit.CoreFileKit';
-import { preferenceManager } from '../../utils/PreferenceManager';
+import { preferenceManager } from '../utils/PreferenceManager';
 
 interface ImageCacheItem {
   path: string;

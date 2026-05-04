@@ -5,7 +5,7 @@
  * @since 3.0.0
  */
 
-import { COMMON_COLORS } from '../../utils/AppTheme';
+import { COMMON_COLORS } from '../../common/constants/AppTheme';
 
 /**
  * AppToast 组件属性

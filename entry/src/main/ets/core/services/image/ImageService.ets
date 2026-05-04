@@ -1,6 +1,6 @@
 import { logger } from '../../../utils/Logger';
 import { fileIo } from '@kit.CoreFileKit';
-import { errorHandler, ErrorLevel } from '../../utils/ErrorHandler';
+import { errorHandler, ErrorLevel } from '../utils/ErrorHandler';
 
 export interface ImageInfoResult {
   width: number;

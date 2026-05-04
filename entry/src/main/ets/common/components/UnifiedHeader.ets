@@ -4,8 +4,8 @@
  * 支持返回按钮、标题、副标题、自定义操作和渐变背景
  */
 
-import { themeManager, AppColors } from '../../core/utils/AppTheme';
-import { fontScaleManager } from '../../core/utils/FontScaleManager';
+import { themeManager, AppColors } from '../../common/constants/AppTheme';
+import { fontScaleManager } from '../../common/utils/FontScaleManager';
 import { tr } from '../../core/utils/LocalizationUtil';
 import { responsiveLayoutUtil } from '../../core/utils/ResponsiveLayoutUtil';
 import { goBack } from '../utils/NavigationHelper';

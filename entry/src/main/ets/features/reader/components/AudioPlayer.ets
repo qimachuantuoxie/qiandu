@@ -5,7 +5,7 @@ import { logger } from '../../../common/utils/Logger';
  */
 
 import { audioPlayerService, AudioPlayState, AudioPlayProgress, AudioPlayConfig } from '../../services/audio/AudioPlayerService';
-import { COMMON_COLORS } from '../../utils/AppTheme';
+import { COMMON_COLORS } from '../../../common/constants/AppTheme';
 
 @Component
 export struct AudioPlayer {

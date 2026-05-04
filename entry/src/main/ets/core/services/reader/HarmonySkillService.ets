@@ -8,8 +8,8 @@ import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { wantAgent } from '@kit.AbilityKit';
-import { preferenceManager } from '../../utils/PreferenceManager';
-import { BookInfo } from '../../models/CoreBookModel';
+import { preferenceManager } from '../utils/PreferenceManager';
+import { BookInfo } from '../models/CoreBookModel';
 
 const DOMAIN = 0xFF09;
 

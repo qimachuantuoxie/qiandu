@@ -9,7 +9,7 @@ import { logger } from '../../utils/Logger';
  * @since 4.0.0
  */
 
-import { displayHelper, FoldStatus, ScreenType } from '../utils/DisplayHelper';
+import { displayHelper, FoldStatus, ScreenType } from './DisplayHelper';
 import { window, display } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 

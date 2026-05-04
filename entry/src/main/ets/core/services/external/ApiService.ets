@@ -4,8 +4,8 @@ import { logger } from '../../../utils/Logger';
  * 鎷︽埅鍣ㄣ€乀oken 娉ㄥ叆銆侀噸璇曟満鍒躲€佸皝瑁?
  */
 import { http } from '@kit.NetworkKit';
-import { preferenceManager } from '../../utils/PreferenceManager';
-import { errorHandler, ErrorLevel } from '../../utils/ErrorHandler';
+import { preferenceManager } from '../utils/PreferenceManager';
+import { errorHandler, ErrorLevel } from '../utils/ErrorHandler';
 
 export interface ApiResponse<T> {
   code: number;

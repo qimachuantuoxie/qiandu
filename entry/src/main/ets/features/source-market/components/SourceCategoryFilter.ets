@@ -1,7 +1,7 @@
 // 涔︽簮鍒嗙被绛涢€夊櫒缁勪欢
 import { BookSourceType } from '../../../core/models/source/BookSourceModel';
 import { bookSourceViewModel, SourceFilterState, DEFAULT_FILTER_STATE } from '../../viewmodels/BookSourceViewModel';
-import { COMMON_COLORS } from '../../utils/AppTheme';
+import { COMMON_COLORS } from '../../../common/constants/AppTheme';
 
 // 绛涢€夌被鍨嬫灇涓?enum EnabledStatusFilter {
   ALL = 'all',

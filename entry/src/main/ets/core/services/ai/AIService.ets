@@ -5,7 +5,7 @@ import { logger } from '../../../utils/Logger';
 // 閫傜敤浜庨槄璇诲簲鐢ㄧ殑AI杈呭姪鍔熻兘
 
 import { http } from '@kit.NetworkKit';
-import { errorHandler, ErrorLevel } from '../../utils/ErrorHandler';
+import { errorHandler, ErrorLevel } from '../utils/ErrorHandler';
 
 /**
  * AI 寮曟搸绫诲瀷

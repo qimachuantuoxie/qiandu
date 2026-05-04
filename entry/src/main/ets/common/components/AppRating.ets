@@ -3,7 +3,7 @@
  * 支持自定义星级、只读模式和无障碍访问
  */
 
-import { COMMON_COLORS } from '../../utils/AppTheme';
+import { COMMON_COLORS } from '../../common/constants/AppTheme';
 
 /**
  * AppRating 组件属性

@@ -3,9 +3,9 @@ import { logger } from '../../../utils/Logger';
 // 鏀�寔闃呰�3.0 (Legado) 涔︽簮鏍煎紡鐨勫�鍏ャ€佹悳绱㈠拰娴嬭瘯
 // 鎻愪緵鍦ㄧ嚎涔︽簮绠＄悊鍜屼功绫嶅唴瀹硅幏鍙栧姛鑳?
 import { http } from '@kit.NetworkKit';
-import { BookSource, BookSourceType, SearchRule, ContentRule } from '../../models/BookSourceModel';
-import { BookSourceImporter, LegadoBookSource } from '../../utils/BookSourceImporter';
-import { errorHandler, ErrorLevel } from '../../utils/ErrorHandler';
+import { BookSource, BookSourceType, SearchRule, ContentRule } from '../models/BookSourceModel';
+import { BookSourceImporter, LegadoBookSource } from '../utils/BookSourceImporter';
+import { errorHandler, ErrorLevel } from '../utils/ErrorHandler';
 
 /**
  * 缃戠粶涔︽簮鎼滅储缁撴灉
