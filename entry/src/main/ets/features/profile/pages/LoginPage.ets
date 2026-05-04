@@ -7,6 +7,7 @@ import { themeManager, AppColors, COMMON_COLORS } from '../../../core/utils/AppT
 import { fontScaleManager } from '../../../core/utils/FontScaleManager';
 import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
+import { loginViewModel } from '../viewmodels/LoginViewModel';
 
 @Entry
 @ComponentV2
@@ -26,6 +27,10 @@ struct LoginPage {
     this.isDarkMode = themeManager.isDarkMode();
     this.currentColors = themeManager.getColors();
     this.fontScale = await fontScaleManager.getFontScale();
+    
+    // 初始化ViewModel
+    loginViewModel.init();
+    
     await this.initData();
   }
 
@@ -45,6 +50,9 @@ struct LoginPage {
     return this.isDarkMode ? dark : light;
   }
 
+  /**
+   * 处理用户名密码登录
+   */
   private async handleLogin(): Promise<void> {
     if (!this.username || !this.password) {
       promptAction.showToast({ message: '请输入用户名和密码', duration: 2000 });
@@ -53,25 +61,73 @@ struct LoginPage {
 
     this.isLoading = true;
     
-    // 模拟登录请求
-    setTimeout(() => {
-      this.isLoading = false;
-      promptAction.showToast({ message: '登录成功', duration: 1500 });
+    try {
+      const success = await loginViewModel.login();
       
-      if (this.rememberPassword) {
-        preferenceManager.save('username', this.username);
-        preferenceManager.save('password', this.password);
-      }
-      
-      setTimeout(() => {
-        try {
-          goBack();
-        } catch (error) {
-          const msg = error instanceof Error ? error.message : String(error);
-          logger.error('[LoginPage] back failed:', msg);
+      if (success) {
+        promptAction.showToast({ message: '登录成功', duration: 1500 });
+        
+        if (this.rememberPassword) {
+          preferenceManager.save('username', this.username);
+          preferenceManager.save('password', this.password);
         }
-      }, 1000);
-    }, 1500);
+        
+        setTimeout(() => {
+          try {
+            goBack();
+          } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            logger.error('[LoginPage] back failed:', msg);
+          }
+        }, 1000);
+      } else {
+        promptAction.showToast({ 
+          message: loginViewModel.errorMsg || '登录失败', 
+          duration: 2000 
+        });
+      }
+    } catch (error) {
+      const err = error as Error;
+      logger.error('[LoginPage] Login failed:', err.message);
+      promptAction.showToast({ message: '登录失败，请重试', duration: 2000 });
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  /**
+   * 处理华为账号登录
+   */
+  private async handleHuaweiLogin(): Promise<void> {
+    this.isLoading = true;
+    
+    try {
+      const success = await loginViewModel.loginWithHuawei();
+      
+      if (success) {
+        promptAction.showToast({ message: '华为账号登录成功', duration: 1500 });
+        
+        setTimeout(() => {
+          try {
+            goBack();
+          } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            logger.error('[LoginPage] back failed:', msg);
+          }
+        }, 1000);
+      } else {
+        promptAction.showToast({ 
+          message: loginViewModel.errorMsg || '华为登录失败', 
+          duration: 2000 
+        });
+      }
+    } catch (error) {
+      const err = error as Error;
+      logger.error('[LoginPage] Huawei login failed:', err.message);
+      promptAction.showToast({ message: '华为登录失败，请重试', duration: 2000 });
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   build() {
@@ -92,9 +148,10 @@ struct LoginPage {
         // 返回按钮
         Row() {
           Row() {
-            SymbolGlyph($r('sys.symbol.chevron.left'))
-              .fontSize(Size.iconLG)
-              .fontColor(['#FFFFFF'])
+            Text('<')
+              .fontSize(24)
+              .fontColor('#FFFFFF')
+              .fontWeight(FontWeight.Bold)
           }
           .width(Size.buttonMD)
           .height(Size.buttonMD)
@@ -125,9 +182,8 @@ struct LoginPage {
           // Logo和标题
           Column({ space: Spacing.md }) {
             Column() {
-              SymbolGlyph($r('sys.symbol.book.fill'))
-                .fontSize(Size.iconXXXL * 1.5)
-                .fontColor(['#FFFFFF'])
+              Text('📚')
+                .fontSize(48)
             }
             .width(80)
             .height(80)
@@ -150,9 +206,8 @@ struct LoginPage {
             // 用户名输入框
             Column({ space: Spacing.sm }) {
               Row({ space: Spacing.md }) {
-                SymbolGlyph($r('sys.symbol.person.fill'))
-                  .fontSize(Size.iconMD)
-                  .fontColor([this.tc('#8E8E93', '#C7C7CC')])
+                Text('👤')
+                  .fontSize(20)
                 
                 TextInput({ placeholder: '用户名/邮箱', text: $$this.username })
                   .placeholderColor(this.tc('#8E8E93', '#C7C7CC'))
@@ -170,9 +225,8 @@ struct LoginPage {
             // 密码输入框
             Column({ space: Spacing.sm }) {
               Row({ space: Spacing.md }) {
-                SymbolGlyph($r('sys.symbol.lock.fill'))
-                  .fontSize(Size.iconMD)
-                  .fontColor([this.tc('#8E8E93', '#C7C7CC')])
+                Text('🔒')
+                  .fontSize(20)
                 
                 TextInput({ placeholder: '密码', text: $$this.password })
                   .placeholderColor(this.tc('#8E8E93', '#C7C7CC'))
@@ -209,9 +263,9 @@ struct LoginPage {
                   .color('#FFFFFF')
               } else {
                 Row({ space: Spacing.sm }) {
-                  SymbolGlyph($r('sys.symbol.arrow.right'))
-                    .fontSize(Size.iconMD)
-                    .fontColor(['#FFFFFF'])
+                  Text('→')
+                    .fontSize(20)
+                    .fontColor('#FFFFFF')
                   
                   Text('登录')
                     .fontSize(fontScaleManager.getScaledFontSize(16))
@@ -239,6 +293,33 @@ struct LoginPage {
               normal: { .scale({ x: 1, y: 1 }) }
             })
 
+            // 华为账号登录按钮
+            Button() {
+              Row({ space: Spacing.sm }) {
+                Text('📱')
+                  .fontSize(20)
+                
+                Text('华为账号登录')
+                  .fontSize(fontScaleManager.getScaledFontSize(16))
+                  .fontWeight(FontWeight.SemiBold)
+                  .fontColor('#FFFFFF')
+              }
+            }
+            .width('100%')
+            .height(Size.buttonLG + Spacing.sm)
+            .backgroundColor('rgba(255,255,255,0.2)')
+            .borderRadius(BorderRadius.xl)
+            .enabled(!this.isLoading)
+            .onClick(() => {
+              if (!this.isLoading) {
+                this.handleHuaweiLogin();
+              }
+            })
+            .stateStyles({
+              pressed: { .scale({ x: 0.98, y: 0.98 }) },
+              normal: { .scale({ x: 1, y: 1 }) }
+            })
+
             // 其他操作
             Row({ space: Spacing.lg }) {
               Text('忘记密码?')
@@ -258,6 +339,42 @@ struct LoginPage {
             }
             .width('100%')
             .justifyContent(FlexAlign.SpaceBetween)
+
+            // 隐私政策和用户协议
+            Row({ space: Spacing.md }) {
+              Text('隐私政策')
+                .fontSize(fontScaleManager.getScaledFontSize(12))
+                .fontColor('rgba(255,255,255,0.7)')
+                .decoration({ type: TextDecorationType.Underline })
+                .onClick(() => {
+                  try {
+                    navigateTo('pages/PrivacyPolicyPage');
+                  } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    logger.error('[LoginPage] Navigate to PrivacyPolicy failed:', msg);
+                  }
+                })
+
+              Text('|')
+                .fontSize(fontScaleManager.getScaledFontSize(12))
+                .fontColor('rgba(255,255,255,0.5)')
+
+              Text('用户协议')
+                .fontSize(fontScaleManager.getScaledFontSize(12))
+                .fontColor('rgba(255,255,255,0.7)')
+                .decoration({ type: TextDecorationType.Underline })
+                .onClick(() => {
+                  try {
+                    navigateTo('pages/UserAgreementPage');
+                  } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    logger.error('[LoginPage] Navigate to UserAgreement failed:', msg);
+                  }
+                })
+            }
+            .width('100%')
+            .justifyContent(FlexAlign.Center)
+            .padding({ top: Spacing.sm })
           }
           .width('100%')
         }

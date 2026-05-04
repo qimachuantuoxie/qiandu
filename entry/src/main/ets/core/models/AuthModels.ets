@@ -1,22 +1,22 @@
-﻿// 閸楀簼璐熺拹锕€褰块惂璇茬秿濡€崇€?
+// 华为账号登录模型
 // Huawei Account Login Models
 
 /**
- * 閻劍鍩涙穱鈩冧紖閹恒儱褰?
+ * 用户信息接口
  */
 export interface UserInfo {
-  userId: string;           // 閻劍鍩?ID
-  displayName?: string;     // 閺勫墽銇氶崥宥囆?
-  avatarUri?: string;       // 婢舵潙鍎?URI
-  accessToken: string;      // 鐠佸潡妫舵禒銈囧
-  refreshToken?: string;    // 閸掗攱鏌婃禒銈囧
-  expiresInMillis: number;  // 鏉╁洦婀￠弮鍫曟？閿涘牊顕犵粔鎺炵礆
-  loginType: LoginType;     // 閻ц缍嶇猾璇茬€?
-  loginTime: number;        // 閻ц缍嶉弮鍫曟？閹?
+  userId: string;           // 用户ID
+  displayName?: string;     // 显示名称
+  avatarUri?: string;       // 头像URI
+  accessToken: string;      // 访问令牌
+  refreshToken?: string;    // 刷新令牌
+  expiresInMillis: number;  // 过期时间戳
+  loginType: LoginType;     // 登录类型
+  loginTime: number;        // 登录时间戳
 }
 
 /**
- * 閻ц缍嶇猾璇茬€烽弸姘
+ * 登录类型枚举
  */
 export enum LoginType {
   HUAWEI = 'huawei',
@@ -24,7 +24,7 @@ export enum LoginType {
 }
 
 /**
- * 閻ц缍嶉悩鑸碘偓浣圭亣娑?
+ * 登录状态枚举
  */
 export enum LoginStatus {
   NOT_LOGGED = 'not_logged',
@@ -34,7 +34,7 @@ export enum LoginStatus {
 }
 
 /**
- * 閹哄牊娼堥崫宥呯安閹恒儱褰涢敍鍫濆磿娑撻缚澶勯崣鍑ょ礆
+ * 认证结果接口（包含授权码和用户数据）
  */
 export interface AuthResult {
   authCode: string;
@@ -48,7 +48,7 @@ export interface UserData {
 }
 
 /**
- * 閻ц缍嶉柊宥囩枂
+ * 登录配置
  */
 export interface LoginConfig {
   appId: string;
@@ -63,14 +63,14 @@ export const HUAWEI_LOGIN_CONFIG: LoginConfig = {
 };
 
 /**
- * 閻㈢喐鍨氬〒绋款吂閻劍鍩?ID
+ * 生成访客用户ID
  */
 export function generateGuestId(): string {
   return 'guest_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
 }
 
 /**
- * 閺嶇厧绱￠崠鏍箖閺堢喐妞傞梻?
+ * 格式化过期时间显示
  */
 export function formatExpiresTime(expiresInMillis: number): string {
   const date = new Date(Date.now() + expiresInMillis);

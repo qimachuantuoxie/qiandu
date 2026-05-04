@@ -1,13 +1,13 @@
 import { logger } from '../../../utils/Logger';
 /**
- * 鐧诲綍鐘舵€佺�鐞嗘湇鍔?
+ * 登录状态管理服务
  * Login State Management Service
  */
 
 import { preferenceManager } from '../utils/PreferenceManager';
 
 /**
- * 鐢ㄦ埛淇℃伅鎺ュ彛
+ * 用户信息接口
  */
 export interface UserInfo {
   userId: string;
@@ -19,7 +19,7 @@ export interface UserInfo {
 }
 
 /**
- * 鐧诲綍鐘舵€佺�鐞嗗櫒
+ * 登录状态管理器
  */
 class LoginStateManager {
   private static instance: LoginStateManager;
@@ -27,7 +27,7 @@ class LoginStateManager {
   private listeners: Array<(isLoggedIn: boolean) => void> = [];
 
   /**
-   * 鍒濆�鍖栫櫥褰曠姸鎬?
+   * 初始化登录状态
    */
   init(): void {
     try {
@@ -58,7 +58,7 @@ class LoginStateManager {
   }
 
   /**
-   * 閼惧嘲褰囬崡鏇氱伐鐎圭偘绶?
+   * 获取单例实例
    */
   static getInstance(): LoginStateManager {
     if (!LoginStateManager.instance) {
@@ -68,26 +68,26 @@ class LoginStateManager {
   }
 
   /**
-   * 妫€鏌ユ槸鍚﹀凡鐧诲綍
+   * 检查是否已登录
    */
   isLoggedIn(): boolean {
     return this.currentUser !== null;
   }
 
   /**
-   * 鑾峰彇褰撳墠鐢ㄦ埛淇℃伅
+   * 获取当前用户信息
    */
   getCurrentUser(): UserInfo | null {
     return this.currentUser;
   }
 
   /**
-   * 鐧诲綍鎴愬姛
+   * 登录成功
    */
   loginSuccess(userInfo: UserInfo): void {
     this.currentUser = userInfo;
 
-    // 淇濆瓨鍒版湰鍦板瓨鍌?
+    // 保存到本地存储
     preferenceManager.setString('isLoggedIn', 'true');
     preferenceManager.setString('userId', userInfo.userId);
     preferenceManager.setString('username', userInfo.username);
@@ -97,17 +97,17 @@ class LoginStateManager {
       preferenceManager.setString('token', userInfo.token);
     }
 
-    // 闁�氨鐓￠惄鎴濇儔閸?
+    // 通知监听器
     this.notifyListeners(true);
   }
 
   /**
-   * 闁�偓閸戣櫣娅ヨぐ?
+   * 退出登录
    */
   logout(): void {
     this.currentUser = null;
 
-    // 濞撳懘娅庨張顒€婀寸€涙ê鍋?
+    // 清除本地存储
     preferenceManager.setString('isLoggedIn', 'false');
     preferenceManager.setString('userId', '');
     preferenceManager.setString('username', '');
@@ -115,12 +115,12 @@ class LoginStateManager {
     preferenceManager.setNumber('loginTime', 0);
     preferenceManager.setString('token', '');
 
-    // 闁�氨鐓￠惄鎴濇儔閸?
+    // 通知监听器
     this.notifyListeners(false);
   }
 
   /**
-   * 閺囧瓨鏌婇悽銊﹀煕娣団剝浼?
+   * 更新用户信息
    */
   updateUserInfo(userInfo: Partial<UserInfo>): void {
     if (this.currentUser) {
@@ -143,7 +143,7 @@ class LoginStateManager {
         this.currentUser.token = userInfo.token;
       }
 
-      // 閺囧瓨鏌婇張顒€婀寸€涙ê鍋?
+      // 更新本地存储
       if (userInfo.nickname !== undefined) {
         preferenceManager.setString('nickname', userInfo.nickname);
       }
@@ -157,14 +157,14 @@ class LoginStateManager {
   }
 
   /**
-   * 濞ｈ�濮為惄鎴濇儔閸?
+   * 添加状态监听器
    */
   addListener(listener: (isLoggedIn: boolean) => void): () => void {
     const newListeners = this.listeners.slice();
     newListeners.push(listener);
     this.listeners = newListeners;
 
-    // 鏉╂柨娲栭崣鏍ㄧХ鐠併垽妲勯崙鑺ユ殶
+    // 返回取消订阅函数
     return (): void => {
       const index = this.listeners.indexOf(listener);
       if (index > -1) {
@@ -176,7 +176,7 @@ class LoginStateManager {
   }
 
   /**
-   * 閫氱煡鎵€鏈夌洃鍚�櫒
+   * 通知所有监听器
    */
   private notifyListeners(isLoggedIn: boolean): void {
     this.listeners.forEach((listener: (isLoggedIn: boolean) => void): void => {
@@ -190,7 +190,7 @@ class LoginStateManager {
   }
 
   /**
-   * 鑾峰彇鐧诲綍鏃堕棿
+   * 获取登录时间
    */
   getLoginTime(): number {
     if (this.currentUser === undefined || this.currentUser === null) {
@@ -203,7 +203,7 @@ class LoginStateManager {
   }
 
   /**
-   * 妫€鏌ョ櫥褰曟槸鍚﹁繃鏈燂紙30澶╋級
+   * 检查登录是否过期（30天）
    */
   isLoginExpired(): boolean {
     if (!this.currentUser) {
@@ -215,7 +215,7 @@ class LoginStateManager {
   }
 
   /**
-   * 鍒锋柊鐧诲綍鏃堕棿
+   * 刷新登录时间
    */
   refreshLoginTime(): void {
     if (this.currentUser) {
@@ -225,6 +225,6 @@ class LoginStateManager {
   }
 }
 
-// 瀵煎嚭鍗曚緥
+// 导出单例
 export const loginStateManager = LoginStateManager.getInstance();
 export default loginStateManager;

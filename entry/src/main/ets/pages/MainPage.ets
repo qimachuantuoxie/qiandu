@@ -1,8 +1,8 @@
 ﻿import { toast, navigateTo, goBack, navHelper } from '../common';
 import { NavPathStack } from '@kit.ArkUI';
 import { picker } from '@kit.CoreFileKit';
-import { BookInfo, BookFormat, ReadStatus, generateBookId } models/CoreBookModel';
-import { bookViewModel } viewmodels/BookViewModel';
+import { BookInfo, BookFormat, ReadStatus, generateBookId } from '../core/models/CoreBookModel';
+import { bookViewModel } from '../core/viewmodels/BookViewModel';
 import { mainPageViewModel, MainPageViewModel } from '../features/home/viewmodels/MainPageViewModel';
 import { HomeContent } from '../features/home/components/HomePage';
 import { DiscoverContent } from '../features/discover/components/DiscoverPage';
@@ -15,8 +15,8 @@ import { promptAction } from '@kit.ArkUI';
 import { Context } from '@kit.AbilityKit';
 import { Spacing, Size, BorderRadius, getShadow } from '../common/constants/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
-import { appTheme, themeManager, COMMON_COLORS, AppColors } utils/AppTheme';
-import { fontScaleManager } utils/FontScaleManager';
+import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../common/constants/AppTheme';
+import { fontScaleManager } from '../core/utils/FontScaleManager';
 
 type ImportResult = 'success' | 'failed' | 'skipped';
 

@@ -1,12 +1,12 @@
 import { logger } from '../../../utils/Logger';
 /**
- * Legado Book Source Market Service - 妤﹁儻鎸嬮悧鍫滃姛濠ф劕绔堕崷鐑樻箛閸?
+ * Legado Book Source Market Service - 书源市场服务
  *
- * 閸旂喕鍏橀敍?
- * - 閸︺劎鍤庢稊锔界爱鐢�倸婧€濞村繗顫? * - 娑旓附绨�崚鍡欒�閸滃本鎮崇槐?
- * - 娑旓附绨�稉瀣�祰閸滃苯顕遍崗?
- * - 娑旓附绨�拠鍕�瀻閸滃本甯撶悰?
- * - 娑旓附绨�崚鍡曢煩閸滃苯顕遍崙?
+ * 功能说明：
+ * - 获取书源市场列表和详情
+ * - 预览和下载书源包
+ * - 导入和导出书源
+ * - 测试书源可用性
  *
  * @since 5.1.0
  */
@@ -38,19 +38,7 @@ interface ParseResult {
   sources: BookSource[];
 }
 
-interface TestSourceResult {
-  success: boolean;
-  responseTime: number;
-  searchResultCount: number;
-  error?: string;
-}
 
-interface TestSourceBatchResult {
-  total: number;
-  success: number;
-  failed: number;
-  averageResponseTime: number;
-}
 
 export interface QueryParams {
   category?: SourceMarketCategory;
@@ -61,7 +49,7 @@ export interface QueryParams {
 }
 
 /**
- * Legado鐟欏嫬鍨�€涙�顔岀猾璇茬€烽敍鍫㈡暏娴滃骸顕遍崙鐚寸礆
+ * Legado规则字段定义
  */
 export interface LegadoRuleFields {
   bookSourceName?: string;
@@ -75,127 +63,129 @@ export interface LegadoRuleFields {
 }
 
 /**
- * 娑旓附绨�敮鍌氭簚閸掑棛琚? */
+ * 书源市场分类
+ */
 export enum SourceMarketCategory {
-  /** 閸忋劑鍎?*/
+  /** 全部 */
   ALL = 'all',
-  /** 缁�儳鎼ч幒銊ㄥ礃 */
+  /** 精选推荐 */
   FEATURED = 'featured',
-  /** 閻㈢兘顣?*/
+  /** 男频 */
   MALE = 'male',
-  /** 婵傛娊顣?*/
+  /** 女频 */
   FEMALE = 'female',
-  /** 濠曨偆鏁?*/
+  /** 漫画 */
   COMIC = 'comic',
-  /** 闂婃娊顣?*/
+  /** 音频 */
   AUDIO = 'audio',
-  /** 閼辨艾鎮?*/
+  /** 聚合 */
   AGGREGATE = 'aggregate'
 }
 
 /**
- * 娑旓附绨�敮鍌氭簚閹烘帒绨? */
+ * 书源市场排序
+ */
 export enum SourceMarketSort {
-  /** 閹恒劏宕橀幒鎺戠碍 */
+  /** 推荐排序 */
   RECOMMENDED = 'recommended',
-  /** 娑撳�娴囬柌?*/
+  /** 下载量 */
   DOWNLOADS = 'downloads',
-  /** 鐠囧嫬鍨?*/
+  /** 评分 */
   RATING = 'rating',
-  /** 閺囧瓨鏌婇弮鍫曟？ */
+  /** 更新时间 */
   UPDATE_TIME = 'update_time',
-  /** 娑旓附绨�弫浼村櫤 */
+  /** 书源数量 */
   SOURCE_COUNT = 'source_count'
 }
 
 /**
- * 娑旓附绨�敮鍌氭簚妞?
+ * 书源市场项
  */
 export interface SourceMarketItem {
-  /** 鐢�倸婧€ID */
+  /** 书源ID */
   marketId: string;
-  /** 娑旓附绨�崠鍛�倳缁?*/
+  /** 书源包名称 */
   name: string;
-  /** 閹诲繗鍫?*/
+  /** 描述 */
   description: string;
-  /** 娴ｆ粏鈧?*/
+  /** 作者 */
   author: string;
-  /** 閸掑棛琚?*/
+  /** 分类 */
   category: SourceMarketCategory;
-  /** 娑旓附绨�弫浼村櫤 */
+  /** 书源数量 */
   sourceCount: number;
-  /** 娑撳�娴囬柌?*/
+  /** 下载量 */
   downloads: number;
-  /** 鐠囧嫬鍨?*/
+  /** 评分 */
   rating: number;
-  /** 鐠囧嫬鍨庢禍鐑樻殶 */
+  /** 评分人数 */
   ratingCount: number;
-  /** 閸ョ偓鐖�RL */
+  /** 图标URL */
   iconUrl: string;
-  /** 娑旓附绨甁SON URL */
+  /** 书源JSON URL */
   sourceUrl: string;
-  /** 鐠囷附鍎忔い绀�L */
+  /** 详情页URL */
   detailUrl?: string;
-  /** 閺嶅洨顒?*/
+  /** 标签 */
   tags: string[];
-  /** 閺勵垰鎯佺€规ɑ鏌?*/
+  /** 是否官方 */
   isOfficial: boolean;
-  /** 閺囧瓨鏌婇弮鍫曟？ */
+  /** 更新时间 */
   updateTime: number;
-  /** 閸掓稑缂撻弮鍫曟？ */
+  /** 创建时间 */
   createTime: number;
-  /** 閺勵垰鎯佸�韫�瑓鏉?*/
+  /** 是否已下载 */
   isDownloaded: boolean;
-  /** 閺勵垰鎯侀棁鈧�憰涔侷P */
+  /** 是否需要VIP */
   requiresVip: boolean;
-  /** 妫板嫯顫嶆稊锔界爱閸掓�銆?*/
+  /** 预览书源列表 */
   previewSources?: string[];
 }
 
 /**
- * 娑旓附绨�敮鍌氭簚缁涙盯鈧��娼�禒?
+ * 书源市场查询过滤条件
  */
 export interface MarketFilter {
-  /** 閸掑棛琚?*/
+  /** 分类 */
   category?: SourceMarketCategory;
-  /** 閺嶅洨顒?*/
+  /** 标签 */
   tag?: string;
-  /** 閺勵垰鎯佺€规ɑ鏌?*/
+  /** 是否官方 */
   isOfficial?: boolean;
-  /** 閺勵垰鎯侀棁鈧�憰涔侷P */
+  /** 是否需要VIP */
   requiresVip?: boolean;
 }
 
 /**
- * 娑旓附绨�敮鍌氭簚閺屻儴顕楃紒鎾寸亯
+ * 书源市场查询结果
  */
 export interface MarketQueryResult {
-  /** 閹�粯鏆?*/
+  /** 总数 */
   total: number;
-  /** 瑜版挸澧犳い?*/
+  /** 当前页 */
   page: number;
-  /** 濮ｅ繘銆夐弫浼村櫤 */
+  /** 每页数量 */
   pageSize: number;
-  /** 閺佺増宓侀崚妤勩€?*/
+  /** 数据列表 */
   items: SourceMarketItem[];
 }
 
 /**
- * 妫板嫯顫嶉崫宥呯安
+ * 预览响应
  */
 interface PreviewResponse {
   sources: BookSource[];
 }
 
 /**
- * 娑撳�娴囬崫宥呯安
+ * 下载响应
  */
 interface DownloadResponse {
   sources: LegadoSourceRaw[];
 }
 
 /**
- * Legado鐎电厧鍤�┃鎰�壐瀵?
+ * Legado书源导出格式
  */
 interface LegadoSourceExport {
   bookSourceName: string;
@@ -220,7 +210,7 @@ export interface SourceStats {
 }
 
 /**
- * Legado 閸樼喎顫愭稊锔界爱閺嶇厧绱￠敍鍦漇ON閿?
+ * Legado 原始书源JSON格式
  */
 export interface LegadoSourceRaw {
   bookSourceName?: string;
@@ -238,35 +228,37 @@ export interface LegadoSourceRaw {
 }
 
 /**
- * 缂傛挸鐡ㄩ弫鐗堝祦閹恒儱褰? */
+ * 缓存数据结构
+ */
 interface CacheData<T> {
   data: T;
   time: number;
 }
 
 /**
- * 娑旓附绨�敮鍌氭簚閺堝秴濮熺猾?
+ * 书源市场服务类
  */
 class LegadoSourceMarketService {
-  /** 閸楁洑绶ョ€圭偘绶?*/
+  /** 单例实例 */
   private static instance: LegadoSourceMarketService;
 
-  /** 娑撳﹣绗呴弬?*/
+  /** 上下文 */
   private context: common.Context | null = null;
 
-  /** API閸╄櫣顢匲RL */
+  /** API基础URL */
   private baseUrl: string = 'https://api.legado-market.com';
 
-  /** 缂傛挸鐡?*/
+  /** 缓存 */
   private cache: Map<string, CacheData<object>> = new Map();
 
-  /** 缂傛挸鐡ㄩ張澶嬫櫏閺堢噦绱?閸掑棝鎸撻敍?*/
+  /** 缓存过期时间（毫秒） */
   private cacheTTL: number = 5 * 60 * 1000;
 
   private constructor() {}
 
   /**
-   * 閼惧嘲褰囬崡鏇氱伐鐎圭偘绶?   */
+   * 获取单例实例
+   */
   static getInstance(): LegadoSourceMarketService {
     if (!LegadoSourceMarketService.instance) {
       LegadoSourceMarketService.instance = new LegadoSourceMarketService();
@@ -275,7 +267,7 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 閸掓繂顫愰崠鏍ㄦ箛閸?
+   * 初始化服务
    */
   async init(context: common.Context, baseUrl?: string): Promise<boolean> {
     try {
@@ -293,16 +285,16 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 濡�偓閺屻儲婀囬崝鈩冩Ц閸氾箑姘ㄧ紒?
+   * 检查服务是否就绪
    */
   isReady(): boolean {
     return this.context !== null;
   }
 
-  // ==================== 娑旓附绨�敮鍌氭簚濞村繗顫?====================
+  // ==================== 书源市场查询 ====================
 
   /**
-   * 閼惧嘲褰囬幒銊ㄥ礃娑旓附绨�崠?
+   * 获取精选书源
    */
   async getFeaturedSources(page: number = 1, pageSize: number = 20): Promise<MarketQueryResult> {
     try {
@@ -321,7 +313,7 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 閼惧嘲褰囬悜顓㈡，娑旓附绨�崠鍜冪礄閹稿�绗呮潪浠嬪櫤閿?
+   * 获取热门书源（按下载量排序）
    */
   async getPopularSources(page: number = 1, pageSize: number = 20): Promise<MarketQueryResult> {
     try {
@@ -337,7 +329,7 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 閼惧嘲褰囨�妯跨槑閸掑棔鍔熷┃鎰�瘶
+   * 获取高评分书源
    */
   async getTopRatedSources(page: number = 1, pageSize: number = 20): Promise<MarketQueryResult> {
     try {
@@ -353,7 +345,7 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 閺嶈�宓侀崚鍡欒�閼惧嘲褰囨稊锔界爱閸?
+   * 按分类获取书源
    */
   async getSourcesByCategory(
     category: SourceMarketCategory,
@@ -373,7 +365,7 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 閹兼粎鍌ㄦ稊锔界爱閸?
+   * 搜索书源
    */
   async searchSources(
     keyword: string,
@@ -389,7 +381,8 @@ class LegadoSourceMarketService {
         return cached;
       }
 
-      // TODO: 閺囨寧宕叉稉铏规埂鐎规咖PI閸︽澘娼?      const url = this.baseUrl + '/api/market/search?keyword=' + encodeURIComponent(keyword) + '&page=' + page + '&pageSize=' + pageSize;
+      // TODO: 实现实际的API调用
+      const url = this.baseUrl + '/api/market/search?keyword=' + encodeURIComponent(keyword) + '&page=' + page + '&pageSize=' + pageSize;
 
       const result = await this.httpGet<MarketQueryResult>(url);
 
@@ -405,7 +398,7 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 閺屻儴顕楁稊锔界爱閸栧拑绱欓柅姘辨暏閿?
+   * 通用查询书源
    */
   async querySources(params: QueryParams): Promise<MarketQueryResult> {
     try {
@@ -421,7 +414,8 @@ class LegadoSourceMarketService {
         return cached;
       }
 
-      // 閺嬪嫬缂撻弻銉�嚄閸欏倹鏆?      let queryParams = '';
+      // 构建查询参数
+      let queryParams = '';
       if (category) queryParams += `&category=${category}`;
       if (sort) queryParams += `&sort=${sort}`;
       queryParams += `&page=${page}&pageSize=${pageSize}`;
@@ -435,7 +429,8 @@ class LegadoSourceMarketService {
         }
       }
 
-      // TODO: 閺囨寧宕叉稉铏规埂鐎规咖PI閸︽澘娼?      const url = `${this.baseUrl}/api/market/sources?${queryParams}`;
+      // TODO: 实现实际的API调用
+      const url = `${this.baseUrl}/api/market/sources?${queryParams}`;
 
       const result = await this.httpGet<MarketQueryResult>(url);
 
@@ -450,10 +445,10 @@ class LegadoSourceMarketService {
     }
   }
 
-  // ==================== 娑旓附绨�崠鍛邦嚊閹?====================
+  // ==================== 书源包详情 ====================
 
   /**
-   * 閼惧嘲褰囨稊锔界爱閸栧懓顕涢幆?
+   * 获取书源包详情
    */
   async getSourceMarketDetail(marketId: string): Promise<SourceMarketItem | null> {
     try {
@@ -463,7 +458,8 @@ class LegadoSourceMarketService {
         return cached;
       }
 
-      // TODO: 閺囨寧宕叉稉铏规埂鐎规咖PI閸︽澘娼?      const url = `${this.baseUrl}/api/market/sources/${marketId}`;
+      // TODO: 实现实际的API调用
+      const url = `${this.baseUrl}/api/market/sources/${marketId}`;
 
       const result = await this.httpGet<SourceMarketItem>(url);
 
@@ -479,16 +475,18 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 妫板嫯顫嶆稊锔界爱閸栧懎鍞寸€?
+   * 预览书源包内容
    */
   async previewSourcePackage(marketId: string): Promise<BookSource[] | null> {
     try {
-      // TODO: 閺囨寧宕叉稉铏规埂鐎规咖PI閸︽澘娼?      const url = `${this.baseUrl}/api/market/sources/${marketId}/preview`;
+      // TODO: 实现实际的API调用
+      const url = `${this.baseUrl}/api/market/sources/${marketId}/preview`;
 
       const response = await this.httpGet<PreviewResponse>(url);
 
       if (response && response.sources) {
-        // 閻╁瓨甯存潻鏂挎礀BookSource閺佹壆绮?        return response.sources;
+        // 直接返回BookSource格式
+        return response.sources;
       }
 
       return null;
@@ -498,24 +496,26 @@ class LegadoSourceMarketService {
     }
   }
 
-  // ==================== 娑撳�娴囬崪灞筋嚤閸?====================
+  // ==================== 下载与导入 ====================
 
   /**
-   * 娑撳�娴囨稊锔界爱閸?
+   * 下载书源包
    */
   async downloadSourcePackage(marketId: string): Promise<BookSource[] | null> {
     try {
       logger.info('[SourceMarket] Downloading source package:', marketId);
 
-      // TODO: 閺囨寧宕叉稉铏规埂鐎规咖PI閸︽澘娼?      const url = `${this.baseUrl}/api/market/sources/${marketId}/download`;
+      // TODO: 实现实际的API调用
+      const url = `${this.baseUrl}/api/market/sources/${marketId}/download`;
 
       const response = await this.httpGet<DownloadResponse>(url);
 
       if (response && response.sources) {
-        // 鏉烆剚宕查弽鐓庣础
+        // 转换格式
         const sources = this.convertLegadoSources(response.sources);
 
-        // 娣囨繂鐡ㄦ稉瀣�祰鐠佹澘缍?        await this.saveDownloadRecord(marketId);
+        // 保存下载记录
+        await this.saveDownloadRecord(marketId);
 
         return sources;
       }
@@ -528,7 +528,7 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 娴犲抖RL鐎电厧鍙嗘稊锔界爱閸栧拑绱橪egado閺嶇厧绱￠敍?
+   * 从URL导入书源（支持Legado格式的JSON）
    */
   async importFromUrl(url: string): Promise<ImportResult> {
     const httpRequest = http.createHttp();
@@ -572,19 +572,20 @@ class LegadoSourceMarketService {
       };
       return result;
     } finally {
-      // 闁插﹥鏂丠TTP鐠у嫭绨?      httpRequest.destroy();
+      // 销毁HTTP请求
+      httpRequest.destroy();
     }
   }
 
   /**
-   * 鐟欙絾鐎介獮鎯版祮閹诡澀鍔熷┃?
+   * 解析并转换书源JSON内容为BookSource格式
    */
   parseAndConvertSources(jsonContent: string): BookSource[] {
     try {
       let legadoSources: LegadoSourceRaw[] = [];
       const content = jsonContent.trim();
 
-      // 鐏忔繆鐦�憴锝嗙€絁SON
+      // 判断JSON格式
       if (content.startsWith('[')) {
         legadoSources = JSON.parse(content) as LegadoSourceRaw[];
       } else if (content.startsWith('{')) {
@@ -599,7 +600,7 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 鏉烆剚宕睱egado閺嶇厧绱℃稉鍝勫敶闁�劍鐗稿�?
+   * 将Legado原始格式转换为BookSource格式
    */
   private convertLegadoSources(legadoSources: LegadoSourceRaw[]): BookSource[] {
     return legadoSources
@@ -607,7 +608,7 @@ class LegadoSourceMarketService {
       .map(source => {
         const bookSource: BookSource = {
           id: generateSourceId(),
-          name: source.bookSourceName || '鏈�懡鍚嶄功婧?,
+          name: source.bookSourceName || '未命名书源',
           url: source.bookSourceUrl || '',
           enabled: source.enabled !== false,
           priority: source.customOrder || 1,
@@ -630,7 +631,8 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 鏉烆剚宕叉稊锔界爱缁��鐎?   */
+   * 转换书源类型
+   */
   private convertSourceType(type: number): BookSourceType {
     switch (type) {
       case 0:
@@ -644,86 +646,15 @@ class LegadoSourceMarketService {
     }
   }
 
-  // ==================== 娑旓附绨�ù瀣�槸 ====================
+  // ==================== 导出与分享 ====================
 
   /**
-   * 濞村�鐦�稊锔界爱
-   */
-  async testSource(source: BookSource, testKeyword: string = '濞村�鐦?): Promise<TestSourceResult> {
-    try {
-      logger.info('[SourceMarket] Testing source:', source.name);
-      const startTime = Date.now();
-
-      // TODO: 鐎圭偟骞囬惇鐔风杽閻ㄥ嫪鍔熷┃鎰�ゴ鐠囨洟鈧�槒绶?      // 1. 濞村�鐦�幖婊呭偍閸旂喕鍏?      // 2. 濞村�鐦�稊锔剧潉鐠囷附鍎?      // 3. 濞村�鐦�粩鐘哄Ν閸掓�銆?      // 4. 濞村�鐦�崘鍛�啇閼惧嘲褰?
-      const responseTime = Date.now() - startTime;
-
-      return {
-        success: true,
-        responseTime,
-        searchResultCount: 10 // 濡�剝瀚欓弫鐗堝祦
-      };
-    } catch (error) {
-      logger.error('[SourceMarket] Test source failed:', error);
-      const err = error as Error;
-      return {
-        success: false,
-        responseTime: 0,
-        searchResultCount: 0,
-        error: err.message
-      };
-    }
-  }
-
-  /**
-   * 閹靛綊鍣哄ù瀣�槸娑旓附绨?   */
-  async testSourcesBatch(sources: BookSource[]): Promise<TestSourceBatchResult> {
-    try {
-      logger.info('[SourceMarket] Testing', sources.length, 'sources...');
-
-      let successCount = 0;
-      let failedCount = 0;
-      let totalResponseTime = 0;
-
-      for (const source of sources) {
-        const result = await this.testSource(source);
-
-        if (result.success) {
-          successCount++;
-          totalResponseTime += result.responseTime;
-        } else {
-          failedCount++;
-        }
-      }
-
-      const averageResponseTime = successCount > 0
-        ? Math.round(totalResponseTime / successCount)
-        : 0;
-
-      return {
-        total: sources.length,
-        success: successCount,
-        failed: failedCount,
-        averageResponseTime
-      };
-    } catch (error) {
-      logger.error('[SourceMarket] Test sources batch failed:', error);
-      return {
-        total: sources.length,
-        success: 0,
-        failed: sources.length,
-        averageResponseTime: 0
-      };
-    }
-  }
-
-  // ==================== 娑旓附绨�崚鍡曢煩閸滃苯顕遍崙?====================
-
-  /**
-   * 鐎电厧鍤�稊锔界爱娑撶瘮SON
+   * 导出书源为JSON格式
    */
   exportSourcesToJson(sources: BookSource[]): string {
     try {
-      // 鏉烆剚宕叉稉绡杄gado閺嶇厧绱?      const legadoSources: LegadoSourceExport[] = [];
+      // 转换为Legado格式
+      const legadoSources: LegadoSourceExport[] = [];
       for (let i = 0; i < sources.length; i++) {
         const source = sources[i];
         const legadoSource: LegadoSourceExport = {
@@ -752,7 +683,7 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 閻㈢喐鍨氱€电厧鍙哢RL閿涘湢egado URL Scheme閿?
+   * 生成导入URL（Legado URL Scheme格式）
    */
   generateImportUrl(jsonContent: string): string {
     const encoded = encodeURIComponent(jsonContent);
@@ -760,15 +691,16 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 閻㈢喐鍨氶崚鍡曢煩闁剧偓甯?   */
+   * 生成分享链接
+   */
   generateShareUrl(marketId: string): string {
     return `${this.baseUrl}/share/${marketId}`;
   }
 
-  // ==================== 缂佺喕顓搁崪灞惧笓鐞?====================
+  // ==================== 排行榜与统计 ====================
 
   /**
-   * 閼惧嘲褰囨稊锔界爱閹烘帟顢戝�?
+   * 获取书源排行榜
    */
   async getSourceRanking(type: 'downloads' | 'rating' | 'update', limit: number = 50): Promise<SourceMarketItem[]> {
     try {
@@ -778,7 +710,8 @@ class LegadoSourceMarketService {
         return cached;
       }
 
-      // TODO: 閺囨寧宕叉稉铏规埂鐎规咖PI閸︽澘娼?      const url = `${this.baseUrl}/api/market/ranking?type=${type}&limit=${limit}`;
+      // TODO: 实现实际的API调用
+      const url = `${this.baseUrl}/api/market/ranking?type=${type}&limit=${limit}`;
 
       const result = await this.httpGet<SourceMarketItem[]>(url);
 
@@ -794,11 +727,12 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 閼惧嘲褰囨稊锔界爱缂佺喕顓告穱鈩冧紖
+   * 获取书源统计数据
    */
   async getSourceStats(): Promise<SourceStats> {
     try {
-      // TODO: 閺囨寧宕叉稉铏规埂鐎规咖PI閸︽澘娼?      const url = `${this.baseUrl}/api/market/stats`;
+      // TODO: 实现实际的API调用
+      const url = `${this.baseUrl}/api/market/stats`;
 
       return await this.httpGet<SourceStats>(url) || {
         totalSources: 0,
@@ -817,10 +751,11 @@ class LegadoSourceMarketService {
     }
   }
 
-  // ==================== 閺堫剙婀寸粻锛勬倞 ====================
+  // ==================== 本地存储 ====================
 
   /**
-   * 娣囨繂鐡ㄦ稉瀣�祰鐠佹澘缍?   */
+   * 保存下载记录
+   */
   private async saveDownloadRecord(marketId: string): Promise<void> {
     try {
       const records = await preferenceManager.getValue('downloaded_sources', '[]');
@@ -836,7 +771,8 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 閼惧嘲褰囧�韫�瑓鏉炵晫娈戞稊锔界爱閸栧將D閸掓�銆?   */
+   * 获取已下载的书源ID列表
+   */
   async getDownloadedSourceIds(): Promise<string[]> {
     try {
       const records = await preferenceManager.getValue('downloaded_sources', '[]');
@@ -847,10 +783,10 @@ class LegadoSourceMarketService {
     }
   }
 
-  // ==================== 缂傛挸鐡ㄧ粻锛勬倞 ====================
+  // ==================== 缓存管理 ====================
 
   /**
-   * 閼惧嘲褰囩紓鎾崇摠
+   * 获取缓存
    */
   private getCached<T>(key: string): T | null {
     const cached = this.cache.get(key);
@@ -862,7 +798,7 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 鐠佸墽鐤嗙紓鎾崇摠
+   * 设置缓存
    */
   private setCached<T>(key: string, data: T): void {
     this.cache.set(key, {
@@ -872,17 +808,18 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 濞撳懘娅庣紓鎾崇摠
+   * 清除缓存
    */
   clearCache(): void {
     this.cache.clear();
     logger.info('[SourceMarket] Cache cleared');
   }
 
-  // ==================== HTTP鐠囬攱鐪?====================
+  // ==================== HTTP请求 ====================
 
   /**
-   * HTTP GET鐠囬攱鐪?   */
+   * HTTP GET请求
+   */
   private async httpGet<T>(url: string): Promise<T | null> {
     const httpRequest = http.createHttp();
     try {
@@ -910,7 +847,7 @@ class LegadoSourceMarketService {
   }
 
   /**
-   * 闁插﹥鏂佺挧鍕�爱
+   * 释放资源
    */
   release(): void {
     this.cache.clear();
@@ -919,6 +856,6 @@ class LegadoSourceMarketService {
   }
 }
 
-// 鐎电厧鍤�崡鏇氱伐
+// 导出单例
 export const legadoSourceMarket = LegadoSourceMarketService.getInstance();
 export default legadoSourceMarket;

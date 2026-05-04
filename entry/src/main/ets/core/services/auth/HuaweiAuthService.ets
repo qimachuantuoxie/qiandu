@@ -1,36 +1,44 @@
-﻿/**
- * 閸楀簼璐熺拹锕€褰跨拋銈堢槈閺堝秴濮?
+/**
+ * 华为账号认证服务
  * Huawei Account Authentication Service
  * 
- * 娴ｈ法鏁?@kit.AccountKit 鐎圭偟骞囬崡搴濊礋娑撯偓闁款喚娅ヨぐ鏇炲閼?
+ * 使用 @kit.AccountKit 实现真实的华为账号登录
+ * 参考官方文档：https://developer.huawei.com/consumer/cn/doc/harmonyos-references/account-api-authentication
  */
 
 import { authentication } from '@kit.AccountKit';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { util } from '@kit.ArkTS';
 
 const DOMAIN = 0xFF03;
 
 /**
- * 閹哄牊娼堥崫宥呯安缂佹挻鐏?
+ * 华为认证结果接口
  */
 export interface HuaweiAuthResult {
-  authorizationCode: string;  // 閹哄牊娼堥惍?
-  state: string;              // 閻樿埖鈧胶鐖?
+  success: boolean;
+  authorizationCode?: string;  // 授权码
+  userId?: string;             // 用户ID (uid)
+  userName?: string;           // 用户名
+  displayName?: string;        // 显示名称
+  avatarUrl?: string;          // 头像URL
+  error?: string;              // 错误信息
+  errorCode?: number;          // 错误码
 }
 
 /**
- * 閻劍鍩涙穱鈩冧紖
+ * 华为用户资料
  */
 export interface HuaweiUserProfile {
-  openId: string;        // 閻劍鍩涢崬顖欑閺嶅洩鐦?
-  unionId?: string;      // 閻劍鍩涚紒鐔剁閺嶅洩鐦?
-  displayName?: string;  // 閻劍鍩涢弰鐢敌?
-  avatarUrl?: string;    // 閻劍鍩涙径鏉戝剼URL
+  openId: string;        // 用户OpenID（应用内唯一）
+  unionId?: string;      // 用户UnionID（开发者账号下唯一）
+  displayName?: string;  // 用户昵称
+  avatarUrl?: string;    // 用户头像URL
 }
 
 /**
- * 閸楀簼璐熺拹锕€褰跨拋銈堢槈閺堝秴濮熺猾?
+ * 华为账号认证服务类
  */
 export class HuaweiAuthService {
   private static instance: HuaweiAuthService;
@@ -40,7 +48,7 @@ export class HuaweiAuthService {
   private constructor() {}
 
   /**
-   * 閼惧嘲褰囬崡鏇氱伐鐎圭偘绶?
+   * 获取单例实例
    */
   static getInstance(): HuaweiAuthService {
     if (!HuaweiAuthService.instance) {
@@ -50,9 +58,9 @@ export class HuaweiAuthService {
   }
 
   /**
-   * 閸掓繂顫愰崠鏍ㄦ箛閸?
-   * @param context 鎼存梻鏁ゆ稉濠佺瑓閺?
-   * @param clientId 鐎广垺鍩涚粩鐤楧閿涘牆褰查柅澶涚礉娴犲窇odule.json5鐠囪褰囬敍?
+   * 初始化服务
+   * @param context 应用上下文
+   * @param clientId 客户端ID（可选，从module.json5中读取）
    */
   init(context: common.Context, clientId?: string): void {
     this.context = context;
@@ -63,135 +71,191 @@ export class HuaweiAuthService {
   }
 
   /**
-   * 閹笛嗩攽閸楀簼璐熺拹锕€褰块惂璇茬秿
-   * @returns Promise<HuaweiAuthResult> 閹哄牊娼堢紒鎾寸亯
+   * 执行华为账号登录
+   * 根据官方文档实现完整的登录流程
+   * @returns Promise<HuaweiAuthResult> 认证结果
    */
   async login(): Promise<HuaweiAuthResult> {
     if (!this.context) {
-      throw new Error('HuaweiAuthService not initialized');
+      throw new Error('HuaweiAuthService not initialized. Please call init() first.');
     }
 
-    return new Promise<HuaweiAuthResult>((resolve, reject) => {
+    try {
       hilog.info(DOMAIN, 'HuaweiAuthService', 'Starting Huawei account login');
 
-      // TODO: authentication API not available in current environment
-      // // 閺嬪嫰鈧姵宸块弶鍐嚞濮瑰倸寮弫?
-      // const authRequest: authentication.AuthRequest = {
-      //   scopes: ['openid', 'profile'],  // 鐠囬攱鐪皁penid閸滃rofile閺夊啴妾?
-      //   state: this.generateState()     // 閻㈢喐鍨氶梾蹇旀簚state闂冪潬SRF閺€璇插毊
-      // };
-
-      // // 鐠嬪啰鏁ら崡搴濊礋鐠愶箑褰块幒鍫熸綀API
-      // authentication.requestAuthCodeFromAccount(this.context!, authRequest)
-      //   .then((data: authentication.AuthCodeResponse) => {
-      //     hilog.info(DOMAIN, 'HuaweiAuthService', 'Get auth code success');
-
-      //     const result: HuaweiAuthResult = {
-      //       authorizationCode: data.authorizationCode,
-      //       state: data.state
-      //     };
-
-      //     resolve(result);
-      //   })
-      //   .catch (error) {
-      //     hilog.error(DOMAIN, 'HuaweiAuthService',
-      //       'Login failed: message=%{public}s',
-      //       error.message);
-
-      //     reject(error);
-      //   });
+      // 1. 创建华为账号登录请求
+      const huaweiIdProvider = new authentication.HuaweiIDProvider();
+      const loginRequest = huaweiIdProvider.createLoginWithHuaweiIDRequest();
       
-      // Stub: 鏉╂柨娲栧Ο鈩冨珯缂佹挻鐏?
+      // 2. 配置登录参数
+      loginRequest.scopes = ['openid', 'profile'];  // 请求openid和profile权限
+      loginRequest.state = util.generateRandomUUID(); // 生成随机state防止CSRF攻击
+      loginRequest.forceLogin = false;  // false表示如果已登录则静默登录，true强制拉起登录页面
+
+      hilog.info(DOMAIN, 'HuaweiAuthService', 'Login request configured, executing...');
+
+      // 3. 创建认证控制器并执行请求
+      const controller = new authentication.AuthenticationController(this.context);
+      const response = await controller.executeRequest(loginRequest);
+
+      hilog.info(DOMAIN, 'HuaweiAuthService', 'Login request executed successfully');
+
+      // 4. 检查响应数据
+      if (!response.data) {
+        throw new Error('Login response data is empty');
+      }
+
+      const authorizationCode = response.data.authorizationCode;
+      const uid = response.data.uid;
+
+      if (!authorizationCode) {
+        throw new Error('Failed to get authorization code from response');
+      }
+
+      if (!uid) {
+        throw new Error('Failed to get user ID from response');
+      }
+
+      hilog.info(DOMAIN, 'HuaweiAuthService', 'Got authorization code and user ID');
+
+      // 5. 构建返回结果
       const result: HuaweiAuthResult = {
-        authorizationCode: 'stub_auth_code_' + Date.now(),
-        state: this.generateState()
+        success: true,
+        authorizationCode: authorizationCode,
+        userId: uid,
+        userName: `user_${uid.substring(0, 8)}`,  // 使用uid前8位作为用户名
+        displayName: undefined,  // 需要通过后端API获取真实昵称
+        avatarUrl: undefined     // 需要通过后端API获取真实头像
       };
-      resolve(result);
-    });
+
+      hilog.info(DOMAIN, 'HuaweiAuthService', 'Login completed successfully, userId: %{public}s', uid);
+      return result;
+
+    } catch (error) {
+      const err = error as BusinessError;
+      hilog.error(DOMAIN, 'HuaweiAuthService', 'Login failed: code=%{public}d, message=%{public}s', 
+        err.code || 0, err.message);
+
+      // 处理常见错误码
+      let errorMessage = '登录失败';
+      switch (err.code) {
+        case 1001502001:
+          errorMessage = '用户未登录华为账号，请先登录华为账号';
+          break;
+        case 1001502005:
+          errorMessage = '网络异常，请检查网络连接';
+          break;
+        case 1001502012:
+          errorMessage = '用户取消了登录';
+          break;
+        case 1001500001:
+          errorMessage = '证书指纹校验失败，请检查签名配置';
+          break;
+        case 1001502014:
+          errorMessage = '缺少必要的权限或scope，请检查AGC配置';
+          break;
+        default:
+          errorMessage = `登录失败: ${err.message}`;
+          break;
+      }
+
+      return {
+        success: false,
+        error: errorMessage,
+        errorCode: err.code
+      };
+    }
   }
 
   /**
-   * 妤犲矁鐦夐幒鍫熸綀閻礁鑻熼懢宄板絿閻劍鍩涙穱鈩冧紖
-   * 濞夈劍鍓伴敍姘杽闂勫懐娈戦悽銊﹀煕娣団剝浼呴懢宄板絿闂団偓鐟曚礁婀張宥呭缁旑垰鐣幋?
-   * 鏉╂瑩鍣锋禒鍛扮箲閸ョ偞宸块弶鍐垳娓氭稑鎮楃紒顓濆▏閻?
+   * 使用授权码获取用户资料
+   * 注意：实际项目中应该在服务端完成此步骤
    * 
-   * @param authCode 閹哄牊娼堥惍?
-   * @returns Promise<HuaweiUserProfile> 閻劍鍩涙穱鈩冧紖閿涘牏鐣濋崠鏍閿?
+   * @param authCode 授权码
+   * @returns Promise<HuaweiUserProfile> 用户资料
    */
   async getUserProfile(authCode: string): Promise<HuaweiUserProfile> {
-    hilog.info(DOMAIN, 'HuaweiAuthService', 'Processing auth code');
+    hilog.info(DOMAIN, 'HuaweiAuthService', 'Getting user profile with auth code');
 
-    // 濞夈劍鍓伴敍姘暚閺佸娈戦悽銊﹀煕娣団剝浼呴懢宄板絿濞翠胶chevron_down鎼存棁顕氶弰顖ょ窗
-    // 1. 鐏?authCode 閸欐垿鈧礁鍩屽鈧崣鎴ｂ偓鍛箛閸斺€虫珤
-    // 2. 閺堝秴濮熼崳銊ㄧ殶閻劌宕曟稉?OAuth2.0 閹恒儱褰涢懢宄板絿 access_token 閸?id_token
-    // 3. 閺堝秴濮熼崳銊ㄐ掗弸?id_token 閹存牞鐨熼悽?userinfo 閹恒儱褰涢懢宄板絿閻劍鍩涙穱鈩冧紖
-    // 4. 閺堝秴濮熼崳銊ㄧ箲閸ョ偟鏁ら幋铚備繆閹垳绮扮€广垺鍩涚粩?
+    // 实际项目中的标准流程：
+    // 1. 前端将authCode发送到后端服务器
+    // 2. 后端使用OAuth2.0协议调用华为服务器换取access_token和id_token
+    //    POST https://oauth-login.cloud.huawei.com/oauth2/v3/token
+    //    参数：grant_type=authorization_code, code={authCode}, client_id={clientId}, client_secret={clientSecret}
+    // 3. 后端使用access_token调用userinfo接口获取用户详细信息
+    //    GET https://account.cloud.huawei.com/rest.php?nsp_svc=GOpen.User.getInfo
+    // 4. 后端返回用户信息给前端
     //
-    // 鏉╂瑩鍣锋禒鍛粵閺堫剙婀存径鍕倞閿涘苯鐤勯梽鍛淬€嶉惄顕€娓剁憰渚€鍘ら崥鍫濇倵缁旑垰鐤勯悳?
+    // 由于这是前端演示，暂时返回基础信息
+    // TODO: 实现后端API对接
     
-    // 娴ｈ法鏁ら幒鍫熸綀閻椒缍旀稉杞板閺冨墎娈戦悽銊﹀煕閺嶅洩鐦?
     const profile: HuaweiUserProfile = {
-      openId: authCode.substring(0, 32),  // 娴ｈ法鏁ら幒鍫熸綀閻胶娈戞稉鈧柈銊ュ瀻娴ｆ粈璐熸稉瀛樻openId
-      displayName: '閸楀簼璐熼悽銊﹀煕'              // 姒涙顓婚弰鐢敌為敍灞界杽闂勫懎绨叉禒搴㈡箛閸旓紕顏懢宄板絿
+      openId: authCode.substring(0, 32),  // 临时使用authCode生成openId
+      displayName: '华为用户'              // 临时昵称
     };
 
+    hilog.info(DOMAIN, 'HuaweiAuthService', 'User profile retrieved (mock data)');
     return profile;
   }
 
   /**
-   * 閻㈢喐鍨氶梾蹇旀簚state鐎涙顑佹稉璇х礄闂冪潬SRF閺€璇插毊閿?
-   * @returns 闂呭繑婧€state鐎涙顑佹稉?
-   */
-  private generateState(): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < 32; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-  }
-
-  /**
-   * 濡偓閺屻儱宕曟稉楦垮閸欓攱婀囬崝鈩冩Ц閸氾箑褰查悽?
-   * @returns Promise<boolean> 閺堝秴濮熼崣顖滄暏閹?
+   * 检查华为账号服务是否可用
+   * @returns Promise<boolean> 服务是否可用
    */
   async isServiceAvailable(): Promise<boolean> {
     if (!this.context) {
+      hilog.warn(DOMAIN, 'HuaweiAuthService', 'Service not initialized');
       return false;
     }
 
     try {
-      // TODO: authentication API not available
-      // const available = authentication.isAccountAvailable(this.context!) as boolean;
-      const available = false; // Stub: 姒涙顓绘稉宥呭讲閻?
+      // 检查华为账号服务是否可用
+      const available = await authentication.isAccountAvailable(this.context);
       hilog.info(DOMAIN, 'HuaweiAuthService', 'Service available: %{public}s',
         available ? 'true' : 'false');
       return available;
     } catch (error) {
-      const err = error as Error;
-      const errorErr = error as Error;
+      const err = error as BusinessError;
       hilog.error(DOMAIN, 'HuaweiAuthService', 
-        'Check service available failed: %{public}s', 
-        errorErr.message);
+        'Check service available failed: code=%{public}d, message=%{public}s', 
+        err.code || 0, err.message);
       return false;
     }
   }
 
   /**
-   * 閻ц鍤敍鍫熸寵闁库偓閹哄牊娼堥敍?
-   * 濞夈劍鍓伴敍姘寵闁库偓閹哄牊娼堥棁鈧憰浣告躬閺堝秴濮熺粩顖氱暚閹?
-   * 鏉╂瑩鍣锋禒鍛閻炲棙婀伴崷鎵Ц閹?
+   * 退出登录/取消授权
+   * 清除用户的授权状态
    */
-  logout(): void {
-    hilog.info(DOMAIN, 'HuaweiAuthService', 'Logout called');
-    // 鐎圭偤妾惃鍕寵闁库偓閹哄牊娼堥棁鈧憰浣告躬閺堝秴濮熺粩顖濈殶閻劌宕曟稉绡圥I
-    // 閺堫剙婀撮悩鑸碘偓浣圭閻炲棛鏁?AccountManager 閹?LoginStateManager 婢跺嫮鎮?
+  async logout(): Promise<void> {
+    if (!this.context) {
+      throw new Error('HuaweiAuthService not initialized');
+    }
+
+    try {
+      hilog.info(DOMAIN, 'HuaweiAuthService', 'Starting logout');
+
+      // 创建取消授权请求
+      const huaweiIdProvider = new authentication.HuaweiIDProvider();
+      const cancelRequest = huaweiIdProvider.createCancelAuthorizationRequest();
+
+      // 执行取消授权
+      const controller = new authentication.AuthenticationController(this.context);
+      await controller.executeRequest(cancelRequest);
+
+      hilog.info(DOMAIN, 'HuaweiAuthService', 'Logout successful');
+    } catch (error) {
+      const err = error as BusinessError;
+      hilog.error(DOMAIN, 'HuaweiAuthService', 
+        'Logout failed: code=%{public}d, message=%{public}s', 
+        err.code || 0, err.message);
+      throw error;
+    }
   }
 }
 
 /**
- * 鐎电厧鍤崡鏇氱伐鐎圭偘绶?
+ * 导出单例实例
  */
 export const huaweiAuthService = HuaweiAuthService.getInstance();
 export default huaweiAuthService;
-

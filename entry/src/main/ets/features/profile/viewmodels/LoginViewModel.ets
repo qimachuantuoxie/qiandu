@@ -1,5 +1,5 @@
 /**
- * LoginPage ViewModel - V2鐗堟湰
+ * LoginPage ViewModel - V2版本
  */
 import { loginStateManager, UserInfo } from '../../../core/services/auth/LoginStateManager';
 import { huaweiAuthService } from '../../../core/services/auth/HuaweiAuthService';
@@ -43,9 +43,12 @@ export class LoginViewModel {
     this.rememberMe = remember;
   }
 
+  /**
+   * 用户名密码登录（需要后端API支持）
+   */
   async login(): Promise<boolean> {
     if (!this.username.trim() || !this.password.trim()) {
-      this.errorMsg = '璇疯緭鍏ョ敤鎴峰悕鍜屽瘑鐮?;
+      this.errorMsg = '请输入用户名和密码';
       return false;
     }
 
@@ -53,51 +56,55 @@ export class LoginViewModel {
     this.errorMsg = '';
 
     try {
-      // TODO: 瀹炵幇瀹為檯鐨勭敤鎴峰悕瀵嗙爜鐧诲綍閫昏緫
-      // 鐩墠浣跨敤妯℃嫙鐧诲綍
-      const userInfo: UserInfo = {
-        userId: 'user_' + Date.now(),
-        username: this.username,
-        loginTime: Date.now()
-      };
-      loginStateManager.loginSuccess(userInfo);
-      
-      if (this.rememberMe) {
-        preferenceManager.setString('remembered_user', this.username);
-      } else {
-        preferenceManager.setString('remembered_user', '');
-      }
-      return true;
+      // TODO: 实现实际的用户名密码登录逻辑
+      // 需要后端API支持，目前建议使用华为账号登录
+      this.errorMsg = '请使用华为账号登录';
+      return false;
     } catch (error) {
       const err = error as Error;
-      this.errorMsg = '鐧诲綍澶辫触: ' + message;
+      this.errorMsg = '登录失败: ' + err.message;
       return false;
     } finally {
       this.isLoading = false;
     }
   }
 
+  /**
+   * 华为账号登录（真实实现）
+   */
   async loginWithHuawei(): Promise<boolean> {
     this.isLoading = true;
     this.errorMsg = '';
 
     try {
       const result = await huaweiAuthService.login();
-      if (result.success) {
+      
+      if (result.success && result.userId) {
         const userInfo: UserInfo = {
-          userId: result.userId || 'huawei_' + Date.now(),
-          username: result.userName || '鍗庝负鐢ㄦ埛',
-          loginTime: Date.now()
+          userId: result.userId,
+          username: result.userName || '华为用户',
+          nickname: result.displayName,
+          avatar: result.avatarUrl,
+          loginTime: Date.now(),
+          token: result.authorizationCode
         };
+        
         loginStateManager.loginSuccess(userInfo);
+        
+        if (this.rememberMe) {
+          preferenceManager.setString('remembered_user', this.username);
+        } else {
+          preferenceManager.setString('remembered_user', '');
+        }
+        
         return true;
       } else {
-        this.errorMsg = '鍗庝负鐧诲綍澶辫触';
+        this.errorMsg = result.error || '华为登录失败';
         return false;
       }
     } catch (error) {
       const err = error as Error;
-      this.errorMsg = '鍗庝负鐧诲綍澶辫触: ' + message;
+      this.errorMsg = '华为登录失败: ' + err.message;
       return false;
     } finally {
       this.isLoading = false;
