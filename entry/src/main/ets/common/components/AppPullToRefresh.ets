@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 统一下拉刷新组件
  * 支持下拉刷新、加载中和无障碍访问
  *
@@ -10,13 +10,13 @@ import { COMMON_COLORS } from '../../utils/AppTheme';
 /**
  * AppPullToRefresh 组件属性
  */
-@Component
+@ComponentV2
 export struct AppPullToRefresh {
   @BuilderParam content: () => void;
-  @Prop isRefreshing: boolean = false;
-  @Prop refreshingText: string = '正在刷新...';
-  @Prop pullText: string = '下拉刷新';
-  @Prop isDarkMode: boolean = false;
+  @Param isRefreshing: boolean = false;
+  @Param refreshingText: string = '正在刷新...';
+  @Param pullText: string = '下拉刷新';
+  @Param isDarkMode: boolean = false;
   onRefreshCallback?: () => void;
 
   /**

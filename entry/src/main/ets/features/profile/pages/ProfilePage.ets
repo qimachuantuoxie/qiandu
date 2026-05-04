@@ -81,7 +81,7 @@ struct ProfilePage {
             Column().height(40)
           }
           .width('100%')
-          .padding(16)
+          .padding(Spacing.lg)
         }
         .layoutWeight(1)
         .scrollBar(BarState.Auto)
@@ -113,43 +113,43 @@ struct ProfilePage {
   UserInfoCard() {
     Column() {
       if (this.vm.userInfo) {
-        Row({ space: 16 }) {
+        Row({ space: Spacing.lg }) {
           // 濠㈣埖娼欓敓?
           Stack() {
             if (this.vm.userInfo.avatar && this.vm.userInfo.avatar.length > 0) {
               Image(this.vm.userInfo.avatar)
-                .width(72)
-                .height(72)
-                .borderRadius(36)
+                .width(Size.avatarXL)
+                .height(Size.avatarXL)
+                .borderRadius(BorderRadius.full)
                 .objectFit(ImageFit.Cover)
             } else {
               Column() {
                 Text('妫ｅ啯鍣?)
-                  .fontSize(36)
+                  .fontSize(Size.iconXXL)
               }
-              .width(72)
-              .height(72)
+              .width(Size.avatarXL)
+              .height(Size.avatarXL)
               .justifyContent(FlexAlign.Center)
               .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.3)')
-              .borderRadius(36)
+              .borderRadius(BorderRadius.full)
             }
 
             // 缂傚倹鐗炵欢顐﹀炊閻愵剛鍨?
             Column() {
               Text('妫ｅ啯鎳?)
-                .fontSize(12)
+                .fontSize(Size.iconSM)
             }
-            .width(24)
-            .height(24)
+            .width(Size.iconLG)
+            .height(Size.iconLG)
             .justifyContent(FlexAlign.Center)
             .backgroundColor('rgba(0,0,0,0.6)')
-            .borderRadius(12)
+            .borderRadius(BorderRadius.full)
             .position({ x: 50, y: 50 })
           }
           .onClick(() => this.updateAvatar())
 
           // 闁活潿鍔嶉崺娑欑┍閳╁啩绱?
-          Column({ space: 8 }) {
+          Column({ space: Spacing.sm }) {
             Text(this.vm.userInfo.nickname || this.vm.userInfo.username)
               .fontSize(20)
               .fontWeight(FontWeight.Bold)
@@ -169,14 +169,14 @@ struct ProfilePage {
           .layoutWeight(1)
         }
         .width('100%')
-        .padding(20)
+        .padding(Spacing.xl)
       }
     }
     .width('100%')
     // 婵�絾绋撻獮鎾绘偣閸愨晜娅忛敓?
     .backgroundColor(this.isDarkMode ? 'rgba(44,44,46,0.7)' : 'rgba(255,255,255,0.75)')
     .backdropBlur(20)
-    .borderRadius(16)
+    .borderRadius(BorderRadius.lg)
     .border({
       width: 1,
       color: this.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)'
@@ -220,11 +220,11 @@ struct ProfilePage {
       .height(180)
     }
     .width('100%')
-    .padding(20)
+    .padding(Spacing.xl)
     // 婵�絾绋撻獮鎾绘偣閸愨晜娅忛敓?
     .backgroundColor(this.isDarkMode ? 'rgba(44,44,46,0.6)' : 'rgba(255,255,255,0.7)')
     .backdropBlur(15)
-    .borderRadius(16)
+    .borderRadius(BorderRadius.lg)
     .border({
       width: 1,
       color: this.isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.4)'
@@ -238,24 +238,24 @@ struct ProfilePage {
 
   @Builder
   StatItem(icon: string, value: string, label: string) {
-    Column({ space: 8 }) {
+    Column({ space: Spacing.sm }) {
       Text(icon)
-        .fontSize(28)
+        .fontSize(Size.iconXL)
 
       Text(value)
-        .fontSize(20)
+        .fontSize(fontScaleManager.getScaledFontSize(20))
         .fontWeight(FontWeight.Bold)
         .fontColor(this.isDarkMode ? '#FFFFFF' : '#1A1A1A')
 
       Text(label)
-        .fontSize(12)
+        .fontSize(fontScaleManager.getScaledFontSize(12))
         .fontColor(this.isDarkMode ? '#888888' : '#999999')
     }
     .width('100%')
     .height('100%')
     .justifyContent(FlexAlign.Center)
     .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)')
-    .borderRadius(12)
+    .borderRadius(BorderRadius.md)
   }
 
   @Builder
@@ -263,9 +263,9 @@ struct ProfilePage {
     Column({ space: 0 }) {
       ForEach(this.getMenuItems(), (item: ProfileMenuItem, index: number) => {
         Column() {
-          Row({ space: 16 }) {
+          Row({ space: Spacing.lg }) {
             Text(item.icon)
-              .fontSize(22)
+              .fontSize(Size.iconMD)
 
             Text(item.title)
               .fontSize(15)
@@ -279,11 +279,11 @@ struct ProfilePage {
             }
 
             Text('>')
-              .fontSize(18)
+              .fontSize(Size.iconSM)
               .fontColor(this.isDarkMode ? '#555555' : '#CCCCCC')
           }
           .width('100%')
-          .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+          .padding(Spacing.lg)
           .onClick(() => item.action())
           .stateStyles({
             pressed: {
@@ -309,7 +309,7 @@ struct ProfilePage {
     // 婵�絾绋撻獮鎾绘偣閸愨晜娅忛敓?
     .backgroundColor(this.isDarkMode ? 'rgba(44,44,46,0.6)' : 'rgba(255,255,255,0.7)')
     .backdropBlur(15)
-    .borderRadius(16)
+    .borderRadius(BorderRadius.lg)
     .border({
       width: 1,
       color: this.isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.4)'
@@ -410,7 +410,7 @@ struct ProfilePagePreview {
       Text('娑擃亙姹夌挧鍕�灐閿?- 濞村懓澹婂Ο鈥崇础')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       ProfilePage()
@@ -422,7 +422,7 @@ struct ProfilePagePreview {
       Text('娑擃亙姹夌挧鍕�灐閿?- 濞ｈ精澹婂Ο鈥崇础')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

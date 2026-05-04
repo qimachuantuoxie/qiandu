@@ -79,7 +79,7 @@ struct RewardPage {
         .fontColor(this.currentColors.primary)
     }
     .width('100%')
-    .padding(12)
+    .padding(Spacing.md)
     .backgroundColor(isSelected ? this.currentColors.primary + '20' : this.bg('#FFFFFF', '#2C2C2E'))
     .border({
       width: 2,
@@ -189,7 +189,7 @@ struct RewardPage {
                 .layoutWeight(1)
               }
               .width('100%')
-              .padding(16)
+              .padding(Spacing.lg)
               .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
               .borderRadius(12)
             }
@@ -241,7 +241,7 @@ struct RewardPage {
               }
             }
             .width('100%')
-            .padding(16)
+            .padding(Spacing.lg)
             .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
             .borderRadius(12)
 
@@ -256,7 +256,7 @@ struct RewardPage {
                 .backgroundColor(this.bg('#F5F5F5', '#3C3C3E'))
             }
             .width('100%')
-            .padding(16)
+            .padding(Spacing.lg)
             .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
             .borderRadius(12)
 
@@ -305,7 +305,7 @@ struct RewardPagePreview {
       Text('鎵撹祻鏀�寔锟?- 娴呰壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       RewardPage()
@@ -317,7 +317,7 @@ struct RewardPagePreview {
       Text('鎵撹祻鏀�寔锟?- 娣辫壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

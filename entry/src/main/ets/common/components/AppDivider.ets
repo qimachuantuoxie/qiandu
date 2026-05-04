@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 统一分割线组件
  * 支持水平/垂直、带文本和无障碍访问
  */
@@ -11,12 +11,12 @@ import { COMMON_COLORS } from '../../utils/AppTheme';
  * @vertical - 是否垂直分割
  * @color - 分割线颜色（可选）
  */
-@Component
+@ComponentV2
 export struct AppDivider {
-  @Prop text?: string;
-  @Prop vertical: boolean = false;
-  @Prop color?: string;
-  @Prop isDarkMode: boolean = false;
+  @Param text?: string;
+  @Param vertical: boolean = false;
+  @Param color?: string;
+  @Param isDarkMode: boolean = false;
 
   build() {
     if (this.vertical) {

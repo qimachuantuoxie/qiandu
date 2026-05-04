@@ -1,7 +1,7 @@
 {
     "string": [
         {
-            "name": "module_desc"
+            "name": "module_desc",
             "value": "千读阅界电子书阅读模块"
         },
         {
@@ -226,7 +226,6 @@
         { "name": "login_your_account", "value": "登录您的账号" },
         { "name": "i_agree", "value": "我已阅读并同意" },
         { "name": "donation", "value": "打赏支持" },
-,
         { "name": "loading_resources", "value": "加载资源..." },
         { "name": "init_engine", "value": "初始化引擎..." },
         { "name": "prepare_reading", "value": "准备阅读体验..." },
@@ -243,7 +242,7 @@
         { "name": "note_count", "value": "笔记数量" },
         { "name": "smart_services", "value": "智能服务" },
         { "name": "online_books", "value": "在线书籍" },
-        { "name": "source_market", "value": "书源市场" },
+
         { "name": "local_import", "value": "本地导入" },
         { "name": "folder_scan", "value": "文件夹扫描" },
         { "name": "start_reading", "value": "开始阅读" },

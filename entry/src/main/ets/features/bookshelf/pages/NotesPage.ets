@@ -676,7 +676,7 @@ struct NotesPagePreview {
       Text('笔记管理 - 浅色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       NotesPage()
@@ -688,7 +688,7 @@ struct NotesPagePreview {
       Text('笔记管理 - 深色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

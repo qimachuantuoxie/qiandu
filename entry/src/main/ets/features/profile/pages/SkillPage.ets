@@ -104,7 +104,7 @@ struct SkillPage {
       }
     }
     .width('100%')
-    .padding(16)
+    .padding(Spacing.lg)
     .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
     .borderRadius(12)
     .border({
@@ -204,7 +204,7 @@ struct SkillPage {
             })
           }
           .width('100%')
-          .padding(16)
+          .padding(Spacing.lg)
         }
         .layoutWeight(1)
         .width('100%')
@@ -221,7 +221,7 @@ struct SkillPage {
             .textAlign(TextAlign.Center)
         }
         .width('100%')
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
       }
       .width('100%')
@@ -246,7 +246,7 @@ struct SkillPagePreview {
       Text('鎶€鑳戒腑蹇冮〉 - 娴呰壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       SkillPage()
@@ -258,7 +258,7 @@ struct SkillPagePreview {
       Text('鎶€鑳戒腑蹇冮〉 - 娣辫壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

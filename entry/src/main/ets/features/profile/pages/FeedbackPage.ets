@@ -155,9 +155,9 @@ struct FeedbackPage {
             .margin({ top: 8 })
         }
         .width('70%')
-        .padding(40)
+        .padding(Spacing.xxxl)
         .backgroundColor(this.bg('rgba(40, 40, 40, 0.95)', 'rgba(255, 255, 255, 0.95)'))
-        .borderRadius(24)
+        .borderRadius(BorderRadius.xl)
       }
       .alignItems(HorizontalAlign.Center)
       .justifyContent(FlexAlign.Center)
@@ -187,7 +187,7 @@ struct FeedbackPage {
               .fontColor(this.vm.feedbackType === type.id ? '#FFFFFF' : this.currentColors.textSecondary)
           }
           .padding({ left: this.isTablet ? 24 : 16, right: this.isTablet ? 24 : 16, top: 12, bottom: 12 })
-          .borderRadius(12)
+          .borderRadius(BorderRadius.md)
           .backgroundColor(this.vm.feedbackType === type.id ? '#1976D2' : this.bg('rgba(255, 255, 255, 0.3)', 'rgba(255, 255, 255, 0.05)'))
           .onClick(() => {
             this.vm.setType(type.id);
@@ -198,7 +198,7 @@ struct FeedbackPage {
     }
     .width('100%')
     .padding(this.isTablet ? 24 : 20)
-    .borderRadius(16)
+    .borderRadius(BorderRadius.lg)
     .backgroundColor(this.bg('rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.08)'))
   }
 
@@ -225,7 +225,7 @@ struct FeedbackPage {
         .placeholderColor(this.currentColors.textHint)
         .backgroundColor(this.bg('rgba(255, 255, 255, 0.3)', 'rgba(255, 255, 255, 0.05)'))
         .borderRadius(12)
-        .padding(12)
+        .padding(Spacing.md)
         .onChange((value: string) => {
           this.vm.setContent(value);
         })
@@ -244,7 +244,7 @@ struct FeedbackPage {
     }
     .width('100%')
     .padding(this.isTablet ? 24 : 20)
-    .borderRadius(16)
+    .borderRadius(BorderRadius.lg)
     .backgroundColor(this.bg('rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.08)'))
   }
 
@@ -273,8 +273,8 @@ struct FeedbackPage {
         .fontColor(this.currentColors.textHint)
     }
     .width('100%')
-    .padding(20)
-    .borderRadius(16)
+    .padding(Spacing.xl)
+    .borderRadius(BorderRadius.lg)
     .backgroundColor(this.bg('rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.08)'))
   }
 
@@ -287,7 +287,7 @@ struct FeedbackPage {
       .fontColor(this.vm.content.trim() ? '#FFFFFF' : this.currentColors.textHint)
       .fontSize(this.scaleFontSize(16))
       .fontWeight(FontWeight.Medium)
-      .borderRadius(26)
+      .borderRadius(BorderRadius.xl)
       .enabled(!this.vm.isSubmitting && !!this.vm.content.trim())
       .onClick(() => this.submitFeedback())
       .margin({ top: 12, bottom: 40 })
@@ -303,7 +303,7 @@ struct FeedbackPagePreview {
       Text('鎰忚�鍙嶉�锟?- 娴呰壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       FeedbackPage()
@@ -315,7 +315,7 @@ struct FeedbackPagePreview {
       Text('鎰忚�鍙嶉�锟?- 娣辫壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

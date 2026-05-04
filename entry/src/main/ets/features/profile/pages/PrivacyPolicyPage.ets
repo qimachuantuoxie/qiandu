@@ -209,9 +209,9 @@ struct PrivacyPolicyPage {
         .fontColor(this.colors.textSecondary)
     }
     .width('100%')
-    .padding(this.isTablet ? 24 : 16)
+    .padding(this.isTablet ? Spacing.xxl : Spacing.lg)
     .backgroundColor(this.colors.background)
-    .borderRadius(12)
+    .borderRadius(BorderRadius.md)
   }
 }
 
@@ -224,7 +224,7 @@ struct PrivacyPolicyPagePreview {
       Text('隐私政策�?- 浅色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       PrivacyPolicyPage()
@@ -236,7 +236,7 @@ struct PrivacyPolicyPagePreview {
       Text('隐私政策�?- 深色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

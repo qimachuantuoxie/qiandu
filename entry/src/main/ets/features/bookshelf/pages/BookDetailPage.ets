@@ -213,7 +213,7 @@ struct BookDetailPage {
     .backgroundColor(this.bg('#FFFFFF', '#1C1C1E'))
     .padding({
       top: layoutHelper.getSafeTopPadding(),
-      bottom: Spacing.md
+      bottom: Spacing.sm
     })
   }
 
@@ -533,6 +533,7 @@ struct BookDetailPage {
                   .padding({ left: Spacing.lg })
                 }
                 .width('100%')
+                .padding({ top: Spacing.sm, bottom: Spacing.sm })
               }
 
               CommonCard({
@@ -543,6 +544,7 @@ struct BookDetailPage {
               }) {
                 this.ActionBar()
               }
+              .margin({ top: Spacing.sm, bottom: Spacing.sm })
 
               if (this.book.readProgress > 0) {
                 CommonCard({
@@ -576,6 +578,7 @@ struct BookDetailPage {
                       .fontSize(fontScaleManager.getScaledFontSize(12))
                       .fontColor(this.tc('#666666', '#AAAAAA'))
                   }
+                  .padding({ top: Spacing.md, bottom: Spacing.md })
                 }
               }
 
@@ -599,6 +602,7 @@ struct BookDetailPage {
                   CommonDivider({ isDarkMode: this.isDarkMode })
                   this.InfoItem(tr('total_pages'), String(this.book.totalPages))
                 }
+                .padding({ bottom: Spacing.sm })
               }
 
               if (this.book.description && this.book.description.length > 0) {
@@ -621,6 +625,7 @@ struct BookDetailPage {
                       .lineHeight(fontScaleManager.getScaledFontSize(22))
                       .width('100%')
                   }
+                  .padding({ top: Spacing.md, bottom: Spacing.md })
                 }
               }
 
@@ -635,7 +640,7 @@ struct BookDetailPage {
                 }
               })
               .width('90%')
-              .margin({ top: Spacing.sm, bottom: Spacing.xxxl })
+              .margin({ top: Spacing.lg, bottom: Spacing.xxxl })
             }
             .width('100%')
             .padding({ 

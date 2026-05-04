@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 统一标签组件
  * 支持多种样式、尺寸、可关闭和无障碍访问
  */
@@ -13,13 +13,13 @@ import { COMMON_COLORS } from '../../utils/AppTheme';
  * @closable - 是否可关闭
  * @onClose - 关闭按钮回调
  */
-@Component
+@ComponentV2
 export struct AppTag {
-  @Prop text: string = '';
-  @Prop type: 'primary' | 'success' | 'warning' | 'error' | 'info' = 'primary';
-  @Prop size: 'sm' | 'md' | 'lg' = 'md';
-  @Prop closable: boolean = false;
-  @Prop isDarkMode: boolean = false;
+  @Param text: string = '';
+  @Param type: 'primary' | 'success' | 'warning' | 'error' | 'info' = 'primary';
+  @Param size: 'sm' | 'md' | 'lg' = 'md';
+  @Param closable: boolean = false;
+  @Param isDarkMode: boolean = false;
   onClose?: () => void;
 
   /**

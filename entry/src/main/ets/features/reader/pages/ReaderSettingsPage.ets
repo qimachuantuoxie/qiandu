@@ -113,7 +113,7 @@ struct ReaderSettingsPage {
             this.buildScreenSettings()
           }
         }
-        .width('100%').padding(16)
+        .width('100%').padding(Spacing.lg)
       }
       .layoutWeight(1).width('100%')
 
@@ -122,7 +122,7 @@ struct ReaderSettingsPage {
           .layoutWeight(1).height(44)
           .backgroundColor(this.bg('#F5F5F5', '#3C3C3E'))
           .fontColor(this.tc('#666666', '#AAAAAA')).fontSize(16)
-          .borderRadius(12)
+          .borderRadius(BorderRadius.md)
           .onClick(() => {
             readerSettingsViewModel.resetToDefault();
             promptAction.showToast({ message: '宸查噸缃�负榛樿�璁剧疆', duration: 1500 });
@@ -132,10 +132,10 @@ struct ReaderSettingsPage {
           .layoutWeight(1).height(44)
           .backgroundColor(this.currentColors.primary)
           .fontColor('#FFFFFF').fontSize(16)
-          .borderRadius(12)
+          .borderRadius(BorderRadius.md)
           .onClick(() => { this.saveSettings(); })
       }
-      .width('100%').padding(16)
+      .width('100%').padding(Spacing.lg)
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
     }
     .width('100%').height('100%')
@@ -164,7 +164,7 @@ struct ReaderSettingsPage {
           })
         }
       }
-      .width('100%').padding(16)
+      .width('100%').padding(Spacing.lg)
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E')).borderRadius(12)
 
       Column({ space: 12 }) {
@@ -175,12 +175,12 @@ struct ReaderSettingsPage {
               .fontSize(14).padding({ left: 12, right: 12, top: 6, bottom: 6 })
               .backgroundColor(readerSettingsViewModel.fontSize === size ? this.currentColors.primary : this.bg('#F5F5F5', '#3C3C3E'))
               .fontColor(readerSettingsViewModel.fontSize === size ? '#FFFFFF' : this.tc('#666666', '#AAAAAA'))
-              .borderRadius(16)
+              .borderRadius(BorderRadius.lg)
               .onClick(() => { readerSettingsViewModel.fontSize = size; })
           })
         }
       }
-      .width('100%').padding(16)
+      .width('100%').padding(Spacing.lg)
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E')).borderRadius(12)
 
       Column({ space: 12 }) {
@@ -195,7 +195,7 @@ struct ReaderSettingsPage {
           .width('100%').selectedColor(this.currentColors.primary)
           .onChange((value: number) => { readerSettingsViewModel.lineHeight = value; })
       }
-      .width('100%').padding(16)
+      .width('100%').padding(Spacing.lg)
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E')).borderRadius(12)
 
       Column({ space: 12 }) {
@@ -210,7 +210,7 @@ struct ReaderSettingsPage {
           .width('100%').selectedColor(this.currentColors.primary)
           .onChange((value: number) => { readerSettingsViewModel.pageMargin = value; })
       }
-      .width('100%').padding(16)
+      .width('100%').padding(Spacing.lg)
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E')).borderRadius(12)
 
       Row() {
@@ -218,7 +218,7 @@ struct ReaderSettingsPage {
         Toggle({ type: ToggleType.Switch, isOn: readerSettingsViewModel.showPageNumber })
           .onChange((isOn: boolean) => { readerSettingsViewModel.showPageNumber = isOn; })
       }
-      .width('100%').padding(16)
+      .width('100%').padding(Spacing.lg)
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E')).borderRadius(12)
     }
   }
@@ -231,7 +231,7 @@ struct ReaderSettingsPage {
         Toggle({ type: ToggleType.Switch, isOn: readerSettingsViewModel.enableTTS })
           .onChange((isOn: boolean) => { readerSettingsViewModel.enableTTS = isOn; })
       }
-      .width('100%').padding(16)
+      .width('100%').padding(Spacing.lg)
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E')).borderRadius(12)
 
       Column({ space: 12 }) {
@@ -242,12 +242,12 @@ struct ReaderSettingsPage {
               .fontSize(14).padding({ left: 12, right: 12, top: 6, bottom: 6 })
               .backgroundColor(readerSettingsViewModel.selectedVoice === voice ? this.currentColors.primary : this.bg('#F5F5F5', '#3C3C3E'))
               .fontColor(readerSettingsViewModel.selectedVoice === voice ? '#FFFFFF' : this.tc('#666666', '#AAAAAA'))
-              .borderRadius(16)
+              .borderRadius(BorderRadius.lg)
               .onClick(() => { readerSettingsViewModel.selectedVoice = voice; })
           })
         }
       }
-      .width('100%').padding(16)
+      .width('100%').padding(Spacing.lg)
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E')).borderRadius(12)
 
       Column({ space: 12 }) {
@@ -262,7 +262,7 @@ struct ReaderSettingsPage {
           .width('100%').selectedColor(this.currentColors.primary)
           .onChange((value: number) => { readerSettingsViewModel.ttsSpeed = value; })
       }
-      .width('100%').padding(16)
+      .width('100%').padding(Spacing.lg)
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E')).borderRadius(12)
 
       Column({ space: 12 }) {
@@ -277,7 +277,7 @@ struct ReaderSettingsPage {
           .width('100%').selectedColor(this.currentColors.primary)
           .onChange((value: number) => { readerSettingsViewModel.ttsVolume = value / 100; })
       }
-      .width('100%').padding(16)
+      .width('100%').padding(Spacing.lg)
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E')).borderRadius(12)
     }
   }
@@ -291,21 +291,21 @@ struct ReaderSettingsPage {
           Text('宸﹀彸婊戝姩').fontSize(14).padding({ left: 12, right: 12, top: 6, bottom: 6 })
             .backgroundColor(readerSettingsViewModel.comicReadMode === 0 ? this.currentColors.primary : this.bg('#F5F5F5', '#3C3C3E'))
             .fontColor(readerSettingsViewModel.comicReadMode === 0 ? '#FFFFFF' : this.tc('#666666', '#AAAAAA'))
-            .borderRadius(16)
+            .borderRadius(BorderRadius.lg)
             .onClick(() => { readerSettingsViewModel.comicReadMode = 0; })
           Text('涓婁笅婊戝姩').fontSize(14).padding({ left: 12, right: 12, top: 6, bottom: 6 })
             .backgroundColor(readerSettingsViewModel.comicReadMode === 1 ? this.currentColors.primary : this.bg('#F5F5F5', '#3C3C3E'))
             .fontColor(readerSettingsViewModel.comicReadMode === 1 ? '#FFFFFF' : this.tc('#666666', '#AAAAAA'))
-            .borderRadius(16)
+            .borderRadius(BorderRadius.lg)
             .onClick(() => { readerSettingsViewModel.comicReadMode = 1; })
           Text('鑷�姩鎾�斁').fontSize(14).padding({ left: 12, right: 12, top: 6, bottom: 6 })
             .backgroundColor(readerSettingsViewModel.comicReadMode === 2 ? this.currentColors.primary : this.bg('#F5F5F5', '#3C3C3E'))
             .fontColor(readerSettingsViewModel.comicReadMode === 2 ? '#FFFFFF' : this.tc('#666666', '#AAAAAA'))
-            .borderRadius(16)
+            .borderRadius(BorderRadius.lg)
             .onClick(() => { readerSettingsViewModel.comicReadMode = 2; })
         }
       }
-      .width('100%').padding(16)
+      .width('100%').padding(Spacing.lg)
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E')).borderRadius(12)
 
       Column({ space: 12 }) {
@@ -316,21 +316,21 @@ struct ReaderSettingsPage {
           Text('閫傚簲瀹藉害').fontSize(14).padding({ left: 12, right: 12, top: 6, bottom: 6 })
             .backgroundColor(readerSettingsViewModel.comicScaleMode === 0 ? this.currentColors.primary : this.bg('#F5F5F5', '#3C3C3E'))
             .fontColor(readerSettingsViewModel.comicScaleMode === 0 ? '#FFFFFF' : this.tc('#666666', '#AAAAAA'))
-            .borderRadius(16)
+            .borderRadius(BorderRadius.lg)
             .onClick(() => { readerSettingsViewModel.comicScaleMode = 0; })
           Text('閫傚簲楂樺害').fontSize(14).padding({ left: 12, right: 12, top: 6, bottom: 6 })
             .backgroundColor(readerSettingsViewModel.comicScaleMode === 1 ? this.currentColors.primary : this.bg('#F5F5F5', '#3C3C3E'))
             .fontColor(readerSettingsViewModel.comicScaleMode === 1 ? '#FFFFFF' : this.tc('#666666', '#AAAAAA'))
-            .borderRadius(16)
+            .borderRadius(BorderRadius.lg)
             .onClick(() => { readerSettingsViewModel.comicScaleMode = 1; })
           Text('鍘熷�澶у皬').fontSize(14).padding({ left: 12, right: 12, top: 6, bottom: 6 })
             .backgroundColor(readerSettingsViewModel.comicScaleMode === 2 ? this.currentColors.primary : this.bg('#F5F5F5', '#3C3C3E'))
             .fontColor(readerSettingsViewModel.comicScaleMode === 2 ? '#FFFFFF' : this.tc('#666666', '#AAAAAA'))
-            .borderRadius(16)
+            .borderRadius(BorderRadius.lg)
             .onClick(() => { readerSettingsViewModel.comicScaleMode = 2; })
         }
       }
-      .width('100%').padding(16)
+      .width('100%').padding(Spacing.lg)
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E')).borderRadius(12)
 
       Column({ space: 12 }) {
@@ -345,7 +345,7 @@ struct ReaderSettingsPage {
           .width('100%').selectedColor(this.currentColors.primary)
           .onChange((value: number) => { readerSettingsViewModel.autoPlayInterval = value; })
       }
-      .width('100%').padding(16)
+      .width('100%').padding(Spacing.lg)
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E')).borderRadius(12)
     }
   }
@@ -358,7 +358,7 @@ struct ReaderSettingsPage {
         Toggle({ type: ToggleType.Switch, isOn: readerSettingsViewModel.keepScreenOn })
           .onChange((isOn: boolean) => { readerSettingsViewModel.keepScreenOn = isOn; })
       }
-      .width('100%').padding(16)
+      .width('100%').padding(Spacing.lg)
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E')).borderRadius(12)
 
       Column({ space: 12 }) {
@@ -373,7 +373,7 @@ struct ReaderSettingsPage {
           .width('100%').selectedColor(this.currentColors.primary)
           .onChange((value: number) => { readerSettingsViewModel.brightness = Math.round(value) / 100; })
       }
-      .width('100%').padding(16)
+      .width('100%').padding(Spacing.lg)
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E')).borderRadius(12)
 
       Row() {
@@ -381,7 +381,7 @@ struct ReaderSettingsPage {
         Toggle({ type: ToggleType.Switch, isOn: readerSettingsViewModel.fullScreenMode })
           .onChange((isOn: boolean) => { readerSettingsViewModel.fullScreenMode = isOn; })
       }
-      .width('100%').padding(16)
+      .width('100%').padding(Spacing.lg)
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E')).borderRadius(12)
 
       Row() {
@@ -389,7 +389,7 @@ struct ReaderSettingsPage {
         Toggle({ type: ToggleType.Switch, isOn: readerSettingsViewModel.hideStatusBar })
           .onChange((isOn: boolean) => { readerSettingsViewModel.hideStatusBar = isOn; })
       }
-      .width('100%').padding(16)
+      .width('100%').padding(Spacing.lg)
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E')).borderRadius(12)
     }
   }
@@ -404,7 +404,7 @@ struct ReaderSettingsPagePreview {
       Text('闃呰�鍣ㄨ�缃�〉 - 娴呰壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       ReaderSettingsPage()
@@ -416,7 +416,7 @@ struct ReaderSettingsPagePreview {
       Text('闃呰�鍣ㄨ�缃�〉 - 娣辫壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

@@ -28,20 +28,20 @@ export interface UnifiedHeaderConfig {
   height?: number;
 }
 
-@Component
+@ComponentV2
 export struct UnifiedHeader {
-  @Prop title: string = '';
-  @Prop subtitle: string = '';
-  @Prop showBack: boolean = true;
-  @Prop backgroundColor: string = '';
-  @Prop textColor: string = '';
-  @Prop isDarkMode: boolean = false;
-  @Prop rightActions: HeaderAction[] = [];
-  @Prop gradientColors: Array<[string, number]> = [];
-  @Prop height: number = 0; // 0表示自动根据设备类型确定
-  @State currentColors: AppColors = themeManager.getColors();
-  @State fontScale: number = 1.0;
-  @State actualHeight: number = 56;
+  @Param title: string = '';
+  @Param subtitle: string = '';
+  @Param showBack: boolean = true;
+  @Param backgroundColor: string = '';
+  @Param textColor: string = '';
+  @Param isDarkMode: boolean = false;
+  @Param rightActions: HeaderAction[] = [];
+  @Param gradientColors: Array<[string, number]> = [];
+  @Param height: number = 0; // 0表示自动根据设备类型确定
+  @Local currentColors: AppColors = themeManager.getColors();
+  @Local fontScale: number = 1.0;
+  @Local actualHeight: number = 56;
   
   onBack?: () => void;
   @BuilderParam actions: () => void = () => {};

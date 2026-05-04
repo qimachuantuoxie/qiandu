@@ -14,14 +14,14 @@ export interface HeaderAction {
   action: () => void;
 }
 
-@Component
+@ComponentV2
 export struct CommonHeader {
-  @Prop title: string = '';
-  @Prop isDarkMode: boolean = false;
-  @Prop showBack: boolean = true;
-  @Prop backgroundColor?: string;
-  @Prop rightActions: HeaderAction[] = [];
-  @Prop colors?: AppColors;
+  @Param title: string = '';
+  @Param isDarkMode: boolean = false;
+  @Param showBack: boolean = true;
+  @Param backgroundColor?: string;
+  @Param rightActions: HeaderAction[] = [];
+  @Param colors?: AppColors;
   onBack?: () => void;
 
   build() {
@@ -40,14 +40,14 @@ export struct CommonHeader {
 
 // ============ 渐变背景头部 ============
 
-@Component
+@ComponentV2
 export struct GradientHeader {
-  @Prop title: string = '';
-  @Prop subtitle: string = '';
-  @Prop isDarkMode: boolean = false;
-  @Prop showBack: boolean = true;
-  @Prop gradientColors: Array<[string, number]> = [];
-  @Prop rightActions: HeaderAction[] = [];
+  @Param title: string = '';
+  @Param subtitle: string = '';
+  @Param isDarkMode: boolean = false;
+  @Param showBack: boolean = true;
+  @Param gradientColors: Array<[string, number]> = [];
+  @Param rightActions: HeaderAction[] = [];
 
 private getDefaultGradient(): Array<[string, number]> {
 if (this.gradientColors.length > 0) {
@@ -151,12 +151,12 @@ export interface TabItem {
   badge?: number;
 }
 
-@Component
+@ComponentV2
 export struct TabHeader {
-  @Prop tabs: TabItem[] = [];
-  @Prop currentTab: string = '';
-  @Prop isDarkMode: boolean = false;
-  @Prop colors?: AppColors;
+  @Param tabs: TabItem[] = [];
+  @Param currentTab: string = '';
+  @Param isDarkMode: boolean = false;
+  @Param colors?: AppColors;
   onTabChange?: (tabKey: string) => void;
 
   private getPrimaryColor(): string {

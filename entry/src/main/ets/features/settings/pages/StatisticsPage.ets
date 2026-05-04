@@ -134,8 +134,12 @@ this.TopBar()
     }
     .width('100%')
     .height(56)
-    .padding({ left: 16, right: 16 })
-.backgroundColor(this.currentColors.cardBackground)
+    .padding({ left: Spacing.lg, right: Spacing.lg })
+    .backgroundColor(this.currentColors.cardBackground)
+    .padding(Spacing.lg)
+      top: layoutHelper.getSafeTopPadding(),
+      bottom: Spacing.sm
+    })
   }
   
   @Builder
@@ -175,30 +179,30 @@ this.statItem('book_fill', '鎬讳功绫嶆暟', this.statistics.totalBooks + '�
 
   @Builder
   statItem(icon: string, label: string, value: string, color: string) {
-    Column({ space: 8 }) {
-      // 鍥炬爣瀹瑰櫒 - 甯︽笎鍙樿儗锟?
+    Column({ space: Spacing.sm }) {
+      // 图标容器 - 带渐变背景
       Column() {
         Text(icon)
-          .fontSize(this.isTablet ? 34 : 28)
+          .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(34) : fontScaleManager.getScaledFontSize(28))
       }
-      .width(this.isTablet ? 56 : 48)
-      .height(this.isTablet ? 56 : 48)
-      .borderRadius(14)
+      .width(this.isTablet ? Size.avatarXL : Size.avatarLG)
+      .height(this.isTablet ? Size.avatarXL : Size.avatarLG)
+      .borderRadius(BorderRadius.lg)
       .backgroundColor(color + '15')
       .justifyContent(FlexAlign.Center)
 
       Text(value)
-        .fontSize(this.isTablet ? 24 : 20)
+        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(24) : fontScaleManager.getScaledFontSize(20))
         .fontWeight(FontWeight.Bold)
         .fontColor(color)
 
       Text(label)
-        .fontSize(this.isTablet ? 14 : 12)
+        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(14) : fontScaleManager.getScaledFontSize(12))
         .fontColor(this.currentColors.textSecondary)
     }
     .width('100%')
-    .padding(this.isTablet ? 24 : 16)
-    .borderRadius(12)
+    .padding(this.isTablet ? Spacing.xl : Spacing.md)
+    .borderRadius(BorderRadius.md)
     .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)')
   }
   
@@ -225,19 +229,19 @@ this.statItem('book_fill', '鎬讳功绫嶆暟', this.statistics.totalBooks + '�
   
   @Builder
   timeBlock(label: string, value: number, unit: string) {
-    Column({ space: 8 }) {
+    Column({ space: Spacing.sm }) {
       Text(value + unit)
-        .fontSize(this.isTablet ? 29 : 24)
+        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(29) : fontScaleManager.getScaledFontSize(24))
         .fontWeight(FontWeight.Bold)
         .fontColor(this.currentColors.primary)
       
       Text(label)
-        .fontSize(this.isTablet ? 14 : 12)
+        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(14) : fontScaleManager.getScaledFontSize(12))
         .fontColor(this.currentColors.textSecondary)
     }
     .layoutWeight(1)
-    .padding(this.isTablet ? 24 : 16)
-    .borderRadius(12)
+    .padding(this.isTablet ? Spacing.xl : Spacing.md)
+    .borderRadius(BorderRadius.md)
     .backgroundColor(this.currentColors.background)
   }
   
@@ -307,22 +311,22 @@ this.statItem('book_fill', '鎬讳功绫嶆暟', this.statistics.totalBooks + '�
   
   @Builder
   noteStatItem(icon: string, label: string, count: number) {
-    Column({ space: 8 }) {
+    Column({ space: Spacing.sm }) {
       Text(icon)
-        .fontSize(this.isTablet ? 34 : 28)
+        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(34) : fontScaleManager.getScaledFontSize(28))
       
       Text(count.toString())
-        .fontSize(this.isTablet ? 29 : 24)
+        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(29) : fontScaleManager.getScaledFontSize(24))
         .fontWeight(FontWeight.Bold)
         .fontColor(this.currentColors.primary)
       
       Text(label)
-        .fontSize(this.isTablet ? 14 : 12)
+        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(14) : fontScaleManager.getScaledFontSize(12))
         .fontColor(this.currentColors.textSecondary)
     }
     .layoutWeight(1)
-    .padding(this.isTablet ? 24 : 16)
-    .borderRadius(12)
+    .padding(this.isTablet ? Spacing.xl : Spacing.md)
+    .borderRadius(BorderRadius.md)
     .backgroundColor(this.currentColors.background)
   }
   

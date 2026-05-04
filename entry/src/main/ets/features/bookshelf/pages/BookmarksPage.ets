@@ -442,7 +442,7 @@ struct BookmarksPagePreview {
       Text('书签管理 - 浅色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       BookmarksPage()
@@ -454,7 +454,7 @@ struct BookmarksPagePreview {
       Text('书签管理 - 深色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

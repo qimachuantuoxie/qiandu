@@ -642,7 +642,7 @@ struct FolderScannerPage {
           }
         }
         .width('100%')
-        .padding(16)
+        .padding(Spacing.lg)
         .backgroundColor(this.theme.background)
       }
 
@@ -719,7 +719,7 @@ struct FolderScannerPage {
                         })
                     }
                     .width('100%')
-                    .padding(12)
+                    .padding(Spacing.md)
                     .backgroundColor(this.theme.background)
                     .borderRadius(uiDesignKit.getBorderRadius(BorderRadius.MD))
                   }
@@ -728,7 +728,7 @@ struct FolderScannerPage {
               .width('100%')
             }
             .width('80%')
-            .padding(16)
+            .padding(Spacing.lg)
             .backgroundColor(this.theme.background)
             .borderRadius(uiDesignKit.getBorderRadius(BorderRadius.LG))
           }
@@ -845,7 +845,7 @@ struct FolderScannerPage {
                       }
                     }
                     .width('100%')
-                    .padding(12)
+                    .padding(Spacing.md)
                     .backgroundColor(this.theme.background)
                     .borderRadius(uiDesignKit.getBorderRadius(BorderRadius.MD))
                     .border({
@@ -898,7 +898,7 @@ struct FolderScannerPage {
           }
         }
         .width('100%')
-        .padding(16)
+        .padding(Spacing.lg)
         .backgroundColor(this.theme.background)
         .border({ width: 1, color: this.theme.success + '40' })
       }
@@ -918,7 +918,7 @@ struct FolderScannerPagePreview {
       Text('鏂囦欢澶规壂鎻忛〉 - 娴呰壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       FolderScannerPage()
@@ -930,7 +930,7 @@ struct FolderScannerPagePreview {
       Text('鏂囦欢澶规壂鎻忛〉 - 娣辫壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

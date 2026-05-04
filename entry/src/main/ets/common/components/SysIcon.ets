@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 系统符号图标组件
  * 统一封装 SymbolGlyph，简化使用方式
  * 
@@ -15,12 +15,12 @@ import { fontScaleManager } from '../../core/utils/FontScaleManager';
  * @param size 图标尺寸（默认 24）
  * @param color 图标颜色（默认当前主题色）
  */
-@Component
+@ComponentV2
 export struct SysIcon {
-  @Prop symbol: string = '';
-  @Prop size: number = 24;
-  @Prop color: string = '';
-  @State currentColors: AppColors = themeManager.getColors();
+  @Param symbol: string = '';
+  @Param size: number = 24;
+  @Param color: string = '';
+  @Local currentColors: AppColors = themeManager.getColors();
 
   build() {
     if (this.symbol && this.symbol.length > 0) {
@@ -39,10 +39,10 @@ export struct SysIcon {
 /**
  * 主色系统符号组件
  */
-@Component
+@ComponentV2
 export struct PrimaryIcon {
-  @Prop symbol: string = '';
-  @Prop size: number = 24;
+  @Param symbol: string = '';
+  @Param size: number = 24;
 
   build() {
     SymbolGlyph($r(`sys.symbol.${this.symbol}`))
@@ -54,10 +54,10 @@ export struct PrimaryIcon {
 /**
  * 次要色系统符号组件
  */
-@Component
+@ComponentV2
 export struct SecondaryIcon {
-  @Prop symbol: string = '';
-  @Prop size: number = 24;
+  @Param symbol: string = '';
+  @Param size: number = 24;
 
   build() {
     SymbolGlyph($r(`sys.symbol.${this.symbol}`))
@@ -69,10 +69,10 @@ export struct SecondaryIcon {
 /**
  * 成功色系统符号组件
  */
-@Component
+@ComponentV2
 export struct SuccessIcon {
-  @Prop symbol: string = '';
-  @Prop size: number = 24;
+  @Param symbol: string = '';
+  @Param size: number = 24;
 
   build() {
     SymbolGlyph($r(`sys.symbol.${this.symbol}`))
@@ -84,10 +84,10 @@ export struct SuccessIcon {
 /**
  * 警告色系统符号组件
  */
-@Component
+@ComponentV2
 export struct WarningIcon {
-  @Prop symbol: string = '';
-  @Prop size: number = 24;
+  @Param symbol: string = '';
+  @Param size: number = 24;
 
   build() {
     SymbolGlyph($r(`sys.symbol.${this.symbol}`))
@@ -99,10 +99,10 @@ export struct WarningIcon {
 /**
  * 错误色系统符号组件
  */
-@Component
+@ComponentV2
 export struct ErrorIcon {
-  @Prop symbol: string = '';
-  @Prop size: number = 24;
+  @Param symbol: string = '';
+  @Param size: number = 24;
 
   build() {
     SymbolGlyph($r(`sys.symbol.${this.symbol}`))

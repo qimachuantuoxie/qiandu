@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 统一提示消息组件
  * 支持多种类型、自动消失和无障碍访问
  *
@@ -10,13 +10,13 @@ import { COMMON_COLORS } from '../../utils/AppTheme';
 /**
  * AppToast 组件属性
  */
-@Component
+@ComponentV2
 export struct AppToast {
-  @Prop message: string = '';
-  @Prop type: 'success' | 'error' | 'warning' | 'info' = 'info';
-  @Prop duration: number = 2000;
-  @Prop visible: boolean = false;
-  @Prop isDarkMode: boolean = false;
+  @Param message: string = '';
+  @Param type: 'success' | 'error' | 'warning' | 'info' = 'info';
+  @Param duration: number = 2000;
+  @Param visible: boolean = false;
+  @Param isDarkMode: boolean = false;
 
   /**
    * 根据类型获取图标

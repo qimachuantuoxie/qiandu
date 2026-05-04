@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 统一头像组件
  * 支持图片、文字头像、多种尺寸和圆形/方形
  */
@@ -13,14 +13,14 @@ import { COMMON_COLORS } from '../../utils/AppTheme';
  * @shape - 头像形状：circle | square
  * @backgroundColor - 背景颜色（可选，用于文字头像）
  */
-@Component
+@ComponentV2
 export struct AppAvatar {
-  @Prop imageUrl?: string;
-  @Prop text?: string;
-  @Prop size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' = 'md';
-  @Prop shape: 'circle' | 'square' = 'circle';
-  @Prop backgroundColor?: string;
-  @Prop isDarkMode: boolean = false;
+  @Param imageUrl?: string;
+  @Param text?: string;
+  @Param size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' = 'md';
+  @Param shape: 'circle' | 'square' = 'circle';
+  @Param backgroundColor?: string;
+  @Param isDarkMode: boolean = false;
 
   /**
    * 鏍规嵁灏哄鑾峰彇澶村儚澶у皬

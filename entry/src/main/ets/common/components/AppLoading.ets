@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 统一加载指示器组件
  * 支持自定义大小、颜色和文本
  *
@@ -10,12 +10,12 @@ import { COMMON_COLORS } from '../../utils/AppTheme';
 /**
  * AppLoading 组件属性
  */
-@Component
+@ComponentV2
 export struct AppLoading {
-  @Prop text: string = '加载中...';
-  @Prop size: number = 32;
-  @Prop color: string = '';
-  @Prop isDarkMode: boolean = false;
+  @Param text: string = '加载中...';
+  @Param size: number = 32;
+  @Param color: string = '';
+  @Param isDarkMode: boolean = false;
 
   build() {
     Column({ space: 12 }) {

@@ -97,7 +97,7 @@ struct OnlineBookDetailPage {
       Text('>')
         .fontSize(24)
         .fontColor(this.isDarkMode ? '#FFFFFF' : '#1A1A1A')
-        .padding(8)
+        .padding(Spacing.sm)
     .width('100%')
     .height(56)
     .padding({ left: 16, right: 16 })
@@ -144,7 +144,7 @@ struct OnlineBookDetailPage {
           this.buildTocPreview()
         }
       }
-      .padding(16)
+      .padding(Spacing.lg)
     }
     .layoutWeight(1)
   }
@@ -158,7 +158,7 @@ struct OnlineBookDetailPage {
           .width(120)
           .height(160)
           .objectFit(ImageFit.Cover)
-          .borderRadius(12)
+          .borderRadius(BorderRadius.md)
       } else {
         Column() {
           Text('📚')
@@ -168,7 +168,7 @@ struct OnlineBookDetailPage {
         .height(160)
         .justifyContent(FlexAlign.Center)
         .backgroundColor(this.isDarkMode ? '#2C2C2E' : '#E8E8E8')
-        .borderRadius(12)
+        .borderRadius(BorderRadius.md)
       }
 
       // 书籍信息
@@ -205,9 +205,9 @@ struct OnlineBookDetailPage {
       .justifyContent(FlexAlign.SpaceBetween)
     }
     .width('100%')
-    .padding(16)
+    .padding(Spacing.lg)
     .backgroundColor(this.isDarkMode ? '#2C2C2E' : '#FFFFFF')
-    .borderRadius(12)
+    .borderRadius(BorderRadius.md)
   }
 
   @Builder
@@ -228,9 +228,9 @@ struct OnlineBookDetailPage {
         .textOverflow({ overflow: this.showFullIntro ? TextOverflow.Clip : TextOverflow.Ellipsis })
     }
     .width('100%')
-    .padding(16)
+    .padding(Spacing.lg)
     .backgroundColor(this.isDarkMode ? '#2C2C2E' : '#FFFFFF')
-    .borderRadius(12)
+    .borderRadius(BorderRadius.md)
     .onClick(() => this.showFullIntro = !this.showFullIntro)
   }
 
@@ -245,7 +245,7 @@ struct OnlineBookDetailPage {
         .fontWeight(FontWeight.Bold)
         .backgroundColor(COMMON_COLORS.PRIMARY_BLUE)
         .fontColor('#FFFFFF')
-        .borderRadius(24)
+        .borderRadius(BorderRadius.xl)
         .onClick(() => this.addToBookshelf())
 
       // 查看目录
@@ -256,7 +256,7 @@ struct OnlineBookDetailPage {
         .fontWeight(FontWeight.Bold)
         .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)')
         .fontColor(this.isDarkMode ? '#FFFFFF' : '#1A1A1A')
-        .borderRadius(24)
+        .borderRadius(BorderRadius.xl)
         .onClick(() => this.currentTab = 1)
     }
     .width('100%')
@@ -297,15 +297,15 @@ struct OnlineBookDetailPage {
           }
           .width('100%')
           .padding({ top: 12, bottom: 12 })
-          .borderRadius(8)
+          .borderRadius(BorderRadius.sm)
           .onClick(() => this.startReading(chapter))
         }, (chapter: OnlineChapterInfo) => chapter.title + chapter.index)
       }
     }
     .width('100%')
-    .padding(16)
+    .padding(Spacing.lg)
     .backgroundColor(this.isDarkMode ? '#2C2C2E' : '#FFFFFF')
-    .borderRadius(12)
+    .borderRadius(BorderRadius.md)
   }
 
   // ==================== 目录Tab ====================
@@ -361,7 +361,7 @@ struct OnlineBookDetailPage {
                     .fontColor('#FFFFFF')
                     .padding({ left: 6, right: 6, top: 2, bottom: 2 })
                     .backgroundColor('#FF6B6B')
-                    .borderRadius(4)
+                    .borderRadius(BorderRadius.xs)
                 }
               }
               .width('100%')
@@ -481,7 +481,7 @@ struct OnlineBookDetailPagePreview {
       Text('在线书籍详情�?- 浅色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       OnlineBookDetailPage()
@@ -493,7 +493,7 @@ struct OnlineBookDetailPagePreview {
       Text('在线书籍详情�?- 深色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

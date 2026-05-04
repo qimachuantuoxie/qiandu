@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 统一评分组件
  * 支持自定义星级、只读模式和无障碍访问
  */
@@ -13,13 +13,13 @@ import { COMMON_COLORS } from '../../utils/AppTheme';
  * @size - 星星大小
  * @onChange - 评分变化回调
  */
-@Component
+@ComponentV2
 export struct AppRating {
-  @Prop value: number = 0;
-  @Prop max: number = 5;
-  @Prop readOnly: boolean = false;
-  @Prop size: number = 20;
-  @Prop isDarkMode: boolean = false;
+  @Param value: number = 0;
+  @Param max: number = 5;
+  @Param readOnly: boolean = false;
+  @Param size: number = 20;
+  @Param isDarkMode: boolean = false;
   onChange?: (value: number) => void;
 
   build() {

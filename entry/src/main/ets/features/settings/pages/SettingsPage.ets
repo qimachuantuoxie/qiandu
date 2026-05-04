@@ -100,7 +100,7 @@ struct SettingsPage {
     }
     .width('100%')
     .height('100%')
-    .padding({ top: Spacing.lg, bottom: Spacing.lg })
+    .padding({ top: layoutHelper.getSafeTopPadding(), bottom: Spacing.lg })
   }
 
   @Builder
@@ -121,10 +121,14 @@ struct SettingsPage {
             onClickCallback: (): void => { goBack(); } 
           })
         }
-        .height(56)
+        .height(Size.buttonLG)
         .padding({ left: Spacing.lg, right: Spacing.lg })
         .backgroundColor(this.currentColors.surface)
         .shadow(getShadow('sm', this.isDarkMode))
+        .padding({
+          top: layoutHelper.getSafeTopPadding(),
+          bottom: Spacing.sm
+        })
       }
       
       // 閹靛�婧€缁旑垱鐖ｇ粵鎯у瀼锟?
@@ -217,6 +221,7 @@ struct SettingsPage {
       .height(Size.buttonLG)
       .padding({ left: Spacing.lg, right: Spacing.lg })
       .backgroundColor(this.currentColors.surface)
+      .borderRadius(BorderRadius.sm)
       
       Divider().margin({ left: Spacing.lg })
       
@@ -258,7 +263,7 @@ struct SettingsPage {
         .fontColor(this.currentColors.textSecondary)
         .padding(Spacing.lg)
       
-      // 鎼存梻鏁ゆ穱鈩冧紖閸楋紕锟?
+      // 应用信息卡片
       Column({ space: 0 }) {
         this.buildAboutItem(tr('app_name_label'), tr('app_name'))
         Divider().margin({ left: Spacing.lg })
@@ -275,8 +280,9 @@ struct SettingsPage {
       .margin({ top: Spacing.sm })
       .borderRadius(BorderRadius.md)
       .shadow(getShadow('sm', this.isDarkMode))
+      .padding({ top: Spacing.sm, bottom: Spacing.sm })
       
-      // 閻楀牊娼堟稉搴㈡杺缁涙牕宕遍敓?
+      // 版权和法律信息卡片
       Column({ space: 0 }) {
         this.buildAboutItem(tr('copyright'), 'Copyright 2026')
         Divider().margin({ left: Spacing.lg })
@@ -291,6 +297,7 @@ struct SettingsPage {
       .margin({ top: Spacing.lg })
       .borderRadius(BorderRadius.md)
       .shadow(getShadow('sm', this.isDarkMode))
+      .padding({ top: Spacing.sm, bottom: Spacing.sm })
       
       // 閹垛偓閺堫垱鐖ら崡锛勫�
       Column({ space: 0 }) {
@@ -327,6 +334,10 @@ struct SettingsPage {
     .height(50)
     .padding({ left: Spacing.lg, right: Spacing.lg })
     .onClick((): void => clickAction())
+    .stateStyles({
+      pressed: { .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)') },
+      normal: { .backgroundColor('Transparent') }
+    })
   }
 
   @Builder

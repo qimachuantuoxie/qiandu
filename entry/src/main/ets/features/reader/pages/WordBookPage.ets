@@ -259,7 +259,7 @@ export default struct WordBookPage {
       .width(40)
       .height(40)
       .backgroundColor(this.tc('rgba(0,0,0,0.3)', 'rgba(255,255,255,0.3)'))
-      .borderRadius(20)
+      .borderRadius(BorderRadius.xl)
       .onClick(() => { try { goBack(); } catch(e) { logger.error('back error:', e); } })
 
       Text('\u751f\u8bcd\u672c')
@@ -305,7 +305,7 @@ export default struct WordBookPage {
         }
         .layoutWeight(1)
         .padding({ left: 8 })
-        .borderRadius(20)
+        .borderRadius(BorderRadius.xl)
         .backgroundColor(this.isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)')
 
         Row({ space: 4 }) {
@@ -318,7 +318,7 @@ export default struct WordBookPage {
             .fontColor(HarmonyColors.primary)
         }
         .padding({ left: 12, right: 12, top: 8, bottom: 8 })
-        .borderRadius(12)
+        .borderRadius(BorderRadius.md)
         .backgroundColor(this.isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)')
         .onClick(() => {
           const sorts: string[] = ['time', 'alpha', 'mastered'];
@@ -378,7 +378,7 @@ export default struct WordBookPage {
       }
       .width(40)
       .height(40)
-      .borderRadius(20)
+      .borderRadius(BorderRadius.xl)
       .backgroundColor(word.mastered ? 'rgba(76, 175, 80, 0.1)' : (this.isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)'))
       .justifyContent(FlexAlign.Center)
       .onClick(() => {
@@ -406,7 +406,7 @@ export default struct WordBookPage {
 
       Text('\uD83D\uDDD1')
         .fontSize(18)
-        .padding(8)
+        .padding(Spacing.sm)
         .onClick(() => {
           this.deleteWord(word.word);
         })
@@ -495,9 +495,9 @@ export default struct WordBookPage {
       .margin({ top: 24 })
     }
     .width('80%')
-    .padding(24)
+    .padding(Spacing.xxl)
     .backgroundColor(this.isDarkMode ? 'rgba(40, 40, 40, 0.95)' : 'rgba(255, 255, 255, 0.95)')
-    .borderRadius(16)
+    .borderRadius(BorderRadius.lg)
   }
 }
 
@@ -510,7 +510,7 @@ struct WordBookPagePreview {
       Text('鐢熻瘝鏈�〉 - 娴呰壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       WordBookPage()
@@ -522,7 +522,7 @@ struct WordBookPagePreview {
       Text('鐢熻瘝鏈�〉 - 娣辫壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

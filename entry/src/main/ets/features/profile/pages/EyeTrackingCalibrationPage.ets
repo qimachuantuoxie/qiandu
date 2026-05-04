@@ -102,7 +102,7 @@ export struct EyeTrackingCalibrationPage {
         .textAlign(TextAlign.End)
     }
     .width('100%')
-    .padding(12)
+    .padding(Spacing.md)
     .backgroundColor(this.currentColors.surface)
   }
 
@@ -326,7 +326,7 @@ struct EyeTrackingCalibrationPagePreview {
       Text('閻�厧濮╂潻鍊熼嚋閺嶁€冲櫙妞?- 濞村懓澹婂Ο鈥崇础')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       EyeTrackingCalibrationPage()
@@ -338,7 +338,7 @@ struct EyeTrackingCalibrationPagePreview {
       Text('閻�厧濮╂潻鍊熼嚋閺嶁€冲櫙妞?- 濞ｈ精澹婂Ο鈥崇础')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

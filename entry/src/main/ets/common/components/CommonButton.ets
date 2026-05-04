@@ -47,15 +47,15 @@ export interface ButtonConfig {
   icon?: string;
 }
 
-@Component
+@ComponentV2
 export struct CommonButton {
-  @Prop text: string = '按钮';
-  @Prop type: ButtonType = ButtonType.PRIMARY;
-  @Prop buttonSize: ButtonSize = ButtonSize.MEDIUM;
-  @Prop isEnabled: boolean = true;
-  @Prop icon: string = '';
-  @Prop isDarkMode: boolean = false;
-  @Prop colors: AppColors = LIGHT_COLORS;
+  @Param text: string = '按钮';
+  @Param type: ButtonType = ButtonType.PRIMARY;
+  @Param buttonSize: ButtonSize = ButtonSize.MEDIUM;
+  @Param isEnabled: boolean = true;
+  @Param icon: string = '';
+  @Param isDarkMode: boolean = false;
+  @Param colors: AppColors = LIGHT_COLORS;
   onButtonClick?: () => void;
 
   private getButtonColors(): ButtonColorMap {
@@ -165,13 +165,13 @@ export enum CardType {
   GLASS = 'glass' // 毛玻璃效果
 }
 
-@Component
+@ComponentV2
 export struct CommonCard {
-  @Prop type: CardType = CardType.DEFAULT;
-  @Prop isDarkMode: boolean = false;
-  @Prop cornerRadius: number = 12;
-  @Prop containerPadding: number = 16;
-  @Prop marginBottom: number = 0;
+  @Param type: CardType = CardType.DEFAULT;
+  @Param isDarkMode: boolean = false;
+  @Param cornerRadius: number = 12;
+  @Param containerPadding: number = 16;
+  @Param marginBottom: number = 0;
   @BuilderParam content: () => void = this.emptyBuilder;
 
   @Builder
@@ -233,15 +233,15 @@ export interface ListItemAction {
   text: string;
 }
 
-@Component
+@ComponentV2
 export struct CommonListItem {
-  @Prop icon: string = '';
-  @Prop title: string = '';
-  @Prop subtitle: string = '';
-  @Prop action: ListItemAction = {text: '', icon: ''};
-  @Prop isDarkMode: boolean = false;
-  @Prop showDivider: boolean = true;
-  @Prop cornerRadius: number = 0;
+  @Param icon: string = '';
+  @Param title: string = '';
+  @Param subtitle: string = '';
+  @Param action: ListItemAction = {text: '', icon: ''};
+  @Param isDarkMode: boolean = false;
+  @Param showDivider: boolean = true;
+  @Param cornerRadius: number = 0;
   onListItemClick?: () => void;
 
   build() {

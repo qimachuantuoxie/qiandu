@@ -53,7 +53,7 @@ export struct DiscoverContent {
 
       Text('\ud83d\udd0d')
         .fontSize(20)
-        .padding(8)
+        .padding(Spacing.sm)
     }
     .width('100%')
     .height(60)
@@ -81,7 +81,7 @@ export struct DiscoverContent {
         })
       }
       .width('100%')
-      .padding(16)
+      .padding(Spacing.lg)
     }
     .width('100%')
     .layoutWeight(1)

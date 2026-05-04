@@ -13,7 +13,7 @@ import { BookCoverData } from '../core/services/image/DynamicCoverService';
 import { HomeContent } from '../features/home/components/HomePage';
 import { DiscoverContent } from '../features/discover/components/DiscoverPage';
 import { SettingsPage } from '../features/settings/pages/SettingsPage';
-import { TabBar } from '../common/components/TabBar';
+import { OptimizedTabBar, TabBarItem } from '../common/components/OptimizedTabBar';
 import { SearchBar } from '../common/components/SearchBar';
 import { GroupPanel, AddGroupDialog } from '../features/bookshelf/components/GroupPanel';
 import { OnlineSearchPage } from './OnlineSearchPage';
@@ -34,6 +34,15 @@ struct MainPage {
   @Provide('pageInfos') pageInfos: NavPathStack = new NavPathStack();
   private mainPageVM: MainPageViewModel = mainPageViewModel;
   @State screenInfo: ScreenInfo | null = null;
+  
+  // TabBar配置 - 5个标签页
+  private tabBarItems: TabBarItem[] = [
+    { icon: 'house.fill', activeIcon: 'house.fill', label: '首页' },
+    { icon: 'book.fill', activeIcon: 'book.fill', label: '书架' },
+    { icon: 'magnifyingglass', activeIcon: 'magnifyingglass.circle.fill', label: '书城' },
+    { icon: 'compass.drawing', activeIcon: 'compass.drawing', label: '发现' },
+    { icon: 'person', activeIcon: 'person.fill', label: '我的' }
+  ];
 
   /**
    * 椤甸潰鍒濆锟?
@@ -469,10 +478,13 @@ struct MainPage {
 
           // 底部导航栏 - 始终可见
           if (!this.mainPageVM.isBatchMode) {
-            TabBar({
-              currentTab: this.mainPageVM.currentTab,
-              isDarkMode: this.mainPageVM.isDarkMode,
-              onTabChange: (index: number) => this.mainPageVM.currentTab = index
+            OptimizedTabBar({
+              config: {
+                items: this.tabBarItems,
+                currentIndex: this.mainPageVM.currentTab,
+                isDarkMode: this.mainPageVM.isDarkMode,
+                onTabChange: (index: number) => this.mainPageVM.currentTab = index
+              }
             })
           }
         }

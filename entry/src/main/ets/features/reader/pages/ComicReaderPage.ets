@@ -249,7 +249,7 @@ struct ComicReaderPage {
         .backgroundColor('rgba(0,0,0,0.5)')
         .fontColor('#FFFFFF')
         .fontSize(20)
-        .borderRadius(20)
+        .borderRadius(BorderRadius.xl)
         .onClick(() => goBack())
 
       // 鏍囬�
@@ -268,7 +268,7 @@ struct ComicReaderPage {
         .backgroundColor('rgba(0,0,0,0.5)')
         .fontColor('#FFFFFF')
         .fontSize(18)
-        .borderRadius(20)
+        .borderRadius(BorderRadius.xl)
         .margin({ right: 8 })
         .onClick(() => this.toggleOrientation())
 
@@ -279,7 +279,7 @@ struct ComicReaderPage {
         .backgroundColor('rgba(0,0,0,0.5)')
         .fontColor('#FFFFFF')
         .fontSize(18)
-        .borderRadius(20)
+        .borderRadius(BorderRadius.xl)
         .onClick(() => {
           this.showSettings = !this.showSettings;
         })
@@ -337,7 +337,7 @@ struct ComicReaderPage {
             .fontColor('#FFFFFF')
             .padding({ left: 8, right: 8, top: 4, bottom: 4 })
             .backgroundColor('rgba(0,0,0,0.5)')
-            .borderRadius(12)
+            .borderRadius(BorderRadius.md)
             .position({ x: '50%', y: '90%' })
             .translate({ x: '-50%' })
         }
@@ -400,7 +400,7 @@ struct ComicReaderPage {
           .backgroundColor('rgba(255,255,255,0.2)')
           .fontColor('#FFFFFF')
           .fontSize(FontSize.SM)
-          .borderRadius(20)
+          .borderRadius(BorderRadius.xl)
           .onClick(() => this.previousPage())
 
         Button('Next')
@@ -409,7 +409,7 @@ struct ComicReaderPage {
           .backgroundColor('rgba(0,125,255,0.8)')
           .fontColor('#FFFFFF')
           .fontSize(FontSize.SM)
-          .borderRadius(20)
+          .borderRadius(BorderRadius.xl)
           .onClick(() => this.nextPage())
       }
     }
@@ -453,7 +453,7 @@ struct ComicReaderPage {
             .backgroundColor(this.readMode === ComicReadMode.SINGLE_PAGE ? this.theme.primary : this.theme.backgroundSecondary)
             .fontColor(this.readMode === ComicReadMode.SINGLE_PAGE ? '#FFFFFF' : this.theme.textSecondary)
             .fontSize(FontSize.SM)
-            .borderRadius(16)
+            .borderRadius(BorderRadius.lg)
             .onClick(async () => {
               this.readMode = ComicReadMode.SINGLE_PAGE;
               await comicReader.updateConfig({ readMode: this.readMode });
@@ -464,7 +464,7 @@ struct ComicReaderPage {
             .backgroundColor(this.readMode === ComicReadMode.DOUBLE_PAGE ? this.theme.primary : this.theme.backgroundSecondary)
             .fontColor(this.readMode === ComicReadMode.DOUBLE_PAGE ? '#FFFFFF' : this.theme.textSecondary)
             .fontSize(FontSize.SM)
-            .borderRadius(16)
+            .borderRadius(BorderRadius.lg)
             .onClick(async () => {
               this.readMode = ComicReadMode.DOUBLE_PAGE;
               await comicReader.updateConfig({ readMode: this.readMode });
@@ -476,7 +476,7 @@ struct ComicReaderPage {
             .backgroundColor(this.readMode === ComicReadMode.WEBTOON ? this.theme.primary : this.theme.backgroundSecondary)
             .fontColor(this.readMode === ComicReadMode.WEBTOON ? '#FFFFFF' : this.theme.textSecondary)
             .fontSize(FontSize.SM)
-            .borderRadius(16)
+            .borderRadius(BorderRadius.lg)
             .onClick(async () => {
               this.readMode = ComicReadMode.WEBTOON;
               await comicReader.updateConfig({ readMode: this.readMode });
@@ -499,7 +499,7 @@ struct ComicReaderPage {
             .backgroundColor(this.scaleMode === ComicScaleMode.FIT_WIDTH ? this.theme.primary : this.theme.backgroundSecondary)
             .fontColor(this.scaleMode === ComicScaleMode.FIT_WIDTH ? '#FFFFFF' : this.theme.textSecondary)
             .fontSize(FontSize.SM)
-            .borderRadius(16)
+            .borderRadius(BorderRadius.lg)
             .onClick(async () => {
               this.scaleMode = ComicScaleMode.FIT_WIDTH;
               await comicReader.updateConfig({ scaleMode: this.scaleMode });
@@ -510,7 +510,7 @@ struct ComicReaderPage {
             .backgroundColor(this.scaleMode === ComicScaleMode.FIT_HEIGHT ? this.theme.primary : this.theme.backgroundSecondary)
             .fontColor(this.scaleMode === ComicScaleMode.FIT_HEIGHT ? '#FFFFFF' : this.theme.textSecondary)
             .fontSize(FontSize.SM)
-            .borderRadius(16)
+            .borderRadius(BorderRadius.lg)
             .onClick(async () => {
               this.scaleMode = ComicScaleMode.FIT_HEIGHT;
               await comicReader.updateConfig({ scaleMode: this.scaleMode });
@@ -550,7 +550,7 @@ struct ComicReaderPage {
       .width('100%')
     }
     .width('90%')
-    .padding(20)
+    .padding(Spacing.xl)
     .backgroundColor(this.theme.background)
     .borderRadius(uiDesignKit.getBorderRadius(BorderRadius.XL))
     .shadow({
@@ -573,7 +573,7 @@ struct ComicReaderPagePreview {
       Text('婕�敾闃呰�锟?- 娴呰壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       ComicReaderPage()
@@ -585,7 +585,7 @@ struct ComicReaderPagePreview {
       Text('婕�敾闃呰�锟?- 娣辫壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

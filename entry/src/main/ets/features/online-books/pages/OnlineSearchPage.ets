@@ -106,7 +106,7 @@ export struct OnlineSearchPage {
         .backgroundColor(this.currentColors.surfaceVariant)
         .fontColor(this.currentColors.onSurface)
         .fontSize(16 * this.fontScale)
-        .borderRadius(20)
+        .borderRadius(BorderRadius.xl)
         .onChange((value: string) => {
           this.searchKeyword = value;
         })
@@ -126,7 +126,7 @@ export struct OnlineSearchPage {
         })
     }
     .width('100%')
-    .padding(12)
+    .padding(Spacing.md)
     .backgroundColor(this.currentColors.surface)
   }
 
@@ -140,7 +140,7 @@ export struct OnlineSearchPage {
         // 鎼滅储鍘嗗彶
         this.buildHistoryView()
       }
-      .padding(16)
+      .padding(Spacing.lg)
       .width('100%')
     }
     .layoutWeight(1)
@@ -172,7 +172,7 @@ export struct OnlineSearchPage {
             .padding({ left: 16, right: 16, top: 8, bottom: 8 })
             .margin(4)
             .backgroundColor(this.currentColors.surface)
-            .borderRadius(16)
+            .borderRadius(BorderRadius.lg)
             .onClick(() => {
               this.searchKeyword = keyword;
               this.performSearch();
@@ -183,7 +183,7 @@ export struct OnlineSearchPage {
     .width('100%')
     .padding(16)
     .backgroundColor(this.currentColors.surface)
-    .borderRadius(12)
+    .borderRadius(BorderRadius.md)
   }
 
   @Builder
@@ -215,40 +215,40 @@ export struct OnlineSearchPage {
               .width(80)
               .height(110)
               .fill(this.currentColors.surfaceVariant)
-              .borderRadius(8)
+              .borderRadius(BorderRadius.sm)
 
             Column({ space: 8 }) {
               Rect()
                 .width('60%')
                 .height(18)
                 .fill(this.currentColors.surfaceVariant)
-                .borderRadius(4)
+                .borderRadius(BorderRadius.xs)
 
               Rect()
                 .width('40%')
                 .height(14)
                 .fill(this.currentColors.surfaceVariant)
-                .borderRadius(4)
+                .borderRadius(BorderRadius.xs)
 
               Rect()
                 .width('30%')
                 .height(12)
                 .fill(this.currentColors.surfaceVariant)
-                .borderRadius(4)
+                .borderRadius(BorderRadius.xs)
             }
             .alignItems(HorizontalAlign.Start)
             .layoutWeight(1)
             .margin({ left: 12 })
           }
           .width('100%')
-          .padding(12)
+          .padding(Spacing.md)
           .backgroundColor(this.currentColors.surface)
-          .borderRadius(12)
+          .borderRadius(BorderRadius.md)
         }
       })
     }
     .layoutWeight(1)
-    .padding(12)
+    .padding(Spacing.md)
     .width('100%')
   }
 
@@ -281,7 +281,7 @@ export struct OnlineSearchPage {
         }, (result: OnlineSearchResult) => result.bookUrl + result.sourceId)
       }
       .layoutWeight(1)
-      .padding(12)
+      .padding(Spacing.md)
       .width('100%')
     }
     .layoutWeight(1)
@@ -343,9 +343,9 @@ export struct OnlineSearchPage {
         .fontColor([this.currentColors.onSurfaceVariant])
     }
     .width('100%')
-    .padding(12)
+    .padding(Spacing.md)
     .backgroundColor(this.currentColors.surface)
-    .borderRadius(12)
+    .borderRadius(BorderRadius.md)
     .onClick(() => {
       this.openBookDetail(result);
     })
@@ -408,7 +408,7 @@ export struct OnlineSearchPage {
               .padding({ left: 16, right: 16, top: 8, bottom: 8 })
               .margin(4)
               .backgroundColor(this.currentColors.surface)
-              .borderRadius(16)
+              .borderRadius(BorderRadius.lg)
               .onClick(() => {
                 this.searchKeyword = keyword;
                 this.performSearch();
@@ -421,13 +421,13 @@ export struct OnlineSearchPage {
           .fontColor(this.currentColors.onSurfaceVariant)
           .width('100%')
           .textAlign(TextAlign.Center)
-          .padding(20)
+          .padding(Spacing.xl)
       }
     }
     .width('100%')
     .padding(16)
     .backgroundColor(this.currentColors.surface)
-    .borderRadius(12)
+    .borderRadius(BorderRadius.md)
   }
 
   private async performSearch(): Promise<void> {
@@ -550,7 +550,7 @@ struct OnlineSearchPagePreview {
       Text('鍦ㄧ嚎鎼滅储锟?- 娴呰壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       OnlineSearchPage()
@@ -562,7 +562,7 @@ struct OnlineSearchPagePreview {
       Text('鍦ㄧ嚎鎼滅储锟?- 娣辫壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

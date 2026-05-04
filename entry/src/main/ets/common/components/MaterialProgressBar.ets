@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 自写 Material 风格进度条组件
  * 仿 MaterialProgressBar 效果，无外部依赖
  * 支持线性/环形、颜色、二级进度、渐变等
@@ -25,10 +25,10 @@ export interface MaterialModel {
   active?: boolean;         // 是否启用动画
 }
 
-@Component
+@ComponentV2
 export struct MaterialProgressBar {
-  @Prop style: 'MaterialCircular' | 'MaterialHorizontal' | 'SmoothCircular' | 'SmoothHorizontal' = 'MaterialHorizontal';
-  @Prop modelBuild?: MaterialModel;
+  @Param style: 'MaterialCircular' | 'MaterialHorizontal' | 'SmoothCircular' | 'SmoothHorizontal' = 'MaterialHorizontal';
+  @Param modelBuild?: MaterialModel;
 
   private progressValue: number = 0;
   private secondProgressValue: number = 0;

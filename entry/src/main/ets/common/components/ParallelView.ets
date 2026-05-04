@@ -47,21 +47,21 @@ const DEFAULT_CONFIG: ParallelViewConfig = {
   maxLeftWidth: 600
 };
 
-@Component
+@ComponentV2
 export struct ParallelView {
   // 配置
-  @Prop config: ParallelViewConfig = DEFAULT_CONFIG;
-  @Prop isDarkMode: boolean = false;
+  @Param config: ParallelViewConfig = DEFAULT_CONFIG;
+  @Param isDarkMode: boolean = false;
   
   // 状态
-  @State leftWidth: number = 0;
-  @State rightWidth: number = 0;
-  @State containerWidth: number = 0;
-  @State isDragging: boolean = false;
+  @Local leftWidth: number = 0;
+  @Local rightWidth: number = 0;
+  @Local containerWidth: number = 0;
+  @Local isDragging: boolean = false;
   
   // 折叠状态
-  @State foldStatus: FoldStatus = FoldStatus.UNKNOWN;
-  @State shouldShowParallel: boolean = false;
+  @Local foldStatus: FoldStatus = FoldStatus.UNKNOWN;
+  @Local shouldShowParallel: boolean = false;
   
   // 内容构建器
   @BuilderParam leftContent: () => void;

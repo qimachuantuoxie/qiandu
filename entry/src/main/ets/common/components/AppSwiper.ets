@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 统一轮播组件
  * 支持自动播放、指示器和无障碍访问
  */
@@ -15,18 +15,18 @@ import { COMMON_COLORS } from '../../utils/AppTheme';
  * @indicatorColor - 指示器激活颜色（可选）
  * @onIndexChanged - 索引变化回调
  */
-@Component
+@ComponentV2
 export struct AppSwiper {
   @BuilderParam content: (index: number) => void;
-  @Prop count: number = 0;
-  @Prop autoPlay: boolean = true;
-  @Prop interval: number = 3000;
-  @Prop showIndicator: boolean = true;
-  @Prop indicatorColor?: string;
-  @Prop isDarkMode: boolean = false;
+  @Param count: number = 0;
+  @Param autoPlay: boolean = true;
+  @Param interval: number = 3000;
+  @Param showIndicator: boolean = true;
+  @Param indicatorColor?: string;
+  @Param isDarkMode: boolean = false;
   onIndexChanged?: (index: number) => void;
 
-  @State currentIndex: number = 0;
+  @Local currentIndex: number = 0;
 
   build() {
     Stack() {

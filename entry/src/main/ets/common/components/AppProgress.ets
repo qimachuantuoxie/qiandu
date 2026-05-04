@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 统一进度条组件
  * 支持线性/环形进度、自定义颜色和无障碍访问
  */
@@ -13,14 +13,14 @@ import { COMMON_COLORS } from '../../common/constants/AppTheme';
  * @color - 进度条颜色（可选）
  * @showText - 是否显示百分比文本
  */
-@Component
+@ComponentV2
 export struct AppProgress {
-  @Prop value: number = 0;
-  @Prop max: number = 100;
-  @Prop type: 'linear' | 'circular' = 'linear';
-  @Prop color?: string;
-  @Prop showText: boolean = true;
-  @Prop isDarkMode: boolean = false;
+  @Param value: number = 0;
+  @Param max: number = 100;
+  @Param type: 'linear' | 'circular' = 'linear';
+  @Param color?: string;
+  @Param showText: boolean = true;
+  @Param isDarkMode: boolean = false;
 
   build() {
     if (this.type === 'linear') {

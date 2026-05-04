@@ -5,11 +5,11 @@
 
 import { goBack } from '../utils/NavigationHelper';
 
-@Component
+@ComponentV2
 export struct BackButton {
-  @Prop isDarkMode: boolean = false;
-  @Prop colors: string = ''; // 可选：自定义颜色
-  @Prop size: number = 40; // 按钮尺寸
+  @Param isDarkMode: boolean = false;
+  @Param colors: string = ''; // 可选：自定义颜色
+  @Param size: number = 40; // 按钮尺寸
   private onBack?: () => void;
 
   private getBgColor(): string {

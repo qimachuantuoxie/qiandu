@@ -243,7 +243,7 @@ struct DictionaryPage {
                   .lineHeight(22)
               }
               .width('100%')
-              .padding(12)
+              .padding(Spacing.md)
               .borderRadius(8)
               .backgroundColor(this.isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)')
             }, (def: Definition, index: number) => def.partOfSpeech + index)
@@ -269,7 +269,7 @@ struct DictionaryPage {
                     .fontColor(this.colors.textSecondary)
                 }
                 .width('100%')
-                .padding(12)
+                .padding(Spacing.md)
                 .borderRadius(8)
                 .backgroundColor(this.isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)')
               }, (example: Example, index: number) => example.sentence + index)
@@ -304,7 +304,7 @@ struct DictionaryPage {
           }
         }
         .width('100%')
-        .padding(16)
+        .padding(Spacing.lg)
       }
       .layoutWeight(1)
     }
@@ -347,7 +347,7 @@ struct DictionaryPage {
       }
     }
     .width('100%')
-    .padding(16)
+    .padding(Spacing.lg)
   }
 }
 

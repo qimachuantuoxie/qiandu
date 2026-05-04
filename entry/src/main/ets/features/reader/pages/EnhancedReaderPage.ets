@@ -670,7 +670,7 @@ struct EnhancedReaderPage {
     }
     .width('100%')
     .height('100%')
-    .padding(16)
+    .padding(Spacing.lg)
   }
 
   @Builder
@@ -710,9 +710,9 @@ struct EnhancedReaderPage {
                 }
               }
               .width('100%')
-              .padding(16)
+              .padding(Spacing.lg)
               .backgroundColor(this.isDarkMode ? '#2C2C2E' : '#FFF')
-              .borderRadius(8)
+              .borderRadius(BorderRadius.sm)
               .onClick(() => {
                 // 璺宠浆鍒颁功绛句�?
                 this.isMenuVisible = false;
@@ -771,9 +771,9 @@ struct EnhancedReaderPage {
                 }
               }
               .width('100%')
-              .padding(16)
+              .padding(Spacing.lg)
               .backgroundColor(this.isDarkMode ? '#2C2C2E' : '#FFF')
-              .borderRadius(8)
+              .borderRadius(BorderRadius.sm)
             }
           }, (note: Note) => note.id)
         }
@@ -936,7 +936,7 @@ text: 'Cancel',
       .justifyContent(FlexAlign.Center)
       .width('100%')
     }
-    .padding(24)
+    .padding(Spacing.xxl)
     .width('100%')
     .backgroundColor(this.isDarkMode ? '#2C2C2E' : '#FFFFFF')
     .borderRadius({ topLeft: 16, topRight: 16 })
@@ -1014,7 +1014,7 @@ text: 'Cancel',
           .width(48)
           .height(48)
           .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)')
-          .borderRadius(24)
+          .borderRadius(BorderRadius.xl)
           .justifyContent(FlexAlign.Center)
           .onClick(() => this.onTTSPreviousPage())
 
@@ -1040,7 +1040,7 @@ text: 'Cancel',
           .width(56)
           .height(56)
           .backgroundColor('#007DFF')
-          .borderRadius(28)
+          .borderRadius(BorderRadius.xxl)
           .justifyContent(FlexAlign.Center)
           .onClick(() => this.toggleNovelTTS())
 
@@ -1066,7 +1066,7 @@ text: 'Cancel',
           .width(48)
           .height(48)
           .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)')
-          .borderRadius(24)
+          .borderRadius(BorderRadius.xl)
           .justifyContent(FlexAlign.Center)
           .onClick(() => this.onTTSNextPage())
         }
@@ -1160,7 +1160,7 @@ text: 'Cancel',
           .width(48)
           .height(48)
           .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)')
-          .borderRadius(24)
+          .borderRadius(BorderRadius.xl)
           .justifyContent(FlexAlign.Center)
           .onClick(() => this.stopAudio())
 
@@ -1173,7 +1173,7 @@ text: 'Cancel',
           .width(56)
           .height(56)
           .backgroundColor('#007DFF')
-          .borderRadius(28)
+          .borderRadius(BorderRadius.xxl)
           .justifyContent(FlexAlign.Center)
           .onClick(() => this.toggleAudioPlayPause())
 
@@ -1186,7 +1186,7 @@ text: 'Cancel',
           .width(48)
           .height(48)
           .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)')
-          .borderRadius(24)
+          .borderRadius(BorderRadius.xl)
           .justifyContent(FlexAlign.Center)
           .onClick(() => this.pickAndPlayAudio())
         }
@@ -1241,7 +1241,7 @@ text: 'Cancel',
             .fontColor(this.aiActiveTab === 0 ? '#FFFFFF' : this.isDarkMode ? '#AAAAAA' : '#666666')
             .padding({ left: 12, right: 12, top: 6, bottom: 6 })
             .backgroundColor(this.aiActiveTab === 0 ? '#007DFF' : this.isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)')
-            .borderRadius(16)
+            .borderRadius(BorderRadius.lg)
             .onClick(() => {
               this.aiActiveTab = 0;
               if (!this.aiSummaryText) {
@@ -1255,7 +1255,7 @@ text: 'Cancel',
             .fontColor(this.aiActiveTab === 1 ? '#FFFFFF' : this.isDarkMode ? '#AAAAAA' : '#666666')
             .padding({ left: 12, right: 12, top: 6, bottom: 6 })
             .backgroundColor(this.aiActiveTab === 1 ? '#007DFF' : this.isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)')
-            .borderRadius(16)
+            .borderRadius(BorderRadius.lg)
             .onClick(() => {
               this.aiActiveTab = 1;
               if (!this.aiTranslationText) {

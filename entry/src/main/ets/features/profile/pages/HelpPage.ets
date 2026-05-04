@@ -245,7 +245,7 @@ struct HelpPage {
           })
         }
         .width('100%')
-        .padding(16)
+        .padding(Spacing.lg)
       }
       .layoutWeight(1)
     }
@@ -313,9 +313,9 @@ struct HelpPage {
       .scrollBar(BarState.Off)
     }
     .width('100%')
-    .padding(16)
+    .padding(Spacing.lg)
     .backgroundColor(this.getBgColor('#FFFFFF', '#2C2C2E'))
-    .borderRadius(16)
+    .borderRadius(BorderRadius.lg)
   }
 
   /**
@@ -369,7 +369,7 @@ struct HelpPage {
         .height(32)
         .justifyContent(FlexAlign.Center)
         .backgroundColor(this.getCurrentCategoryColor())
-        .borderRadius(8)
+        .borderRadius(BorderRadius.sm)
 
         Text(item.question)
           .fontSize(15)
@@ -390,9 +390,9 @@ struct HelpPage {
       }
     }
     .width('100%')
-    .padding(16)
+    .padding(Spacing.lg)
     .backgroundColor(this.isDarkMode ? '#2C2C2E' : '#FFFFFF')
-    .borderRadius(16)
+    .borderRadius(BorderRadius.lg)
     .onClick((): void => {
       this.expandedIndex = this.expandedIndex === index ? -1 : index
     })
@@ -428,7 +428,7 @@ struct HelpPagePreview {
       Text('甯�姪涓�績锟?- 娴呰壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       HelpPage()
@@ -440,7 +440,7 @@ struct HelpPagePreview {
       Text('甯�姪涓�績锟?- 娣辫壊妯″紡')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

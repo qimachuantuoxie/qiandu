@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 统一空状态组件
  * 支持自定义图标、文本和操作按钮
  *
@@ -10,13 +10,13 @@ import { COMMON_COLORS } from '../../utils/AppTheme';
 /**
  * AppEmpty 组件属性
  */
-@Component
+@ComponentV2
 export struct AppEmpty {
-  @Prop icon: string = '📭';
-  @Prop title: string = '暂无数据';
-  @Prop subtitle: string = '';
-  @Prop actionText: string = '';
-  @Prop isDarkMode: boolean = false;
+  @Param icon: string = '📭';
+  @Param title: string = '暂无数据';
+  @Param subtitle: string = '';
+  @Param actionText: string = '';
+  @Param isDarkMode: boolean = false;
   onActionCallback?: () => void;
 
   build() {

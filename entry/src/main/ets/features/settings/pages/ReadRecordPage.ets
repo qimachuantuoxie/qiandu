@@ -94,77 +94,77 @@ struct ReadRecordPage {
 
   @Builder
   StatCard(title: string, value: string, icon: string, color: string) {
-    Column({ space: 8 }) {
+    Column({ space: Spacing.sm }) {
       Text(icon)
-        .fontSize(this.isTablet ? 28 : 24)
+        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(28) : fontScaleManager.getScaledFontSize(24))
       Text(value)
-        .fontSize(this.isTablet ? 24 : 20)
+        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(24) : fontScaleManager.getScaledFontSize(20))
         .fontWeight(FontWeight.Bold)
         .fontColor(color)
       Text(title)
-        .fontSize(this.isTablet ? 14 : 12)
+        .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(14) : fontScaleManager.getScaledFontSize(12))
         .fontColor(this.tc('#999999', '#888888'))
     }
     .width('30%')
-    .padding(this.isTablet ? 24 : 16)
+    .padding(this.isTablet ? Spacing.xl : Spacing.md)
     .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
-    .borderRadius(12)
+    .borderRadius(BorderRadius.md)
   }
 
   @Builder
   TabButton(label: string, type: TabType) {
     Button(label)
       .width(80)
-      .height(32)
-      .fontSize(13)
+      .height(Size.buttonSM)
+      .fontSize(fontScaleManager.getScaledFontSize(13))
       .backgroundColor(this.currentTab === type ? this.currentColors.primary : '#F5F5F5')
       .fontColor(this.currentTab === type ? '#FFFFFF' : '#666666')
-      .borderRadius(16)
+      .borderRadius(BorderRadius.full)
       .onClick(() => { this.currentTab = type; })
   }
 
   @Builder
   RecordItem(record: ReadRecord) {
-    Row({ space: 12 }) {
-      Column({ space: 4 }) {
+    Row({ space: Spacing.md }) {
+      Column({ space: Spacing.xs }) {
         Text(record.bookTitle)
-          .fontSize(16)
+          .fontSize(fontScaleManager.getScaledFontSize(16))
           .fontWeight(FontWeight.Medium)
           .fontColor(this.tc('#333333', '#FFFFFF'))
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
-        Row({ space: 8 }) {
+        Row({ space: Spacing.sm }) {
           Text(`${record.startPage}-${record.endPage}页`)
-            .fontSize(12)
+            .fontSize(fontScaleManager.getScaledFontSize(12))
             .fontColor(this.tc('#666666', '#AAAAAA'))
           Text('|')
-            .fontSize(12)
+            .fontSize(fontScaleManager.getScaledFontSize(12))
             .fontColor(this.tc('#999999', '#888888'))
           Text(formatDuration(record.duration))
-            .fontSize(12)
+            .fontSize(fontScaleManager.getScaledFontSize(12))
             .fontColor(this.currentColors.primary)
         }
         Text(formatTime(record.endTime))
-          .fontSize(11)
+          .fontSize(fontScaleManager.getScaledFontSize(11))
           .fontColor(this.tc('#999999', '#888888'))
       }
       .layoutWeight(1)
       .alignItems(HorizontalAlign.Start)
       Button() {
         Text('×')
-          .fontSize(14)
+          .fontSize(fontScaleManager.getScaledFontSize(14))
           .fontColor(this.tc('#999999', '#888888'))
       }
-      .width(32)
-      .height(32)
+      .width(Size.avatarSM)
+      .height(Size.avatarSM)
       .backgroundColor('rgba(255,255,255,0.5)')
-      .borderRadius(16)
+      .borderRadius(BorderRadius.full)
       .onClick(() => { this.onDeleteRecord(record.id); })
     }
     .width('100%')
-    .padding(16)
+    .padding(Spacing.lg)
     .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
-    .borderRadius(8)
+    .borderRadius(BorderRadius.sm)
     .onClick(() => { this.onRecordClick(record); })
   }
 
@@ -193,28 +193,22 @@ struct ReadRecordPage {
         BackButton({ isDarkMode: this.isDarkMode })
 
         Text('阅读记录')
-          .fontSize(this.isTablet ? 22 : 18)
+          .fontSize(this.isTablet ? fontScaleManager.getScaledFontSize(22) : fontScaleManager.getScaledFontSize(18))
           .fontWeight(FontWeight.Bold)
           .fontColor(this.tc('#333333', '#FFFFFF'))
           .layoutWeight(1)
           .textAlign(TextAlign.Center)
-        Text('阅读记录')
-          .fontSize(this.isTablet ? 22 : 18)
-          .fontWeight(FontWeight.Medium)
-          .fontColor(this.tc('#333333', '#FFFFFF'))
-          .layoutWeight(1)
-          .textAlign(TextAlign.Center)
-        Button() {
-          Text('')
-            .fontSize(20)
-        }
-        .width(40)
-        .height(40)
+
+        Blank()
       }
       .width('100%')
-      .height(this.isTablet ? 64 : 56)
-      .padding({ left: this.isTablet ? 24 : 8, right: this.isTablet ? 24 : 8 })
+      .height(this.isTablet ? Size.buttonXL : Size.buttonLG)
+      .padding({ left: this.isTablet ? Spacing.xl : Spacing.md, right: this.isTablet ? Spacing.xl : Spacing.md })
       .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
+      .padding({
+        top: layoutHelper.getSafeTopPadding(),
+        bottom: Spacing.sm
+      })
 
       Scroll() {
         Column({ space: 16 }) {
@@ -274,7 +268,7 @@ struct ReadRecordPagePreview {
       Text('阅读记录�?- 浅色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#F0F0F0')
 
       ReadRecordPage()
@@ -286,7 +280,7 @@ struct ReadRecordPagePreview {
       Text('阅读记录�?- 深色模式')
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
-        .padding(12)
+        .padding(Spacing.md)
         .backgroundColor('#333333')
         .fontColor('#FFFFFF')
 

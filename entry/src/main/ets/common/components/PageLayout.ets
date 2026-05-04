@@ -23,18 +23,18 @@ export interface PageLayoutConfig {
   gradientColors?: Array<[string, number]>;
 }
 
-@Component
+@ComponentV2
 export struct StandardPageLayout {
-  @Prop config: PageLayoutConfig = {
+  @Param config: PageLayoutConfig = {
     title: '',
     showBack: true,
     showHeader: true,
     padding: Spacing.lg
   };
   
-  @Prop isDarkMode: boolean = false;
-  @Prop screenInfo: ScreenInfo | null = null;
-  @State currentColors: AppColors = themeManager.getColors();
+  @Param isDarkMode: boolean = false;
+  @Param screenInfo: ScreenInfo | null = null;
+  @Local currentColors: AppColors = themeManager.getColors();
   
   @BuilderParam header?: () => void;
   @BuilderParam content: () => void;
@@ -110,19 +110,19 @@ export struct StandardPageLayout {
  * 列表页面布局组件
  * 针对列表场景优化，支持下拉刷新和加载更多
  */
-@Component
+@ComponentV2
 export struct ListPageLayout {
-  @Prop config: PageLayoutConfig = {
+  @Param config: PageLayoutConfig = {
     title: '',
     showBack: true,
     showHeader: true,
     padding: 0
   };
   
-  @Prop isDarkMode: boolean = false;
-  @Prop isLoading: boolean = false;
-  @Prop hasMore: boolean = false;
-  @State currentColors: AppColors = themeManager.getColors();
+  @Param isDarkMode: boolean = false;
+  @Param isLoading: boolean = false;
+  @Param hasMore: boolean = false;
+  @Local currentColors: AppColors = themeManager.getColors();
   
   @BuilderParam header?: () => void;
   @BuilderParam listContent: () => void;
@@ -189,9 +189,9 @@ export struct ListPageLayout {
  * 表单页面布局组件
  * 针对表单场景优化，提供统一的表单项样式
  */
-@Component
+@ComponentV2
 export struct FormPageLayout {
-  @Prop config: PageLayoutConfig = {
+  @Param config: PageLayoutConfig = {
     title: '',
     showBack: true,
     showHeader: true,

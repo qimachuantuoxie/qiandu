@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 统一UI组件库导出文件
  */
 
@@ -32,3 +32,6 @@ export { CommonHeader, HeaderAction, GradientHeader, TabHeader, TabItem } from '
 // 页面布局组件
 export { StandardPageLayout, ListPageLayout, FormPageLayout, PageLayoutConfig } from './PageLayout';
 export { UnifiedHeader } from './UnifiedHeader';
+
+// 底部导航栏组件
+export { OptimizedTabBar, TabBarItem } from './OptimizedTabBar';
