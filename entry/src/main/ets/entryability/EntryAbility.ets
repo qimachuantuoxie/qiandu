@@ -3,8 +3,8 @@
 import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window, display } from '@kit.ArkUI';
-import { displayHelper } from '../core/utils/DisplayHelper';
-import { nativeModules } from '../core/utils/NativeModules';
+import { displayHelper } utils/DisplayHelper';
+import { nativeModules } utils/NativeModules';
 import { preferenceManager } from '../core/utils/PreferenceManager';
 import { localizationUtil } from '../core/utils/LocalizationUtil';
 import { DeviceUtils } from '../core/utils/DeviceUtils';

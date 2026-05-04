@@ -14,7 +14,7 @@ import { logger } from '../../utils/Logger';
 import { fileIo } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
 import { ZipUtils } from '../utils/ZipUtils';
-import { LocalChapterInfo, ParseResult, ZipParseResult } from '../core/models/EbookTypes';
+import { LocalChapterInfo, ParseResult, ZipParseResult } from '../models/EbookTypes';
 
 /**
  * DOCX 瑙ｆ瀽鍣ㄧ被

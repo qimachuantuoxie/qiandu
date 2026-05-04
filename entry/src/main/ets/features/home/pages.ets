@@ -1,10 +1,11 @@
 import { router } from '@kit.ArkUI';
-import { themeManager, AppColors } from '../core/utils/AppTheme';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { DeviceUtils } from '../core/utils/DeviceUtils';
+import { themeManager, AppColors } from '../../../core/utils/AppTheme';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
+import { DeviceUtils } from '../../../core/utils/DeviceUtils';
 import { BackButton } from '../components/common/BackButton';
-import { featuresViewModel, FeatureItem, FeaturesViewModel } from '../core/viewmodels/FeaturesViewModel';
+import { featuresViewModel, FeatureItem, FeaturesViewModel } from '../../../core/viewmodels/FeaturesViewModel';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
+import { ThemeTokens } from '../../common/utils/ThemeTokens';
 
 @Entry
 @Component
@@ -35,14 +36,6 @@ struct FeaturesPage {
     await this.vm.init();
   }
 
-  private tc(light: string, dark: string): string {
-    return this.isDarkMode ? dark : light;
-  }
-
-  private bg(light: string, dark: string): string {
-    return this.isDarkMode ? dark : light;
-  }
-
   @Builder
   FeatureCard(item: FeatureItem) {
     Column({ space: 12 }) {
@@ -54,20 +47,20 @@ struct FeaturesPage {
           Text(item.name)
             .fontSize(this.isTablet ? 19 : 16)
             .fontWeight(FontWeight.Medium)
-            .fontColor(this.tc('#333333', '#FFFFFF'))
+            .fontColor(ThemeTokens.textPrimary())
 
           Text(item.description)
             .fontSize(this.isTablet ? 16 : 13)
-            .fontColor(this.tc('#999999', '#8E8E93'))
+            .fontColor(ThemeTokens.textSecondary())
         }
         .layoutWeight(1)
         .alignItems(HorizontalAlign.Start)
 
-        Text(item.enabled ? '已启�? : '已禁�?)
+        Text(item.enabled ? '已启用' : '已禁用')
           .fontSize(this.isTablet ? 13 : 11)
-          .fontColor(item.enabled ? '#52C41A' : '#999999')
+          .fontColor(item.enabled ? ThemeTokens.textSuccess() : ThemeTokens.textSecondary())
           .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-          .backgroundColor(item.enabled ? 'rgba(82,196,26,0.1)' : 'rgba(153,153,153,0.1)')
+          .backgroundColor(item.enabled ? ThemeTokens.bgSuccess() : ThemeTokens.bgTertiary())
           .borderRadius(10)
       }
       .width('100%')
@@ -77,9 +70,9 @@ struct FeaturesPage {
           ForEach(item.tags, (tag: string) => {
             Text(tag)
               .fontSize(this.isTablet ? 13 : 11)
-              .fontColor(this.tc('#666666', '#8E8E93'))
+              .fontColor(ThemeTokens.textSecondary())
               .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-              .backgroundColor(this.bg('#F0F0F0', '#2C2C2E'))
+              .backgroundColor(ThemeTokens.bgTertiary())
               .borderRadius(8)
           }, (tag: string) => tag)
         }
@@ -88,7 +81,7 @@ struct FeaturesPage {
     }
     .width('100%')
     .padding(this.isTablet ? 24 : 16)
-    .backgroundColor(this.bg('#FFFFFF', '#2C2C2E'))
+    .backgroundColor(ThemeTokens.bgSecondary())
     .borderRadius(12)
     .margin({ top: 8 })
   }
@@ -98,16 +91,16 @@ struct FeaturesPage {
       Row() {
         BackButton({ isDarkMode: this.isDarkMode })
 
-        Text('功能特�?)
+        Text('功能特性')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
-          .fontColor(this.tc('#333333', '#FFFFFF'))
+          .fontColor(ThemeTokens.textPrimary())
           .layoutWeight(1)
 
         Text('功能中心')
           .fontSize(18)
           .fontWeight(FontWeight.Medium)
-          .fontColor(this.tc('#333333', '#FFFFFF'))
+          .fontColor(ThemeTokens.textPrimary())
           .layoutWeight(1)
           .textAlign(TextAlign.Center)
 
@@ -117,21 +110,21 @@ struct FeaturesPage {
       .width('100%')
       .height(52)
       .padding({ left: 4, right: 16 })
-      .backgroundColor(this.bg('#FFFFFF', '#1C1C1E'))
+      .backgroundColor(ThemeTokens.bgSecondary())
 
       Column({ space: 8 }) {
         Text('千读阅界')
           .fontSize(22)
           .fontWeight(FontWeight.Bold)
-          .fontColor(this.tc('#333333', '#FFFFFF'))
+          .fontColor(ThemeTokens.textPrimary())
 
         Text('Core Features')
           .fontSize(14)
-          .fontColor(this.tc('#999999', '#8E8E93'))
+          .fontColor(ThemeTokens.textSecondary())
       }
       .width('100%')
       .padding(20)
-      .backgroundColor(this.bg('#FFFFFF', '#1C1C1E'))
+      .backgroundColor(ThemeTokens.bgSecondary())
 
       Scroll() {
         Column({ space: 16 }) {
@@ -146,7 +139,7 @@ struct FeaturesPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.bg('#F5F5F5', '#1C1C1E'))
+    .backgroundColor(ThemeTokens.bgPrimary())
   }
 }
 

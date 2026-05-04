@@ -6,7 +6,7 @@ import { navHelper } from './utils/NavigationHelper';
 
 // 导入所有页面组件
 import { LoginPage } from './features/profile/pages/LoginPage';
-import { MainPage } from './features/home/pages/MainPage';
+import { MainPage } from './features/home/pages.ets/MainPage';
 import { ProfilePage } from './features/profile/pages/ProfilePage';
 import { BookDetailPage } from './features/bookshelf/pages/BookDetailPage';
 import { EnhancedReaderPage } from './features/reader/pages/EnhancedReaderPage';
@@ -24,7 +24,7 @@ import { StatisticsPage } from './features/settings/pages/StatisticsPage';
 import { SettingsPage } from './features/settings/pages/SettingsPage';
 import { PrivacyPolicyPage } from './features/profile/pages/PrivacyPolicyPage';
 import { UserAgreementPage } from './features/profile/pages/UserAgreementPage';
-import { FeaturesPage } from './features/home/pages/FeaturesPage';
+import { FeaturesPage } from './features/home/pages.ets/FeaturesPage';
 import { BookmarksPage } from './features/bookshelf/pages/BookmarksPage';
 import { NotesPage } from './features/bookshelf/pages/NotesPage';
 import { FeedbackPage } from './features/profile/pages/FeedbackPage';

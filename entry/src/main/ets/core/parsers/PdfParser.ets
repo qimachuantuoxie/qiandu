@@ -20,7 +20,7 @@ import {
   PdfBookmarkItem,
   PdfBookmarkResult,
   PdfInfoResult
-} from '../core/models/EbookTypes';
+} from '../models/EbookTypes';
 
 /**
  * PDF 瑙ｆ瀽鍣ㄧ被

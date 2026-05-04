@@ -2,11 +2,12 @@ import { logger } from '../../../common/utils/Logger';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { router, promptAction } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
-import { preferenceManager } from '../core/utils/PreferenceManager';
-import { themeManager, AppColors, COMMON_COLORS } from '../core/utils/AppTheme';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
+import { preferenceManager } from '../../../core/utils/PreferenceManager';
+import { themeManager, AppColors, COMMON_COLORS } from '../../../core/utils/AppTheme';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
+import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
+import { ThemeTokens } from '../../common/utils/ThemeTokens';
 
 interface DictionaryResult {
   word: string;
@@ -96,12 +97,12 @@ struct DictionaryPage {
         Row() {
           SymbolGlyph($r('sys.symbol.chevron.left'))
             .fontSize(Size.iconLG)
-            .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
+            .fontColor([ThemeTokens.textPrimary()])
         }
         .width(Size.buttonMD)
         .height(Size.buttonMD)
         .borderRadius(BorderRadius.full)
-        .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
+        .backgroundColor(ThemeTokens.bgHover())
         .justifyContent(FlexAlign.Center)
         .onClick(() => {
           try {
@@ -119,7 +120,7 @@ struct DictionaryPage {
         Text('词典')
           .fontSize(fontScaleManager.getScaledFontSize(18))
           .fontWeight(FontWeight.SemiBold)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .fontColor(ThemeTokens.textPrimary())
           .layoutWeight(1)
           .textAlign(TextAlign.Center)
 
@@ -129,7 +130,7 @@ struct DictionaryPage {
       .width('100%')
       .height(Size.buttonLG + Spacing.sm)
       .padding({ left: Spacing.lg, right: Spacing.lg })
-      .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
+      .backgroundColor(ThemeTokens.bgSecondary())
       .shadow(getShadow('sm', this.isDarkMode))
 
       // 搜索区域
@@ -137,7 +138,7 @@ struct DictionaryPage {
         Row({ space: Spacing.sm }) {
           SymbolGlyph($r('sys.symbol.magnifyingglass'))
             .fontSize(Size.iconMD)
-            .fontColor([this.tc('#8E8E93', '#8E8E93')])
+            .fontColor([ThemeTokens.textSecondary()])
             .margin({ left: Spacing.md })
 
           TextInput({ 
@@ -145,7 +146,7 @@ struct DictionaryPage {
             text: $$this.searchText,
             onEnterKeyClick: () => this.handleSearch()
           })
-            .placeholderColor(this.tc('#C7C7CC', '#8E8E93'))
+            .placeholderColor(ThemeTokens.textTertiary())
             .fontSize(fontScaleManager.getScaledFontSize(15))
             .height(Size.inputSM + Spacing.sm)
             .backgroundColor(Color.Transparent)
@@ -158,7 +159,7 @@ struct DictionaryPage {
             Row() {
               SymbolGlyph($r('sys.symbol.xmark.circle.fill'))
                 .fontSize(Size.iconMD)
-                .fontColor([this.tc('#8E8E93', '#8E8E93')])
+                .fontColor([ThemeTokens.textSecondary()])
             }
             .width(Size.buttonMD)
             .height(Size.buttonMD)
@@ -172,7 +173,7 @@ struct DictionaryPage {
         .width('100%')
         .height(Size.inputSM + Spacing.sm)
         .padding({ left: Spacing.sm, right: Spacing.sm })
-        .backgroundColor(this.tc('#F2F2F7', '#2C2C2E'))
+        .backgroundColor(ThemeTokens.bgTertiary())
         .borderRadius(BorderRadius.xl)
 
         // 搜索按钮
@@ -241,11 +242,11 @@ struct DictionaryPage {
                   Text(this.searchResult!.word)
                     .fontSize(fontScaleManager.getScaledFontSize(24))
                     .fontWeight(FontWeight.Bold)
-                    .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+                    .fontColor(ThemeTokens.textPrimary())
 
                   Text(this.searchResult!.phonetic)
                     .fontSize(fontScaleManager.getScaledFontSize(14))
-                    .fontColor(this.tc('#8E8E93', '#8E8E93'))
+                    .fontColor(ThemeTokens.textSecondary())
                 }
                 .alignItems(HorizontalAlign.Start)
                 .layoutWeight(1)
@@ -269,7 +270,7 @@ struct DictionaryPage {
             }
             .width('100%')
             .padding(Spacing.xl)
-            .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+            .backgroundColor(ThemeTokens.bgSecondary())
             .borderRadius(BorderRadius.xl)
             .shadow(getShadow('md', this.isDarkMode))
 
@@ -285,7 +286,7 @@ struct DictionaryPage {
                   Rectangle()
                     .width('100%')
                     .height(1)
-                    .fill(this.tc('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.06)'))
+                    .fill(ThemeTokens.borderLight())
                 }
                 .width('100%')
 
@@ -295,12 +296,12 @@ struct DictionaryPage {
                       Text((idx + 1).toString() + '.')
                         .fontSize(fontScaleManager.getScaledFontSize(14))
                         .fontWeight(FontWeight.Medium)
-                        .fontColor(this.tc('#8E8E93', '#8E8E93'))
+                        .fontColor(ThemeTokens.textSecondary())
                         .width(20)
                       
                       Text(def)
                         .fontSize(fontScaleManager.getScaledFontSize(14))
-                        .fontColor(this.tc('#3A3A3C', '#E5E5EA'))
+                        .fontColor(ThemeTokens.textPrimary())
                         .lineHeight(22)
                         .layoutWeight(1)
                     }
@@ -311,7 +312,7 @@ struct DictionaryPage {
               }
               .width('100%')
               .padding(Spacing.xl)
-              .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+              .backgroundColor(ThemeTokens.bgSecondary())
               .borderRadius(BorderRadius.xl)
               .shadow(getShadow('sm', this.isDarkMode))
             }, (meaning: MeaningItem, index: number) => meaning.partOfSpeech + index)
@@ -364,24 +365,24 @@ struct DictionaryPage {
         // 空状态
         Column({ space: Spacing.xl }) {
           Column() {
-            SymbolGlyph($r('sysymbol.book.closed'))
+            SymbolGlyph($r('sys.symbol.book.closed'))
               .fontSize(Size.iconXXXL * 1.5)
-              .fontColor([this.tc('#D1D1D6', '#48484A')])
+              .fontColor([ThemeTokens.textDisabled()])
           }
           .width(100)
           .height(100)
           .borderRadius(BorderRadius.full)
-          .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+          .backgroundColor(ThemeTokens.bgHover())
           .justifyContent(FlexAlign.Center)
 
           Text('输入单词开始查询')
             .fontSize(fontScaleManager.getScaledFontSize(16))
             .fontWeight(FontWeight.Medium)
-            .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+            .fontColor(ThemeTokens.textPrimary())
 
           Text('支持中英文词典查询')
             .fontSize(fontScaleManager.getScaledFontSize(13))
-            .fontColor(this.tc('#8E8E93', '#8E8E93'))
+            .fontColor(ThemeTokens.textSecondary())
         }
         .width('100%')
         .layoutWeight(1)
@@ -390,7 +391,7 @@ struct DictionaryPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
+    .backgroundColor(ThemeTokens.bgPrimary())
   }
 }
 

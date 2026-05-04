@@ -3,11 +3,11 @@ import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { router, promptAction } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { preferenceManager } from '../core/utils/PreferenceManager';
-import { themeManager, AppColors } from '../core/utils/AppTheme';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
+import { preferenceManager } from '../../../core/utils/PreferenceManager';
+import { themeManager, AppColors } from '../../../core/utils/AppTheme';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
 import { readerSettingsViewModel } from '../viewmodels/ReaderSettingsViewModel';
-import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
+import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
 @Entry
@@ -370,7 +370,7 @@ struct ReaderSettingsPage {
       // 行间距滑块
       Column({ space: Spacing.md }) {
         Row() {
-          SymbolGlyph($r('sysymbol.textformat.line.spacing'))
+          SymbolGlyph($r('sys.symbol.textformat.line.spacing'))
             .fontSize(Size.iconMD)
             .fontColor([this.currentColors.primary])
           

@@ -58,6 +58,15 @@ export const ThemeTokens = {
   /** 选中状态背景 */
   bgSelected: (): string => themeManager.getColors().primary + '15',
   
+  /** 成功状态背景 */
+  bgSuccess: (): string => themeManager.isDarkMode() ? 'rgba(82,196,26,0.15)' : 'rgba(82,196,26,0.05)',
+  
+  /** 警告状态背景 */
+  bgWarning: (): string => themeManager.isDarkMode() ? 'rgba(250,140,22,0.15)' : 'rgba(250,140,22,0.05)',
+  
+  /** 错误状态背景 */
+  bgError: (): string => themeManager.isDarkMode() ? 'rgba(255,77,79,0.15)' : 'rgba(255,77,79,0.05)',
+  
   /** 遮罩层背景 */
   bgOverlay: (): string => themeManager.isDarkMode() ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.5)',
   

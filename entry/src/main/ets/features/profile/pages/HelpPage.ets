@@ -2,10 +2,10 @@ import { logger } from '../../../common/utils/Logger';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { router, promptAction } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
-import { preferenceManager } from '../core/utils/PreferenceManager';
-import { themeManager, AppColors, COMMON_COLORS } from '../core/utils/AppTheme';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
+import { preferenceManager } from '../../../core/utils/PreferenceManager';
+import { themeManager, AppColors, COMMON_COLORS } from '../../../core/utils/AppTheme';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
+import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
 interface FAQItem {
@@ -249,7 +249,7 @@ struct HelpPage {
               // 意见反馈
               Column({ space: Spacing.sm }) {
                 Column() {
-                  SymbolGlyph($r('sysymbol.pencil'))
+                  SymbolGlyph($r('sys.symbol.pencil'))
                     .fontSize(Size.iconXL)
                     .fontColor(['#FFFFFF'])
                 }
@@ -282,7 +282,7 @@ struct HelpPage {
           // 温馨提示
           Column({ space: Spacing.md }) {
             Row({ space: Spacing.sm }) {
-              SymbolGlyph($r('sysymbol.lightbulb.fill'))
+              SymbolGlyph($r('sys.symbol.lightbulb.fill'))
                 .fontSize(Size.iconMD)
                 .fontColor(['#FFD700'])
               

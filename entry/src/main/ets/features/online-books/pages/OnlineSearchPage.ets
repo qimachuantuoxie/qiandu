@@ -1,13 +1,13 @@
 import { logger } from '../../../common/utils/Logger';
-import { toast } from '../core/utils/ToastHelper';
+import { toast } from '../../../core/utils/ToastHelper';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { common } from '@kit.AbilityKit';
-import { onlineBookService } from '../core/services/book/OnlineBookService';
-import { OnlineSearchResult } from '../core/models/OnlineBookModel';
-import { themeManager, COMMON_COLORS, AppColors } from '../core/utils/AppTheme';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { tr } from '../core/utils/LocalizationUtil';
-import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
+import { onlineBookService } from '../../../core/services/book/OnlineBookService';
+import { OnlineSearchResult } from '../../../core/models/OnlineBookModel';
+import { themeManager, COMMON_COLORS, AppColors } from '../../../core/utils/AppTheme';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
+import { tr } from '../../../core/utils/LocalizationUtil';
+import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
 const PREFERENCES_NAME = 'search_preferences';
@@ -516,7 +516,7 @@ struct OnlineSearchPage {
   EmptyView() {
     Column({ space: Spacing.xl }) {
       Column() {
-        SymbolGlyph($r('sysymbol.magnifyingglass'))
+        SymbolGlyph($r('sys.symbol.magnifyingglass'))
           .fontSize(Size.iconXXXL * 1.5)
           .fontColor([this.tc('#D1D1D6', '#48484A')])
       }

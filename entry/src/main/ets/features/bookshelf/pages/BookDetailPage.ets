@@ -1,16 +1,16 @@
 import { logger } from '../../common/utils/Logger';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { promptAction } from '@kit.ArkUI';
-import { BookInfo, ReadStatus, BookshelfGroup } from '../core/models/CoreBookModel';
-import { bookViewModel } from '../core/viewmodels/BookViewModel';
-import { DeviceUtils } from '../core/utils/DeviceUtils';
-import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../core/utils/AppTheme';
-import { dynamicCoverService, BookCoverData } from '../core/services/image/DynamicCoverService';
-import { tr } from '../core/utils/LocalizationUtil';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
+import { BookInfo, ReadStatus, BookshelfGroup } from '../../../core/models/CoreBookModel';
+import { bookViewModel } from '../../../core/viewmodels/BookViewModel';
+import { DeviceUtils } from '../../../core/utils/DeviceUtils';
+import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../../../core/utils/AppTheme';
+import { dynamicCoverService, BookCoverData } from '../../../core/services/image/DynamicCoverService';
+import { tr } from '../../../core/utils/LocalizationUtil';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
 import { common } from '@kit.AbilityKit';
-import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
-import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
+import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
+import { layoutHelper, ScreenInfo } from '../../common/utils/LayoutHelper';
 import { ThemeTokens } from '../../common/utils/ThemeTokens';
 
 interface BookDetailParams {
@@ -287,7 +287,7 @@ struct BookDetailPage {
   ProgressCard() {
     Column({ space: Spacing.md }) {
       Row() {
-        SymbolGlyph($r('sysymbol.chart.bar.xaxis'))
+        SymbolGlyph($r('sys.symbol.chart.bar.xaxis'))
           .fontSize(Size.iconMD)
           .fontColor([this.currentColors.primary])
         
@@ -393,7 +393,7 @@ struct BookDetailPage {
       // 开始阅读按钮
       Button() {
         Row({ space: Spacing.sm }) {
-          SymbolGlyph($r('sysymbol.book.open'))
+          SymbolGlyph($r('sys.symbol.book.open'))
             .fontSize(Size.iconMD)
             .fontColor(['#FFFFFF'])
           
@@ -423,7 +423,7 @@ struct BookDetailPage {
 
       // 更多操作按钮
       Button() {
-        SymbolGlyph($r('sysymbol.trash'))
+        SymbolGlyph($r('sys.symbol.trash'))
           .fontSize(Size.iconMD)
           .fontColor(['#FFFFFF'])
       }
@@ -444,7 +444,7 @@ struct BookDetailPage {
   GroupManagement() {
     Column({ space: Spacing.md }) {
       Row() {
-        SymbolGlyph($r('sysymbol.folder'))
+        SymbolGlyph($r('sys.symbol.folder'))
           .fontSize(Size.iconMD)
           .fontColor([this.currentColors.primary])
         

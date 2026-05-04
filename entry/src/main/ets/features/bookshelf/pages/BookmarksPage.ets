@@ -2,16 +2,17 @@ import { logger } from '../../../common/utils/Logger';
 import { router, promptAction } from '@kit.ArkUI';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { common } from '@kit.AbilityKit';
-import { BookInfo, Bookmark } from '../core/models/CoreBookModel';
-import { bookViewModel } from '../core/viewmodels/BookViewModel';
-import { preferenceManager } from '../core/utils/PreferenceManager';
-import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../core/utils/AppTheme';
-import { DeviceUtils } from '../core/utils/DeviceUtils';
-import { tr } from '../core/utils/LocalizationUtil';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { LazyDataSource } from '../common/datasource/LazyDataSource';
-import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
-import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
+import { BookInfo, Bookmark } from '../../../core/models/CoreBookModel';
+import { bookViewModel } from '../../../core/viewmodels/BookViewModel';
+import { preferenceManager } from '../../../core/utils/PreferenceManager';
+import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../../../core/utils/AppTheme';
+import { DeviceUtils } from '../../../core/utils/DeviceUtils';
+import { tr } from '../../../core/utils/LocalizationUtil';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
+import { LazyDataSource } from '../../common/datasource/LazyDataSource';
+import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
+import { layoutHelper, ScreenInfo } from '../../common/utils/LayoutHelper';
+import { ThemeTokens } from '../../common/utils/ThemeTokens';
 
 interface BookmarkWithBook {
   bookmark: Bookmark;
@@ -220,12 +221,12 @@ struct BookmarksPage {
       Row() {
         SymbolGlyph($r('sys.symbol.chevron.left'))
           .fontSize(Size.iconLG)
-          .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
+          .fontColor([ThemeTokens.textPrimary()])
       }
       .width(Size.buttonMD)
       .height(Size.buttonMD)
       .borderRadius(BorderRadius.full)
-      .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
+      .backgroundColor(ThemeTokens.bgHover())
       .justifyContent(FlexAlign.Center)
       .onClick(() => {
         try {
@@ -244,11 +245,11 @@ struct BookmarksPage {
         Text(tr('bookmarks_title'))
           .fontSize(fontScaleManager.getScaledFontSize(18))
           .fontWeight(FontWeight.SemiBold)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .fontColor(ThemeTokens.textPrimary())
 
         Text(this.bookmarks.length + ' 个书签')
           .fontSize(fontScaleManager.getScaledFontSize(12))
-          .fontColor(this.tc('#8E8E93', '#8E8E93'))
+          .fontColor(ThemeTokens.textSecondary())
       }
       .layoutWeight(1)
       .alignItems(HorizontalAlign.Start)
@@ -258,12 +259,12 @@ struct BookmarksPage {
       Row() {
         SymbolGlyph($r('sys.symbol.line.horizontal.3.decrease.circle'))
           .fontSize(Size.iconMD)
-          .fontColor([this.selectedBookId ? COMMON_COLORS.PRIMARY_BLUE : this.tc('#8E8E93', '#8E8E93')])
+          .fontColor([this.selectedBookId ? COMMON_COLORS.PRIMARY_BLUE : ThemeTokens.textSecondary()])
       }
       .width(Size.buttonMD)
       .height(Size.buttonMD)
       .borderRadius(BorderRadius.full)
-      .backgroundColor(this.selectedBookId ? COMMON_COLORS.PRIMARY_BLUE + '15' : this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
+      .backgroundColor(this.selectedBookId ? COMMON_COLORS.PRIMARY_BLUE + '15' : ThemeTokens.bgHover())
       .justifyContent(FlexAlign.Center)
       .onClick(() => {
         this.showBookFilterDialog();
@@ -272,7 +273,7 @@ struct BookmarksPage {
     .width('100%')
     .height(Size.buttonLG + Spacing.sm)
     .padding({ left: Spacing.lg, right: Spacing.lg })
-    .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
+    .backgroundColor(ThemeTokens.bgSecondary())
     .shadow(getShadow('sm', this.isDarkMode))
   }
 
@@ -283,12 +284,12 @@ struct BookmarksPage {
         // 搜索图标
         SymbolGlyph($r('sys.symbol.magnifyingglass'))
           .fontSize(Size.iconSM)
-          .fontColor([this.tc('#8E8E93', '#8E8E93')])
+          .fontColor([ThemeTokens.textSecondary()])
           .margin({ left: Spacing.md })
 
         // 搜索输入框
         TextInput({ placeholder: '搜索书签...', text: $$this.searchText })
-          .placeholderColor(this.tc('#C7C7CC', '#8E8E93'))
+          .placeholderColor(ThemeTokens.textTertiary())
           .fontSize(fontScaleManager.getScaledFontSize(14))
           .height(Size.inputSM)
           .backgroundColor(Color.Transparent)
@@ -303,7 +304,7 @@ struct BookmarksPage {
           Row() {
             SymbolGlyph($r('sys.symbol.xmark.circle.fill'))
               .fontSize(Size.iconSM)
-              .fontColor([this.tc('#8E8E93', '#8E8E93')])
+              .fontColor([ThemeTokens.textSecondary()])
           }
           .width(Size.buttonSM)
           .height(Size.buttonSM)
@@ -317,7 +318,7 @@ struct BookmarksPage {
       .width('100%')
       .height(Size.inputSM)
       .padding({ left: Spacing.sm, right: Spacing.sm })
-      .backgroundColor(this.tc('#F2F2F7', '#2C2C2E'))
+      .backgroundColor(ThemeTokens.bgTertiary())
       .borderRadius(BorderRadius.xl)
 
       // 激活的筛选标签
@@ -329,7 +330,7 @@ struct BookmarksPage {
           
           Text(bookViewModel.getBookById(this.selectedBookId)?.title || '')
             .fontSize(fontScaleManager.getScaledFontSize(12))
-            .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+            .fontColor(ThemeTokens.textPrimary())
             .maxLines(1)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
             .layoutWeight(1)
@@ -437,7 +438,7 @@ struct BookmarksPage {
         Text(bookmarkWithBook.bookmark.title)
           .fontSize(fontScaleManager.getScaledFontSize(this.isTablet ? 16 : 15))
           .fontWeight(FontWeight.SemiBold)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .fontColor(ThemeTokens.textPrimary())
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .width('100%')
@@ -447,11 +448,11 @@ struct BookmarksPage {
           Row({ space: Spacing.xs }) {
             SymbolGlyph($r('sys.symbol.book'))
               .fontSize(Size.iconXS)
-              .fontColor([this.tc('#8E8E93', '#8E8E93')])
+              .fontColor([ThemeTokens.textSecondary()])
             
             Text(bookmarkWithBook.book.title)
               .fontSize(fontScaleManager.getScaledFontSize(12))
-              .fontColor(this.tc('#8E8E93', '#8E8E93'))
+              .fontColor(ThemeTokens.textSecondary())
               .maxLines(1)
               .textOverflow({ overflow: TextOverflow.Ellipsis })
               .layoutWeight(1)
@@ -464,11 +465,11 @@ struct BookmarksPage {
           Row({ space: Spacing.xs }) {
             SymbolGlyph($r('sys.symbol.clock'))
               .fontSize(Size.iconXS)
-              .fontColor([this.tc('#8E8E93', '#8E8E93')])
+              .fontColor([ThemeTokens.textSecondary()])
             
             Text(this.formatTime(bookmarkWithBook.bookmark.createTime))
               .fontSize(fontScaleManager.getScaledFontSize(11))
-              .fontColor(this.tc('#8E8E93', '#8E8E93'))
+              .fontColor(ThemeTokens.textSecondary())
           }
 
           if (bookmarkWithBook.bookmark.note) {
@@ -493,22 +494,22 @@ struct BookmarksPage {
       // 跳转箭头
       SymbolGlyph($r('sys.symbol.chevron.right'))
         .fontSize(Size.iconSM)
-        .fontColor([this.tc('#C7C7CC', '#48484A')])
+        .fontColor([ThemeTokens.textTertiary()])
     }
     .width('100%')
     .padding(Spacing.lg)
-    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .backgroundColor(ThemeTokens.bgSecondary())
     .borderRadius(BorderRadius.xl)
     .shadow(getShadow('sm', this.isDarkMode))
     .onClick(() => this.goToBookmark(bookmarkWithBook))
     .stateStyles({
-      pressed: { 
-        .scale({ x: 0.98, y: 0.98 }),
-        .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+      pressed: {
+        scale: { x: 0.98, y: 0.98 },
+        backgroundColor: ThemeTokens.bgHover()
       },
-      normal: { 
-        .scale({ x: 1, y: 1 }),
-        .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+      normal: {
+        scale: { x: 1, y: 1 },
+        backgroundColor: ThemeTokens.bgSecondary()
       }
     })
   }
@@ -519,22 +520,22 @@ struct BookmarksPage {
       Column() {
         SymbolGlyph($r('sys.symbol.bookmark'))
           .fontSize(Size.iconXXXL * 1.5)
-          .fontColor([this.tc('#D1D1D6', '#48484A')])
+          .fontColor([ThemeTokens.textDisabled()])
       }
       .width(100)
       .height(100)
       .borderRadius(BorderRadius.full)
-      .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+      .backgroundColor(ThemeTokens.bgHover())
       .justifyContent(FlexAlign.Center)
 
       Text('暂无书签')
         .fontSize(fontScaleManager.getScaledFontSize(16))
         .fontWeight(FontWeight.Medium)
-        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+        .fontColor(ThemeTokens.textPrimary())
 
       Text('阅读时添加书签，方便快速跳转')
         .fontSize(fontScaleManager.getScaledFontSize(13))
-        .fontColor(this.tc('#8E8E93', '#8E8E93'))
+        .fontColor(ThemeTokens.textSecondary())
     }
     .width('100%')
     .layoutWeight(1)

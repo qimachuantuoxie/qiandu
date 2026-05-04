@@ -1,16 +1,16 @@
 import { logger } from '../../../common/utils/Logger';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
-import folderScanner, { ScannedDocument, ScanConfig, ScanProgress, ImportResult, ScanHistory } from '../core/services/book/FolderScannerService';
-import { enhancedParser } from '../core/services/reader/EnhancedDocumentParser';
-import { DocumentFormat } from '../core/services/models/DocumentModels';
-import { bookViewModel } from '../core/viewmodels/BookViewModel';
+import folderScanner, { ScannedDocument, ScanConfig, ScanProgress, ImportResult, ScanHistory } from '../../../core/services/book/FolderScannerService';
+import { enhancedParser } from '../../../core/services/reader/EnhancedDocumentParser';
+import { DocumentFormat } from '../../../core/services/models/DocumentModels';
+import { bookViewModel } from '../../../core/viewmodels/BookViewModel';
 import { router, promptAction } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
-import { BookFormat, ReadStatus, BookInfo } from '../core/models/BookModel';
-import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../core/utils/AppTheme';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
-import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
+import { BookFormat, ReadStatus, BookInfo } from '../../../core/models/BookModel';
+import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../../../core/utils/AppTheme';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
+import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
+import { layoutHelper, ScreenInfo } from '../../common/utils/LayoutHelper';
 
 @Entry
 @ComponentV2
@@ -344,7 +344,7 @@ struct FolderScannerPage {
   EmptyState() {
     Column({ space: Spacing.xl }) {
       Column() {
-        SymbolGlyph($r('sysymbol.folder'))
+        SymbolGlyph($r('sys.symbol.folder'))
           .fontSize(Size.iconXXXL * 1.5)
           .fontColor([this.tc('#D1D1D6', '#48484A')])
       }
@@ -361,7 +361,7 @@ struct FolderScannerPage {
 
       Button() {
         Row({ space: Spacing.sm }) {
-          SymbolGlyph($r('sysymbol.folder.badge.plus'))
+          SymbolGlyph($r('sys.symbol.folder.badge.plus'))
             .fontSize(Size.iconMD)
             .fontColor(['#FFFFFF'])
           
@@ -448,7 +448,7 @@ struct FolderScannerPage {
         // 导入按钮
         Button() {
           Row({ space: Spacing.xs }) {
-            SymbolGlyph($r('sysymbol.square.and.arrow.down'))
+            SymbolGlyph($r('sys.symbol.square.and.arrow.down'))
               .fontSize(Size.iconSM)
               .fontColor(['#FFFFFF'])
             
@@ -499,7 +499,7 @@ struct FolderScannerPage {
 
       // 文件图标
       Column() {
-        SymbolGlyph($r('sysymbol.doc.text'))
+        SymbolGlyph($r('sys.symbol.doc.text'))
           .fontSize(Size.iconXL)
           .fontColor([this.currentColors.primary])
       }

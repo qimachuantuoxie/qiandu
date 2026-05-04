@@ -1,16 +1,16 @@
 import { logger } from '../../common/utils/Logger';
 import { goBack } from '../../../common/utils/NavigationHelper';
 import { common } from '@kit.AbilityKit';
-import { BookSource, BookSourceType, ReplaceRule } from '../core/models/BookSourceModel';
+import { BookSource, BookSourceType, ReplaceRule } from '../../../core/models/BookSourceModel';
 import { bookSourceViewModel, ImportResult, SourceFilterState } from '../viewmodels/BookSourceViewModel';
 import { picker, fileIo } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
-import { OnlineSourceInfo } from '../core/utils/BookSourceImporter';
-import { DeviceUtils } from '../core/utils/DeviceUtils';
-import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../core/utils/AppTheme';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { tr } from '../core/utils/LocalizationUtil';
-import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
+import { OnlineSourceInfo } from '../../../core/utils/BookSourceImporter';
+import { DeviceUtils } from '../../../core/utils/DeviceUtils';
+import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../../../core/utils/AppTheme';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
+import { tr } from '../../../core/utils/LocalizationUtil';
+import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
 @Entry
@@ -400,7 +400,7 @@ struct BookSourceManagePage {
   EmptyState() {
     Column({ space: Spacing.xl }) {
       Column() {
-        SymbolGlyph($r('sysymbol.book.closed'))
+        SymbolGlyph($r('sys.symbol.book.closed'))
           .fontSize(Size.iconXXXL * 1.5)
           .fontColor([this.tc('#D1D1D6', '#48484A')])
       }

@@ -22,7 +22,7 @@ import {
   NavPoint,
   ParseResult,
   ZipParseResult
-} from '../core/models/EbookTypes';
+} from '../models/EbookTypes';
 
 /**
  * EPUB 瑙ｆ瀽鍣ㄧ被

@@ -12,7 +12,7 @@ import { logger } from '../../utils/Logger';
 
 import { fileIo } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
-import { BookMetadata, LocalChapterInfo, ParseResult } from '../core/models/EbookTypes';
+import { BookMetadata, LocalChapterInfo, ParseResult } from '../models/EbookTypes';
 
 /**
  * TXT 瑙ｆ瀽鍣ㄧ被

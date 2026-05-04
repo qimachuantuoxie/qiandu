@@ -2,11 +2,11 @@ import { logger } from '../../../common/utils/Logger';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { router, promptAction } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
-import { preferenceManager } from '../core/utils/PreferenceManager';
-import { themeManager, AppColors } from '../core/utils/AppTheme';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
-import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
+import { preferenceManager } from '../../../core/utils/PreferenceManager';
+import { themeManager, AppColors } from '../../../core/utils/AppTheme';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
+import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
+import { layoutHelper, ScreenInfo } from '../../common/utils/LayoutHelper';
 
 interface SettingItem {
   icon: string;
@@ -306,7 +306,7 @@ struct SettingsPage {
       Column() {
         Row({ space: Spacing.md }) {
           Column() {
-            SymbolGlyph($r('sysymbol.textformat.size'))
+            SymbolGlyph($r('sys.symbol.textformat.size'))
               .fontSize(Size.iconLG)
               .fontColor([this.currentColors.primary])
           }

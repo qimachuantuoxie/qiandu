@@ -2,13 +2,13 @@ import { logger } from '../../common/utils/Logger';
 import { promptAction } from '@kit.ArkUI';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { common } from '@kit.AbilityKit';
-import { OnlineBookDetail, OnlineChapterInfo } from '../core/models/OnlineBookModel';
-import { BookInfo, BookFormat, ReadStatus } from '../core/models/BookModel';
-import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../core/utils/AppTheme';
-import { bookViewModel } from '../core/viewmodels/BookViewModel';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { onlineBookService } from '../core/services/book/OnlineBookService';
-import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
+import { OnlineBookDetail, OnlineChapterInfo } from '../../../core/models/OnlineBookModel';
+import { BookInfo, BookFormat, ReadStatus } from '../../../core/models/BookModel';
+import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../../../core/utils/AppTheme';
+import { bookViewModel } from '../../../core/viewmodels/BookViewModel';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
+import { onlineBookService } from '../../../core/services/book/OnlineBookService';
+import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
 @Entry
@@ -250,7 +250,7 @@ struct OnlineBookDetailPage {
         Column({ space: Spacing.sm }) {
           if (this.bookDetail!.wordCount > 0) {
             Row({ space: Spacing.xs }) {
-              SymbolGlyph($r('sysymbol.doc.text'))
+              SymbolGlyph($r('sys.symbol.doc.text'))
                 .fontSize(Size.iconXS)
                 .fontColor([this.tc('#8E8E93', '#8E8E93')])
               
@@ -262,7 +262,7 @@ struct OnlineBookDetailPage {
 
           if (this.bookDetail!.latestChapter) {
             Row({ space: Spacing.xs }) {
-              SymbolGlyph($r('sysymbol.book.open'))
+              SymbolGlyph($r('sys.symbol.book.open'))
                 .fontSize(Size.iconXS)
                 .fontColor([COMMON_COLORS.PRIMARY_BLUE])
               
@@ -290,7 +290,7 @@ struct OnlineBookDetailPage {
   IntroCard() {
     Column({ space: Spacing.md }) {
       Row() {
-        SymbolGlyph($r('sysymbol.doc.text'))
+        SymbolGlyph($r('sys.symbol.doc.text'))
           .fontSize(Size.iconMD)
           .fontColor([this.currentColors.primary])
         
@@ -329,7 +329,7 @@ struct OnlineBookDetailPage {
     Row({ space: Spacing.md }) {
       Button() {
         Row({ space: Spacing.sm }) {
-          SymbolGlyph($r('sysymbol.book.open'))
+          SymbolGlyph($r('sys.symbol.book.open'))
             .fontSize(Size.iconMD)
             .fontColor(['#FFFFFF'])
           
@@ -366,7 +366,7 @@ struct OnlineBookDetailPage {
       })
 
       Button() {
-        SymbolGlyph($r('sysymbol.download.circle'))
+        SymbolGlyph($r('sys.symbol.download.circle'))
           .fontSize(Size.iconMD)
           .fontColor(['#FFFFFF'])
       }
@@ -389,7 +389,7 @@ struct OnlineBookDetailPage {
   TocPreview() {
     Column({ space: Spacing.md }) {
       Row() {
-        SymbolGlyph($r('sysymbol.list.bullet'))
+        SymbolGlyph($r('sys.symbol.list.bullet'))
           .fontSize(Size.iconMD)
           .fontColor([this.currentColors.primary])
         
@@ -451,7 +451,7 @@ struct OnlineBookDetailPage {
       .justifyContent(FlexAlign.Center)
     } else if (this.toc.length === 0) {
       Column({ space: Spacing.xl }) {
-        SymbolGlyph($r('sysymbol.doc.text'))
+        SymbolGlyph($r('sys.symbol.doc.text'))
           .fontSize(Size.iconXXXL)
           .fontColor([this.tc('#D1D1D6', '#48484A')])
 

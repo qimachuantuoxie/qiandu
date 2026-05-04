@@ -17,4 +17,4 @@ export {
   generateSourceId,
   validateBookSource,
   ImportResult
-} from '../core/models/source/BookSourceModel';
+} models/source/BookSourceModel';

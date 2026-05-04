@@ -2,10 +2,10 @@ import { logger } from '../../../common/utils/Logger';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { router, promptAction } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
-import { preferenceManager } from '../core/utils/PreferenceManager';
-import { themeManager, AppColors, COMMON_COLORS } from '../core/utils/AppTheme';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
+import { preferenceManager } from '../../../core/utils/PreferenceManager';
+import { themeManager, AppColors, COMMON_COLORS } from '../../../core/utils/AppTheme';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
+import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
 @Entry
@@ -125,7 +125,7 @@ struct LoginPage {
           // Logo和标题
           Column({ space: Spacing.md }) {
             Column() {
-              SymbolGlyph($r('sysymbol.book.fill'))
+              SymbolGlyph($r('sys.symbol.book.fill'))
                 .fontSize(Size.iconXXXL * 1.5)
                 .fontColor(['#FFFFFF'])
             }
@@ -150,7 +150,7 @@ struct LoginPage {
             // 用户名输入框
             Column({ space: Spacing.sm }) {
               Row({ space: Spacing.md }) {
-                SymbolGlyph($r('sysymbol.person.fill'))
+                SymbolGlyph($r('sys.symbol.person.fill'))
                   .fontSize(Size.iconMD)
                   .fontColor([this.tc('#8E8E93', '#C7C7CC')])
                 
@@ -170,7 +170,7 @@ struct LoginPage {
             // 密码输入框
             Column({ space: Spacing.sm }) {
               Row({ space: Spacing.md }) {
-                SymbolGlyph($r('sysymbol.lock.fill'))
+                SymbolGlyph($r('sys.symbol.lock.fill'))
                   .fontSize(Size.iconMD)
                   .fontColor([this.tc('#8E8E93', '#C7C7CC')])
                 
@@ -209,7 +209,7 @@ struct LoginPage {
                   .color('#FFFFFF')
               } else {
                 Row({ space: Spacing.sm }) {
-                  SymbolGlyph($r('sysymbol.arrow.right'))
+                  SymbolGlyph($r('sys.symbol.arrow.right'))
                     .fontSize(Size.iconMD)
                     .fontColor(['#FFFFFF'])
                   

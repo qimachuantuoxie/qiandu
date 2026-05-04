@@ -1,14 +1,14 @@
 import { logger } from '../../../common/utils/Logger';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
-import { comicReaderService as comicReader, ComicPage, ComicInfo, ComicReadMode, ComicScaleMode } from '../core/services/reader/ComicReaderService';
+import { comicReaderService as comicReader, ComicPage, ComicInfo, ComicReadMode, ComicScaleMode } from '../../../core/services/reader/ComicReaderService';
 import { ComicReaderViewModel, comicReaderViewModel } from '../viewmodels/ComicReaderViewModel';
 import { router, window } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
-import { DeviceUtils } from '../core/utils/DeviceUtils';
-import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../core/utils/AppTheme';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { tr } from '../core/utils/LocalizationUtil';
-import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
+import { DeviceUtils } from '../../../core/utils/DeviceUtils';
+import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../../../core/utils/AppTheme';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
+import { tr } from '../../../core/utils/LocalizationUtil';
+import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
 @Entry

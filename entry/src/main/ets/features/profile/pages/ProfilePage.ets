@@ -1,13 +1,13 @@
 import { logger } from '../../../common/utils/Logger';
 import { router, promptAction } from '@kit.ArkUI';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
-import { preferenceManager } from '../core/utils/PreferenceManager';
+import { preferenceManager } from '../../../core/utils/PreferenceManager';
 import { profileViewModel, ProfileViewModel } from '../viewmodels/ProfileViewModel';
-import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../core/utils/AppTheme';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { tr } from '../core/utils/LocalizationUtil';
-import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
-import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
+import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../../../core/utils/AppTheme';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
+import { tr } from '../../../core/utils/LocalizationUtil';
+import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
+import { layoutHelper, ScreenInfo } from '../../common/utils/LayoutHelper';
 
 interface ProfileMenuItem {
   icon: string;

@@ -10,8 +10,8 @@ import { logger } from '../../utils/Logger';
  */
 
 import { fileIo } from '@kit.CoreFileKit';
-import { BookFormat } from '../core/models/book/CoreBookModel';
-import { BookMetadata } from '../core/models/EbookTypes';
+import { BookFormat } from '../models/book/CoreBookModel';
+import { BookMetadata } from '../models/EbookTypes';
 
 /**
  * 鐢靛瓙涔﹁В鏋愰€氱敤宸ュ叿绫? */

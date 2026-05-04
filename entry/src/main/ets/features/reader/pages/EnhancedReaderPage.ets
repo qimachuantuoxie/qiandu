@@ -2,16 +2,16 @@ import { logger } from '../../../common/utils/Logger';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { window } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
-import { bookViewModel } from '../core/viewmodels/BookViewModel';
-import { ttsService, TTSListener, TTSProgress } from '../core/services/ai/TTSService';
-import { BookInfo, Bookmark, Note } from '../core/models/CoreBookModel';
-import { preferenceManager } from '../core/utils/PreferenceManager';
-import { themeManager, appTheme, AppColors } from '../core/utils/AppTheme';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { tr } from '../core/utils/LocalizationUtil';
-import { BookContentParser, ChapterInfo } from '../core/utils/BookContentParser';
-import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
-import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
+import { bookViewModel } from '../../../core/viewmodels/BookViewModel';
+import { ttsService, TTSListener, TTSProgress } from '../../../core/services/ai/TTSService';
+import { BookInfo, Bookmark, Note } from '../../../core/models/CoreBookModel';
+import { preferenceManager } from '../../../core/utils/PreferenceManager';
+import { themeManager, appTheme, AppColors } from '../../../core/utils/AppTheme';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
+import { tr } from '../../../core/utils/LocalizationUtil';
+import { BookContentParser, ChapterInfo } from '../../../core/utils/BookContentParser';
+import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
+import { layoutHelper, ScreenInfo } from '../../../common/utils/LayoutHelper';
 
 interface EnhancedReaderParams {
   title?: string;

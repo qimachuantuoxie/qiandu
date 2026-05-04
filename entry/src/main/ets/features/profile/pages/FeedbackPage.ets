@@ -2,10 +2,10 @@ import { logger } from '../../../common/utils/Logger';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { router, promptAction } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
-import { preferenceManager } from '../core/utils/PreferenceManager';
-import { themeManager, AppColors, COMMON_COLORS } from '../core/utils/AppTheme';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
+import { preferenceManager } from '../../../core/utils/PreferenceManager';
+import { themeManager, AppColors, COMMON_COLORS } from '../../../core/utils/AppTheme';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
+import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
 @Entry
@@ -206,7 +206,7 @@ struct FeedbackPage {
           // 联系方式（可选）
           Column({ space: Spacing.md }) {
             Row() {
-              SymbolGlyph($r('sysymbol.phone.fill'))
+              SymbolGlyph($r('sys.symbol.phone.fill'))
                 .fontSize(Size.iconMD)
                 .fontColor([this.currentColors.primary])
               
@@ -249,7 +249,7 @@ struct FeedbackPage {
                 .color('#FFFFFF')
             } else {
               Row({ space: Spacing.sm }) {
-                SymbolGlyph($r('sysymbol.paperplane'))
+                SymbolGlyph($r('sys.symbol.paperplane'))
                   .fontSize(Size.iconMD)
                   .fontColor(['#FFFFFF'])
                 
@@ -285,7 +285,7 @@ struct FeedbackPage {
 
           // 提示信息
           Row({ space: Spacing.xs }) {
-            SymbolGlyph($r('sysymbol.info.circle'))
+            SymbolGlyph($r('sys.symbol.info.circle'))
               .fontSize(Size.iconSM)
               .fontColor([this.tc('#8E8E93', '#8E8E93')])
             

@@ -2,16 +2,16 @@ import { logger } from '../../../common/utils/Logger';
 import { router, promptAction } from '@kit.ArkUI';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { common } from '@kit.AbilityKit';
-import { BookInfo, Note } from '../core/models/CoreBookModel';
-import { bookViewModel } from '../core/viewmodels/BookViewModel';
-import { preferenceManager } from '../core/utils/PreferenceManager';
-import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../core/utils/AppTheme';
-import { DeviceUtils } from '../core/utils/DeviceUtils';
-import { tr } from '../core/utils/LocalizationUtil';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { LazyDataSource } from '../common/datasource/LazyDataSource';
-import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
-import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
+import { BookInfo, Note } from '../../../core/models/CoreBookModel';
+import { bookViewModel } from '../../../core/viewmodels/BookViewModel';
+import { preferenceManager } from '../../../core/utils/PreferenceManager';
+import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../../../core/utils/AppTheme';
+import { DeviceUtils } from '../../../core/utils/DeviceUtils';
+import { tr } from '../../../core/utils/LocalizationUtil';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
+import { LazyDataSource } from '../../common/datasource/LazyDataSource';
+import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
+import { layoutHelper, ScreenInfo } from '../../common/utils/LayoutHelper';
 
 interface NoteWithBook {
   note: Note;

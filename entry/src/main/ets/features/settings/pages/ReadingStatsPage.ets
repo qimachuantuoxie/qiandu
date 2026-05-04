@@ -1,13 +1,13 @@
 import { logger } from '../../../common/utils/Logger';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { common } from '@kit.AbilityKit';
-import { bookViewModel } from '../core/viewmodels/BookViewModel';
+import { bookViewModel } from '../../../core/viewmodels/BookViewModel';
 import { readingStatsViewModel, ReadingStatsViewModel, TrendDataPoint, StatsPeriod } from '../viewmodels/ReadingStatsViewModel';
-import { BookInfo, formatDuration } from '../core/models/CoreBookModel';
-import { DeviceUtils } from '../core/utils/DeviceUtils';
-import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../core/utils/AppTheme';
-import { fontScaleManager } from '../core/utils/FontScaleManager';
-import { Spacing, Size, BorderRadius, getShadow } from '../core/utils/LayoutConstants';
+import { BookInfo, formatDuration } from '../../../core/models/CoreBookModel';
+import { DeviceUtils } from '../../../core/utils/DeviceUtils';
+import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../../../core/utils/AppTheme';
+import { fontScaleManager } from '../../../core/utils/FontScaleManager';
+import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
 @Entry

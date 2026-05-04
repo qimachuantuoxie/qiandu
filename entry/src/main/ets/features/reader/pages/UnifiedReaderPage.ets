@@ -1,6 +1,6 @@
 import { logger } from '../../common/utils/Logger';
-import { BookInfo, BookFormat } from '../core/models/CoreBookModel';
-import { bookViewModel } from '../core/viewmodels/BookViewModel';
+import { BookInfo, BookFormat } from '../../../core/models/CoreBookModel';
+import { bookViewModel } from '../../../core/viewmodels/BookViewModel';
 import { EnhancedReaderPage } from './EnhancedReaderPage';
 import { ComicReaderPage } from './ComicReaderPage';
 
