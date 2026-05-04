@@ -1,10 +1,11 @@
+import { logger } from '../../../common/utils/Logger';
 /**
- * 音频播放组件 - 简单的播放控制 UI
+ * 闊抽�鎾�斁缁勪欢 - 绠€鍗曠殑鎾�斁鎺у埗 UI
  * Audio Player Component - Simple Playback Control UI
  */
 
-import { audioPlayerService, AudioPlayState, AudioPlayProgress, AudioPlayConfig } from '../../../services/audio/AudioPlayerService';
-import { COMMON_COLORS } from '../../../utils/AppTheme';
+import { audioPlayerService, AudioPlayState, AudioPlayProgress, AudioPlayConfig } from '../../services/audio/AudioPlayerService';
+import { COMMON_COLORS } from '../../utils/AppTheme';
 
 @Component
 export struct AudioPlayer {
@@ -24,7 +25,7 @@ export struct AudioPlayer {
         this.progress = prog;
       },
       onError: (error: string) => {
-        console.error('[AudioPlayer] Error:', error);
+        logger.error('[AudioPlayer] Error:', error);
       },
       onCompleted: () => {
         this.isPlaying = false;
@@ -65,12 +66,12 @@ export struct AudioPlayer {
 
   build() {
     Column({ space: 8 }) {
-      // 播放控制按钮
+      // 鎾�斁鎺у埗鎸夐挳
       Row({ space: 16 }) {
-        // 停止按钮
+        // 鍋滄�鎸夐挳
         if (this.currentState !== AudioPlayState.IDLE) {
           Button() {
-            Text('⏹')
+            Text('鈴?)
               .fontSize(24)
           }
           .width(48)
@@ -82,9 +83,9 @@ export struct AudioPlayer {
           .animation(PageStyles.animation('fast'))
         }
 
-        // 播放/暂停按钮
+        // 鎾�斁/鏆傚仠鎸夐挳
         Button() {
-          Text(this.isPlaying ? '⏸' : '▶')
+          Text(this.isPlaying ? '鈴? : '鈻?)
             .fontSize(28)
         }
         .width(64)
@@ -96,14 +97,14 @@ export struct AudioPlayer {
         .stateStyles(PageStyles.pressedStyle())
         .animation(PageStyles.animation('fast'))
 
-        // 进度显示
+        // 杩涘害鏄剧ず
         if (this.progress.duration > 0) {
           Column({ space: 4 }) {
             Text(this.formatTime(this.progress.currentPosition) + ' / ' + this.formatTime(this.progress.duration))
               .fontSize(PageStyles.fontSize('sm'))
               .fontColor(PageStyles.textColor(this.isDarkMode, 'secondary'))
 
-            // 进度条
+            // 杩涘害鏉?
             Slider({
               value: this.progress.percentage,
               min: 0,

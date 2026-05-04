@@ -1,5 +1,6 @@
-// 移除对bookViewModel的导入 - Model层不应依赖ViewModel层
-// 笔记现在由AdvancedNoteManager独立管理，不需要同步到ViewModel
+import { logger } from '../../../utils/Logger';
+// 绉婚櫎瀵筨ookViewModel鐨勫�鍏?- Model灞備笉搴斾緷璧朧iewModel灞?
+// 绗旇�鐜板湪鐢盇dvancedNoteManager鐙�珛绠＄悊锛屼笉闇€瑕佸悓姝ュ埌ViewModel
 
 export function generateBookId(): string {
   return 'book_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
@@ -188,9 +189,9 @@ class AdvancedNoteManager {
     }
     bookNotes.push(note);
 
-    // 移除对bookViewModel的调用 - Model层应独立管理数据
-    // 如需通知外部，可使用回调或事件机制
-    // bookViewModel.addNote(...) - 已移除
+    // 绉婚櫎瀵筨ookViewModel鐨勮皟鐢?- Model灞傚簲鐙�珛绠＄悊鏁版嵁
+    // 濡傞渶閫氱煡澶栭儴锛屽彲浣跨敤鍥炶皟鎴栦簨浠舵満鍒?
+    // bookViewModel.addNote(...) - 宸茬Щ闄?
   }
 
   getNotesByBook(bookId: string): NoteItem[] {
@@ -440,7 +441,7 @@ class DictionaryManager {
   }
 
   addToVocabulary(word: string, definition: DictionaryResult): void {
-    console.info('Word added: ' + word);
+    logger.info('Word added: ' + word);
   }
 }
 

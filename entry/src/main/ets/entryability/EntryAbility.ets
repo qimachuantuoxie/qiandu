@@ -1,19 +1,20 @@
-// 入口Ability - 应用生命周期管理
+// 入口Ability - 使用 Navigation 架构
 
 import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { window, router, display } from '@kit.ArkUI';
-import { displayHelper } from '../utils/DisplayHelper';
-import { nativeModules } from '../utils/NativeModules';
-import { preferenceManager } from '../utils/PreferenceManager';
-import { i18nManager } from '../utils/I18nManager';
-import { DeviceUtils } from '../utils/DeviceUtils';
-import { kitManager } from '../services/huawei-kit/KitManager';
-import { imageCacheService } from '../services/image/ImageCacheService';
-import { secureStorage } from '../utils/SecureStorage';
-import { initAppStore } from '../store/AppStore';
-import { huaweiAuthService } from '../services/auth/HuaweiAuthService';
-import { foldableAdapter } from '../utils/FoldableAdapterManager';
+import { window, display } from '@kit.ArkUI';
+import { displayHelper } from '../core/utils/DisplayHelper';
+import { nativeModules } from '../core/utils/NativeModules';
+import { preferenceManager } from '../core/utils/PreferenceManager';
+import { localizationUtil } from '../core/utils/LocalizationUtil';
+import { DeviceUtils } from '../core/utils/DeviceUtils';
+import { kitManager } from '../core/services/huawei-kit/KitManager';
+import { imageCacheService } from '../core/services/image/ImageCacheService';
+import { secureStorage } from '../core/utils/SecureStorage';
+import { initAppStore } from '../core/stores/AppStore';
+import { huaweiAuthService } from '../core/services/auth/HuaweiAuthService';
+import { foldableAdapter } from '../core/utils/FoldableAdapterManager';
+import { AppNavigationBuilder } from '../AppNavigation';
 
 export default class EntryAbility extends UIAbility {
   private windowClass: window.Window | null = null;
@@ -42,20 +43,20 @@ export default class EntryAbility extends UIAbility {
     // 2. 初始化所有重型服务（等待完成）
     await this.initHeavyServices();
 
-    // 3. 加载主页面（此时所有服务已就绪）
-    windowStage.loadContent('pages/LoginPage', (err) => {
+    // 3. 使用 Navigation 架构加载根组件
+    windowStage.loadContentBuilder(AppNavigationBuilder, (err) => {
       if (err.code) {
         hilog.error(0x0000, 'EntryAbility', 'Load content failed: %{public}s', err.code ? err.code.toString() : 'Unknown error');
         return;
       }
-      hilog.info(0x0000, 'EntryAbility', 'Content loaded successfully');
+      hilog.info(0x0000, 'EntryAbility', 'Navigation content loaded successfully');
     });
   }
 
   private async initHeavyServices(): Promise<void> {
     try {
-      // 这些服务需要按顺序初始化
       await preferenceManager.init(this.context);
+      await localizationUtil.init(this.context);
       await imageCacheService.init(this.context);
       await nativeModules.initialize();
 
@@ -78,10 +79,8 @@ export default class EntryAbility extends UIAbility {
     }
 
     try {
-      // Set window background to transparent using the new API
       this.windowClass.setWindowBackgroundColor('#00000000');
 
-      // Enable multi-window for tablets based on screen width
       const screenWidth = displayHelper.getWidth();
       const isTablet = screenWidth >= 600;
 
@@ -89,7 +88,6 @@ export default class EntryAbility extends UIAbility {
         hilog.info(0x0000, 'EntryAbility', 'Tablet mode enabled');
       }
 
-      // Set preferred orientation based on device
       if (isTablet) {
         this.windowClass.setPreferredOrientation(window.Orientation.AUTO_ROTATION);
       } else {

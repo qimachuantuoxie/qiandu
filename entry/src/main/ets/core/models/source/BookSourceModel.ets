@@ -1,4 +1,4 @@
-// 书源数据模型
+﻿// 涔︽簮鏁版嵁妯″瀷
 // Book Source Data Models
 
 export interface SearchRule {
@@ -50,7 +50,7 @@ export interface TocRule {
 }
 
 /**
- * 书源接口
+ * 涔︽簮鎺ュ彛
  */
 export interface BookSource {
   id: string;
@@ -70,16 +70,16 @@ export interface BookSource {
   ruleToc?: string | TocRule;
   createTime?: number;
   lastUpdateTime?: number;
-  // 新增字段：用于同步和管理
-  importUrl?: string;       // 书源导入来源URL（用于后续更新同步）
-  lastSyncTime?: number;    // 最后同步时间
-  version?: number;         // 书源版本号
-  description?: string;     // 书源描述
-  sourceCount?: number;     // 书源包含的书籍数量
+  // 鏂板瀛楁锛氱敤浜庡悓姝ュ拰绠＄悊
+  importUrl?: string;       // 涔︽簮瀵煎叆鏉ユ簮URL锛堢敤浜庡悗缁洿鏂板悓姝ワ級
+  lastSyncTime?: number;    // 鏈€鍚庡悓姝ユ椂闂?
+  version?: number;         // 涔︽簮鐗堟湰鍙?
+  description?: string;     // 涔︽簮鎻忚堪
+  sourceCount?: number;     // 涔︽簮鍖呭惈鐨勪功绫嶆暟閲?
 }
 
 /**
- * 书源类型
+ * 涔︽簮绫诲瀷
  */
 export enum BookSourceType {
   TEXT = 'text',
@@ -88,7 +88,7 @@ export enum BookSourceType {
 }
 
 /**
- * 搜索结果
+ * 鎼滅储缁撴灉
  */
 export interface SearchResult {
   id?: string;
@@ -108,7 +108,7 @@ export interface SearchResult {
 }
 
 /**
- * 在线书籍信息（书源搜索结果）
+ * 鍦ㄧ嚎涔︾睄淇℃伅锛堜功婧愭悳绱㈢粨鏋滐級
  */
 export interface SourceBookInfo {
   sourceId: string;
@@ -131,7 +131,7 @@ export interface SourceBookInfo {
 }
 
 /**
- * 章节内容
+ * 绔犺妭鍐呭
  */
 export interface ChapterContent {
   bookId: string;
@@ -141,7 +141,7 @@ export interface ChapterContent {
 }
 
 /**
- * 章节信息
+ * 绔犺妭淇℃伅
  */
 export interface ChapterInfo {
   index: number;
@@ -153,7 +153,7 @@ export interface ChapterInfo {
 }
 
 /**
- * 替换规则
+ * 鏇挎崲瑙勫垯
  */
 export interface ReplaceRule {
   id: string;
@@ -167,7 +167,7 @@ export interface ReplaceRule {
 }
 
 /**
- * 替换范围
+ * 鏇挎崲鑼冨洿
  */
 export enum ReplaceScope {
   TITLE = 'title',
@@ -178,12 +178,12 @@ export enum ReplaceScope {
 }
 
 /**
- * 默认书源
+ * 榛樿涔︽簮
  */
 export const DEFAULT_BOOK_SOURCES: BookSource[] = [
   {
     id: 'source_001',
-    name: '默认书源',
+    name: '榛樿涔︽簮',
     url: 'https://api.example.com',
     enabled: true,
     weight: 10,
@@ -194,26 +194,26 @@ export const DEFAULT_BOOK_SOURCES: BookSource[] = [
 ];
 
 /**
- * 默认替换规则
+ * 榛樿鏇挎崲瑙勫垯
  */
 export const DEFAULT_REPLACE_RULES: ReplaceRule[] = [];
 
 /**
- * 生成书源ID
+ * 鐢熸垚涔︽簮ID
  */
 export function generateSourceId(): string {
   return 'source_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
 }
 
 /**
- * 验证书源
+ * 楠岃瘉涔︽簮
  */
 export function validateBookSource(source: BookSource): boolean {
   return !!(source.id && source.name && source.url);
 }
 
 /**
- * 导入结果
+ * 瀵煎叆缁撴灉
  */
 export interface ImportResult {
   success: number;

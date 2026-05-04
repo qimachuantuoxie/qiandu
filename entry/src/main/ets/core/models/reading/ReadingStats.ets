@@ -1,4 +1,5 @@
-// 阅读统计与成就系统 - 对标微信读书的统计体系
+import { logger } from '../../../utils/Logger';
+// 闃呰�缁熻�涓庢垚灏辩郴缁?- 瀵规爣寰�俊璇讳功鐨勭粺璁′綋绯?
 import { ReadingStatistics, AchievementBadge } from './AdvancedReading';
 import { preferenceManager } from '../../../utils/PreferenceManager';
 
@@ -7,27 +8,27 @@ export function generateBookId(): string {
 }
 
 /**
- * 每日阅读记录
+ * 姣忔棩闃呰�璁板綍
  */
 export interface DailyReadingRecord {
-  date: string;                 // 日期 (YYYY-MM-DD)
-  readingTime: number;          // 阅读时长（分钟）
-  booksRead: number;            // 读书数量
-  pagesRead: number;            // 阅读页数
-  notesCount: number;           // 笔记数
+  date: string;                 // 鏃ユ湡 (YYYY-MM-DD)
+  readingTime: number;          // 闃呰�鏃堕暱锛堝垎閽燂級
+  booksRead: number;            // 璇讳功鏁伴噺
+  pagesRead: number;            // 闃呰�椤垫暟
+  notesCount: number;           // 绗旇�鏁?
 }
 
 /**
- * 阅读目标接口
+ * 闃呰�鐩�爣鎺ュ彛
  */
 export interface ReadingGoal {
-  dailyMinutes: number;         // 每日目标（分钟）
-  weeklyBooks: number;          // 每周目标（本）
-  monthlyBooks: number;         // 每月目标（本）
+  dailyMinutes: number;         // 姣忔棩鐩�爣锛堝垎閽燂級
+  weeklyBooks: number;          // 姣忓懆鐩�爣锛堟湰锛?
+  monthlyBooks: number;         // 姣忔湀鐩�爣锛堟湰锛?
 }
 
 /**
- * 好友PK状态枚举
+ * 濂藉弸PK鐘舵€佹灇涓?
  */
 export enum FriendPKStatus {
   ONGOING = 'ongoing',
@@ -36,7 +37,7 @@ export enum FriendPKStatus {
 }
 
 /**
- * 好友 PK 接口
+ * 濂藉弸 PK 鎺ュ彛
  */
 export interface FriendPK {
   id: string;
@@ -45,10 +46,10 @@ export interface FriendPK {
   friendAvatar?: string;
   startTime: number;
   endTime: number;
-  myReadingTime: number;        // 我的阅读时长
-  friendReadingTime: number;    // 好友阅读时长
+  myReadingTime: number;        // 鎴戠殑闃呰�鏃堕暱
+  friendReadingTime: number;    // 濂藉弸闃呰�鏃堕暱
   status: FriendPKStatus;
-  winner?: string;              // 获胜者
+  winner?: string;              // 鑾疯儨鑰?
 }
 
 export class TodayDataClass {
@@ -78,16 +79,16 @@ class BadgeTemplateClass {
 }
 
 /**
- * 阅读统计管理器 - 单例模式
+ * 闃呰�缁熻�绠＄悊鍣?- 鍗曚緥妯″紡
  */
 class ReadingStatisticsManager {
   private static instance: ReadingStatisticsManager;
 
   private dailyRecords: Record<string, DailyReadingRecord> = {};
   private dailyRecordsKeys: string[] = [];
-  private totalReadingTime: number = 0; // 总分钟数
-  private currentStreak: number = 0;    // 连续天数
-  private longestStreak: number = 0;    // 最长连续天数
+  private totalReadingTime: number = 0; // 鎬诲垎閽熸暟
+  private currentStreak: number = 0;    // 杩炵画澶╂暟
+  private longestStreak: number = 0;    // 鏈€闀胯繛缁�ぉ鏁?
 
   private constructor() {}
 
@@ -99,7 +100,7 @@ class ReadingStatisticsManager {
   }
 
   /**
-   * 记录阅读时长
+   * 璁板綍闃呰�鏃堕暱
    */
   async recordReadingTime(minutes: number, bookId?: string): Promise<void> {
     const today = this.getTodayString();
@@ -121,15 +122,15 @@ class ReadingStatisticsManager {
     this.dailyRecords[today] = record;
     this.totalReadingTime += minutes;
 
-    // 更新连续天数
+    // 鏇存柊杩炵画澶╂暟
     this.updateStreak();
 
-    // 保存到本地存储
+    // 淇濆瓨鍒版湰鍦板瓨鍌?
     await this.saveStats();
   }
 
   /**
-   * 保存统计
+   * 淇濆瓨缁熻�
    */
   private async saveStats(): Promise<void> {
     try {
@@ -142,15 +143,15 @@ class ReadingStatisticsManager {
       };
       const statsJson = JSON.stringify(statsData);
       preferenceManager.setString('reading_stats', statsJson);
-      console.info('[ReadingStats] Statistics saved');
+      logger.info('[ReadingStats] Statistics saved');
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error('[ReadingStats] Save stats failed:', message);
+      logger.error('[ReadingStats] Save stats failed:', message);
     }
   }
 
   /**
-   * 加载统计
+   * 鍔犺浇缁熻�
    */
   async loadStats(): Promise<void> {
     try {
@@ -182,16 +183,16 @@ class ReadingStatisticsManager {
         } else {
           this.longestStreak = 0;
         }
-        console.info('[ReadingStats] Statistics loaded');
+        logger.info('[ReadingStats] Statistics loaded');
       }
     } catch (error) {
       const err = error as Error;
-      console.error('[ReadingStats] Load stats failed: ' + message);
+      logger.error('[ReadingStats] Load stats failed: ' + message);
     }
   }
 
   /**
-   * 获取今日数据
+   * 鑾峰彇浠婃棩鏁版嵁
    */
   getTodayData(): TodayDataClass {
     const today = this.getTodayString();
@@ -210,7 +211,7 @@ class ReadingStatisticsManager {
   }
 
   /**
-   * 获取本周数据
+   * 鑾峰彇鏈�懆鏁版嵁
    */
   getWeekData(): WeekDataClass {
     const weekStart = this.getWeekStart();
@@ -236,7 +237,7 @@ class ReadingStatisticsManager {
   }
 
   /**
-   * 获取本月数据
+   * 鑾峰彇鏈�湀鏁版嵁
    */
   getMonthData(): MonthDataClass {
     const monthStart = this.getMonthStart();
@@ -262,7 +263,7 @@ class ReadingStatisticsManager {
   }
 
   /**
-   * 获取完整统计信息
+   * 鑾峰彇瀹屾暣缁熻�淇℃伅
    */
   getFullStatistics(): ReadingStatistics {
     const today = this.getTodayData();
@@ -283,10 +284,10 @@ class ReadingStatisticsManager {
   }
 
   /**
-   * 生成阅读报告（周报/月报/年报）
+   * 鐢熸垚闃呰�鎶ュ憡锛堝懆鎶?鏈堟姤/骞存姤锛?
    */
   generateReport(type: 'week' | 'month' | 'year'): ReadingReport {
-    // TODO: 实现完整的报告生成
+    // TODO: 瀹炵幇瀹屾暣鐨勬姤鍛婄敓鎴?
     return {
       period: type,
       totalTime: 0,
@@ -297,7 +298,7 @@ class ReadingStatisticsManager {
   }
 
   /**
-   * 更新连续天数
+   * 鏇存柊杩炵画澶╂暟
    */
   private updateStreak(): void {
     const today = this.getTodayString();
@@ -318,7 +319,7 @@ class ReadingStatisticsManager {
   }
 
   /**
-   * 获取日期字符串
+   * 鑾峰彇鏃ユ湡瀛楃�涓?
    */
   private getTodayString(): string {
     return new Date().toISOString().split('T')[0];
@@ -346,7 +347,7 @@ class ReadingStatisticsManager {
 }
 
 /**
- * 成就徽章管理器
+ * 鎴愬氨寰界珷绠＄悊鍣?
  */
 class AchievementManager {
   private static instance: AchievementManager;
@@ -365,93 +366,93 @@ class AchievementManager {
   }
 
   /**
-   * 初始化所有徽章
+   * 鍒濆�鍖栨墍鏈夊窘绔?
    */
   private initBadges(): void {
     const badgeTemplates: BadgeTemplateClass[] = [
       {
         id: 'first_read',
-        name: '初次体验',
-        description: '开始阅读第一本书',
-        icon: '阅',
-        requirement: '阅读任意书籍 1 分钟'
+        name: '鍒濇�浣撻獙',
+        description: '寮€濮嬮槄璇荤�涓€鏈�功',
+        icon: '闃?,
+        requirement: '闃呰�浠绘剰涔︾睄 1 鍒嗛挓'
       },
       {
         id: 'bookworm',
-        name: '书虫宝宝',
-        description: '累计阅读 10 本书',
-        icon: '🐛',
-        requirement: '读完 10 本书'
+        name: '涔﹁櫕瀹濆疂',
+        description: '绱��闃呰� 10 鏈�功',
+        icon: 'ladybug_fill',
+        requirement: '璇诲畬 10 鏈�功'
       },
       {
         id: 'scholar',
-        name: '学问达人',
-        description: '累计阅读 100 本书',
-        icon: '🎓',
-        requirement: '读完 100 本书'
+        name: '瀛﹂棶杈句汉',
+        description: '绱��闃呰� 100 鏈�功',
+        icon: 'graduationcap_fill',
+        requirement: '璇诲畬 100 鏈�功'
       },
       {
         id: 'marathon',
-        name: '阅读马拉松',
-        description: '单日阅读超过 5 小时',
-        icon: '🏃',
-        requirement: '单日阅读 300 分钟'
+        name: '闃呰�椹�媺鏉?,
+        description: '鍗曟棩闃呰�瓒呰繃 5 灏忔椂',
+        icon: 'figure_run',
+        requirement: '鍗曟棩闃呰� 300 鍒嗛挓'
       },
       {
         id: 'nightowl',
-        name: '深夜读书',
-        description: '在凌晨0-5 点阅读',
-        icon: '🌙',
-        requirement: '深夜时段阅读'
+        name: '娣卞�璇讳功',
+        description: '鍦ㄥ噷鏅?-5 鐐归槄璇?,
+        icon: 'moon_stars_fill',
+        requirement: '娣卞�鏃舵�闃呰�'
       },
       {
         id: 'earlybird',
-        name: '晨读达人',
-        description: '连续 7 天早起阅读',
-        icon: '🐦',
-        requirement: '连续 7 天6-8 点阅读'
+        name: '鏅ㄨ�杈句汉',
+        description: '杩炵画 7 澶╂棭璧烽槄璇?,
+        icon: 'sunrise_fill',
+        requirement: '杩炵画 7 澶?-8 鐐归槄璇?
       },
       {
         id: 'note_master',
-        name: '笔记达人',
-        description: '累计写 100 篇笔记',
-        icon: '笔',
-        requirement: '写 100 篇笔记'
+        name: '绗旇�杈句汉',
+        description: '绱��鍐?100 绡囩瑪璁?,
+        icon: '绗?,
+        requirement: '鍐?100 绡囩瑪璁?
       },
       {
         id: 'highlight_king',
-        name: '划线王者',
-        description: '累计划线 500 次',
-        icon: '📌',
-        requirement: '划线 500 次'
+        name: '鍒掔嚎鐜嬭€?,
+        description: '绱��鍒掔嚎 500 娆?,
+        icon: 'pin_fill',
+        requirement: '鍒掔嚎 500 娆?
       },
       {
         id: 'streak_7',
-        name: '持之以恒',
-        description: '连续阅读 7 天',
-        icon: '🔥',
-        requirement: '连续 7 天阅读'
+        name: '鎸佷箣浠ユ亽',
+        description: '杩炵画闃呰� 7 澶?,
+        icon: 'flame_fill',
+        requirement: '杩炵画 7 澶╅槄璇?
       },
       {
         id: 'streak_30',
-        name: '一月之约',
-        description: '连续阅读 30 天',
-        icon: '📅',
-        requirement: '连续 30 天阅读'
+        name: '涓€鏈堜箣绾?,
+        description: '杩炵画闃呰� 30 澶?,
+        icon: 'calendar',
+        requirement: '杩炵画 30 澶╅槄璇?
       },
       {
         id: 'streak_100',
-        name: '百日挑战',
-        description: '连续阅读 100 天',
-        icon: '💪',
-        requirement: '连续 100 天阅读'
+        name: '鐧炬棩鎸戞垬',
+        description: '杩炵画闃呰� 100 澶?,
+        icon: 'hand_raised_fill',
+        requirement: '杩炵画 100 澶╅槄璇?
       },
       {
         id: 'speed_reader',
-        name: '速读高手',
-        description: '一天读完一本书',
-        icon: '⚡',
-        requirement: '单日读完 1 本书'
+        name: '閫熻�楂樻墜',
+        description: '涓€澶╄�瀹屼竴鏈�功',
+        icon: 'bolt_fill',
+        requirement: '鍗曟棩璇诲畬 1 鏈�功'
       }
     ];
 
@@ -471,7 +472,7 @@ class AchievementManager {
   }
 
   /**
-   * 检查并解锁徽章
+   * 妫€鏌ュ苟瑙ｉ攣寰界珷
    */
   checkAndUnlock(statistics: ReadingStatistics, streak: number): AchievementBadge[] {
     const unlockedBadges: AchievementBadge[] = [];
@@ -490,7 +491,7 @@ class AchievementManager {
   }
 
   /**
-   * 判断是否满足徽章条件
+   * 鍒ゆ柇鏄�惁婊¤冻寰界珷鏉′欢
    */
   private meetsRequirement(
     badgeId: string,
@@ -520,7 +521,7 @@ class AchievementManager {
   }
 
   /**
-   * 获取所有徽章
+   * 鑾峰彇鎵€鏈夊窘绔?
    */
   getAllBadges(): AchievementBadge[] {
     const result: AchievementBadge[] = [];
@@ -534,7 +535,7 @@ class AchievementManager {
   }
 
   /**
-   * 获取已解锁徽章
+   * 鑾峰彇宸茶В閿佸窘绔?
    */
   getUnlockedBadges(): AchievementBadge[] {
     const allBadges = this.getAllBadges();
@@ -548,7 +549,7 @@ class AchievementManager {
   }
 
   /**
-   * 获取徽章进度
+   * 鑾峰彇寰界珷杩涘害
    */
   getBadgeProgress(badgeId: string, stats: ReadingStatistics, streak: number): number {
     switch (badgeId) {
@@ -567,7 +568,7 @@ class AchievementManager {
 }
 
 /**
- * 好友 PK 管理器
+ * 濂藉弸 PK 绠＄悊鍣?
  */
 class FriendPKManager {
   private static instance: FriendPKManager;
@@ -584,7 +585,7 @@ class FriendPKManager {
   }
 
   /**
-   * 发起 PK 挑战
+   * 鍙戣捣 PK 鎸戞垬
    */
   challengeFriend(friendId: string, friendName: string, durationMinutes: number): FriendPK {
     const pk: FriendPK = {
@@ -601,20 +602,20 @@ class FriendPKManager {
     this.pks[pk.id] = pk;
     this.pksKeys.push(pk.id);
 
-    // TODO: 发送通知给好友
+    // TODO: 鍙戦€侀€氱煡缁欏ソ鍙?
 
     return pk;
   }
 
   /**
-   * 更新我的阅读时长
+   * 鏇存柊鎴戠殑闃呰�鏃堕暱
    */
   updateMyTime(pkId: string, minutes: number): void {
     const pk = this.pks[pkId];
     if (pk !== undefined && pk.status === FriendPKStatus.ONGOING) {
       pk.myReadingTime += minutes;
 
-      // 检查是否结束
+      // 妫€鏌ユ槸鍚︾粨鏉?
       if (Date.now() >= pk.endTime) {
         this.finishPK(pk);
       }
@@ -622,17 +623,17 @@ class FriendPKManager {
   }
 
   /**
-   * 结束 PK
+   * 缁撴潫 PK
    */
   private finishPK(pk: FriendPK): void {
     pk.status = FriendPKStatus.FINISHED;
     pk.winner = pk.myReadingTime > pk.friendReadingTime ? 'me' : 'friend';
 
-    // TODO: 发送结果通知
+    // TODO: 鍙戦€佺粨鏋滈€氱煡
   }
 
   /**
-   * 获取进行中的 PK
+   * 鑾峰彇杩涜�涓�殑 PK
    */
   getOngoingPKs(): FriendPK[] {
     const result: FriendPK[] = [];
@@ -654,7 +655,7 @@ interface ReadingReport {
   readingTrend: number[];
 }
 
-// 导出单例
+// 瀵煎嚭鍗曚緥
 export const readingStatisticsManager = ReadingStatisticsManager.getInstance();
 export const achievementManager = AchievementManager.getInstance();
 export const friendPKManager = FriendPKManager.getInstance();

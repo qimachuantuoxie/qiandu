@@ -1,8 +1,8 @@
-// 分组管理面板组件
-import { BookshelfGroup } from '../../../models/CoreBookModel';
-import { themeManager, COMMON_COLORS, AppColors } from '../../../utils/AppTheme';
-import { fontScaleManager } from '../../../utils/FontScaleManager';
-import { tr } from '../../../utils/I18nManager';
+// 鍒嗙粍绠＄悊闈㈡澘缁勪欢
+import { BookshelfGroup } from '../../models/CoreBookModel';
+import { themeManager, COMMON_COLORS, AppColors } from '../../utils/AppTheme';
+import { fontScaleManager } from '../../utils/FontScaleManager';
+import { tr } from '../../utils/LocalizationUtil';
 
 @Component
 export struct GroupPanel {
@@ -23,7 +23,7 @@ export struct GroupPanel {
 
   build() {
     Column() {
-      // 背景遮罩
+      // 鑳屾櫙閬僵
       Row()
         .width('100%')
         .layoutWeight(1)
@@ -34,9 +34,9 @@ export struct GroupPanel {
           }
         })
 
-      // 分组面板内容
+      // 鍒嗙粍闈㈡澘鍐呭�?
       Column() {
-        // 标题栏
+        // 鏍囬鏍?
         Row() {
           Text(tr('select_group'))
             .fontSize(fontScaleManager.getScaledFontSize(18))
@@ -58,15 +58,15 @@ export struct GroupPanel {
         .width('100%')
         .padding({ left: 20, right: 12, top: 20, bottom: 16 })
 
-        // 分组列表
+        // 鍒嗙粍鍒楄�?
         Scroll() {
           Column({ space: 8 }) {
-            // 全部分组
+            // 鍏ㄩ儴鍒嗙粍
             this.GroupItem('all', 'book_fill', tr('all_books'))
 
-            // 自定义分组
+            // 鑷畾涔夊垎�?
             ForEach(this.groups, (group: BookshelfGroup) => {
-              this.GroupItem(group.id, '📁', group.name)
+              this.GroupItem(group.id, '馃搧', group.name)
             }, (group: BookshelfGroup) => group.id)
           }
           .width('100%')
@@ -105,7 +105,7 @@ export struct GroupPanel {
         .margin({ left: 12 })
       Blank()
       if (this.currentGroupId === groupId) {
-        Text('✓')
+        Text('�?)
           .fontSize(fontScaleManager.getScaledFontSize(16))
           .fontColor(this.currentColors.primary)
       }
@@ -124,7 +124,7 @@ export struct GroupPanel {
   }
 }
 
-// 添加分组对话框组件
+// 娣诲姞鍒嗙粍瀵硅瘽妗嗙粍�?
 @Component
 export struct AddGroupDialog {
   @Prop isDarkMode: boolean = false;
@@ -142,7 +142,7 @@ export struct AddGroupDialog {
 
   build() {
     Column() {
-      // 背景遮罩
+      // 鑳屾櫙閬僵
       Row()
         .width('100%')
         .layoutWeight(1)
@@ -153,7 +153,7 @@ export struct AddGroupDialog {
           }
         })
 
-      // 对话框内容
+      // 瀵硅瘽妗嗗唴�?
       Column() {
         Text(tr('create_group'))
           .fontSize(fontScaleManager.getScaledFontSize(18))

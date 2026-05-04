@@ -1,7 +1,7 @@
-// 书籍数据模型 - 核心数据结构
+﻿// 涔︾睄鏁版嵁妯″瀷 - 鏍稿績鏁版嵁缁撴瀯
 
 /**
- * 书籍模型类
+ * 涔︾睄妯″瀷绫?
  */
 export class BookModelClass {
   id: string = '';
@@ -66,7 +66,7 @@ export class BookModelClass {
 }
 
 /**
- * 电子书格式枚举
+ * 鐢靛瓙涔︽牸寮忔灇涓?
  */
 export enum BookFormat {
   PDF = 'PDF',
@@ -75,20 +75,20 @@ export enum BookFormat {
   TXT = 'TXT',
   DOCX = 'DOCX',      // Word 2007+
   DOC = 'DOC',        // Word 97-2003
-  RTF = 'RTF',        // 富文本格式
-  HTML = 'HTML',      // 网页格式
-  ODT = 'ODT',        // OpenDocument 文本
+  RTF = 'RTF',        // 瀵屾枃鏈牸寮?
+  HTML = 'HTML',      // 缃戦〉鏍煎紡
+  ODT = 'ODT',        // OpenDocument 鏂囨湰
   FB2 = 'FB2',        // FictionBook
-  AZW3 = 'AZW3',      // Kindle 格式
-  AZW = 'AZW',        // Kindle 旧格式
-  CBR = 'CBR',        // 漫画压缩包(RAR)
-  CBZ = 'CBZ',        // 漫画压缩包(ZIP)
-  DJVU = 'DJVU',      // 扫描文档
-  CHM = 'CHM'         // 编译 HTML 帮助
+  AZW3 = 'AZW3',      // Kindle 鏍煎紡
+  AZW = 'AZW',        // Kindle 鏃ф牸寮?
+  CBR = 'CBR',        // 婕敾鍘嬬缉鍖?RAR)
+  CBZ = 'CBZ',        // 婕敾鍘嬬缉鍖?ZIP)
+  DJVU = 'DJVU',      // 鎵弿鏂囨。
+  CHM = 'CHM'         // 缂栬瘧 HTML 甯姪
 }
 
 /**
- * 阅读状态枚举一
+ * 闃呰鐘舵€佹灇涓句竴
  */
 export enum ReadStatus {
   UNREAD = 'unread',
@@ -97,28 +97,28 @@ export enum ReadStatus {
 }
 
 /**
- * 阅读主题枚举
+ * 闃呰涓婚鏋氫妇
  */
 export enum ReadTheme {
-  LIGHT = 'light',      // 白天模式
-  SEPIA = 'sepia',      // 护眼模式
-  DARK = 'dark',        // 夜间模式
-  AUTO = 'auto'         // 自动（跟随系统）
+  LIGHT = 'light',      // 鐧藉ぉ妯″紡
+  SEPIA = 'sepia',      // 鎶ょ溂妯″紡
+  DARK = 'dark',        // 澶滈棿妯″紡
+  AUTO = 'auto'         // 鑷姩锛堣窡闅忕郴缁燂級
 }
 
 /**
- * 翻页模式枚举
+ * 缈婚〉妯″紡鏋氫妇
  */
 export enum PageTurnMode {
-  SCROLL = 'scroll',          // 滚动模式
-  COVER = 'cover',            // 覆盖模式
-  SIMULATION = 'simulation',  // 仿真翻页
-  SLIDE = 'slide',            // 滑动翻页
-  NONE = 'none'               // 无动画
+  SCROLL = 'scroll',          // 婊氬姩妯″紡
+  COVER = 'cover',            // 瑕嗙洊妯″紡
+  SIMULATION = 'simulation',  // 浠跨湡缈婚〉
+  SLIDE = 'slide',            // 婊戝姩缈婚〉
+  NONE = 'none'               // 鏃犲姩鐢?
 }
 
 /**
- * 字体选项接口
+ * 瀛椾綋閫夐」鎺ュ彛
  */
 export interface FontOption {
   name: string;
@@ -126,60 +126,60 @@ export interface FontOption {
 }
 
 /**
- * 书签接口
+ * 涔︾鎺ュ彛
  */
 export interface Bookmark {
-  id: string;                 // 唯一标识
-  bookId: string;             // 书籍 ID
-  pageNumber: number;         // 页码
-  title: string;              // 书签标题
-  createTime: number;         // 创建时间戳
-  note?: string;              // 备注
+  id: string;                 // 鍞竴鏍囪瘑
+  bookId: string;             // 涔︾睄 ID
+  pageNumber: number;         // 椤电爜
+  title: string;              // 涔︾鏍囬
+  createTime: number;         // 鍒涘缓鏃堕棿鎴?
+  note?: string;              // 澶囨敞
 }
 
 /**
- * 笔记接口
+ * 绗旇鎺ュ彛
  */
 export interface Note {
-  id: string;                 // 唯一标识
-  bookId: string;             // 书籍 ID
-  pageNumber: number;         // 页码
-  content: string;            // 笔记内容
-  highlight?: string;         // 高亮文本
-  color?: string;             // 高亮颜色
-  createTime: number;         // 创建时间戳
-  tags?: string[];            // 标签
+  id: string;                 // 鍞竴鏍囪瘑
+  bookId: string;             // 涔︾睄 ID
+  pageNumber: number;         // 椤电爜
+  content: string;            // 绗旇鍐呭
+  highlight?: string;         // 楂樹寒鏂囨湰
+  color?: string;             // 楂樹寒棰滆壊
+  createTime: number;         // 鍒涘缓鏃堕棿鎴?
+  tags?: string[];            // 鏍囩
 }
 
 /**
- * 阅读记录接口
+ * 闃呰璁板綍鎺ュ彛
  */
 export interface ReadRecord {
-  id: string;                 // 唯一标识
-  bookId: string;             // 书籍 ID
-  bookTitle: string;          // 书名
-  startTime: number;          // 开始时间戳
-  endTime: number;            // 结束时间
-  duration: number;           // 阅读时长（秒）
-  startPage: number;          // 起始页
-  endPage: number;            // 结束页
-  note?: string;              // 笔记
+  id: string;                 // 鍞竴鏍囪瘑
+  bookId: string;             // 涔︾睄 ID
+  bookTitle: string;          // 涔﹀悕
+  startTime: number;          // 寮€濮嬫椂闂存埑
+  endTime: number;            // 缁撴潫鏃堕棿
+  duration: number;           // 闃呰鏃堕暱锛堢锛?
+  startPage: number;          // 璧峰椤?
+  endPage: number;            // 缁撴潫椤?
+  note?: string;              // 绗旇
 }
 
 /**
- * 书架分组接口
+ * 涔︽灦鍒嗙粍鎺ュ彛
  */
 export interface BookshelfGroup {
-  id: string;                 // 分组 ID
-  name: string;               // 分组名称
-  color: string;              // 分组颜色
-  bookIds: string[];          // 书籍 ID 列表
-  createTime: number;         // 创建时间
-  sortOrder: number;          // 排序序号
+  id: string;                 // 鍒嗙粍 ID
+  name: string;               // 鍒嗙粍鍚嶇О
+  color: string;              // 鍒嗙粍棰滆壊
+  bookIds: string[];          // 涔︾睄 ID 鍒楄〃
+  createTime: number;         // 鍒涘缓鏃堕棿
+  sortOrder: number;          // 鎺掑簭搴忓彿
 }
 
 /**
- * 封面尺寸配置
+ * 灏侀潰灏哄閰嶇疆
  */
 export interface CoverDimensions {
   width: number;
@@ -187,7 +187,7 @@ export interface CoverDimensions {
 }
 
 /**
- * 书籍解析结果
+ * 涔︾睄瑙ｆ瀽缁撴灉
  */
 export interface BookInfoResult {
   success: boolean;
@@ -198,49 +198,49 @@ export interface BookInfoResult {
 }
 
 /**
- * 书籍信息接口 - 核心数据结构
+ * 涔︾睄淇℃伅鎺ュ彛 - 鏍稿績鏁版嵁缁撴瀯
  */
 export interface BookInfo {
-  id: string;                 // 唯一标识
-  title: string;              // 书名
-  author: string;             // 作者
-  coverPath?: string;         // 封面路径
-  filePath: string;           // 文件路径
-  format: BookFormat;         // 文件格式
-  fileSize: number;           // 文件大小（字节）
-  totalPages: number;         // 总页数
-  currentPage: number;        // 当前页
-  readProgress: number;       // 阅读进度（0-100）
-  lastReadTime: number;       // 最后阅读时间戳
-  addTime: number;            // 添加时间
-  status: ReadStatus;         // 阅读状态
-  description?: string;       // 书籍描述
-  tags?: string[];            // 标签
-  isFavorite: boolean;        // 是否收藏
-  groupIds?: string[];        // 所属分组(ID 列表)
-  totalReadTime?: number;     // 总阅读时长（秒）
-  readStatus?: ReadStatus;    // 阅读状态（冗余字段，兼容旧代码）
-  lastReadPosition?: number;  // 最后阅读位置（页码/偏移）
+  id: string;                 // 鍞竴鏍囪瘑
+  title: string;              // 涔﹀悕
+  author: string;             // 浣滆€?
+  coverPath?: string;         // 灏侀潰璺緞
+  filePath: string;           // 鏂囦欢璺緞
+  format: BookFormat;         // 鏂囦欢鏍煎紡
+  fileSize: number;           // 鏂囦欢澶у皬锛堝瓧鑺傦級
+  totalPages: number;         // 鎬婚〉鏁?
+  currentPage: number;        // 褰撳墠椤?
+  readProgress: number;       // 闃呰杩涘害锛?-100锛?
+  lastReadTime: number;       // 鏈€鍚庨槄璇绘椂闂存埑
+  addTime: number;            // 娣诲姞鏃堕棿
+  status: ReadStatus;         // 闃呰鐘舵€?
+  description?: string;       // 涔︾睄鎻忚堪
+  tags?: string[];            // 鏍囩
+  isFavorite: boolean;        // 鏄惁鏀惰棌
+  groupIds?: string[];        // 鎵€灞炲垎缁?ID 鍒楄〃)
+  totalReadTime?: number;     // 鎬婚槄璇绘椂闀匡紙绉掞級
+  readStatus?: ReadStatus;    // 闃呰鐘舵€侊紙鍐椾綑瀛楁锛屽吋瀹规棫浠ｇ爜锛?
+  lastReadPosition?: number;  // 鏈€鍚庨槄璇讳綅缃紙椤电爜/鍋忕Щ锛?
 }
 
 /**
- * 阅读设置接口
+ * 闃呰璁剧疆鎺ュ彛
  */
 export interface ReadSettings {
-  fontSize: number;           // 字体大小
-  lineSpacing: number;        // 行间距
-  theme: ReadTheme;           // 阅读主题
-  brightness: number;         // 亮度 (0-100)
-  screenOrientation: number;  // 屏幕方向
-  pageTurnMode: PageTurnMode; // 翻页模式
-  fontFamily: string;         // 字体
-  paragraphSpacing: number;   // 段间距
-  letterSpacing: number;      // 字间距
-  textIndent: number;         // 首行缩进
+  fontSize: number;           // 瀛椾綋澶у皬
+  lineSpacing: number;        // 琛岄棿璺?
+  theme: ReadTheme;           // 闃呰涓婚
+  brightness: number;         // 浜害 (0-100)
+  screenOrientation: number;  // 灞忓箷鏂瑰悜
+  pageTurnMode: PageTurnMode; // 缈婚〉妯″紡
+  fontFamily: string;         // 瀛椾綋
+  paragraphSpacing: number;   // 娈甸棿璺?
+  letterSpacing: number;      // 瀛楅棿璺?
+  textIndent: number;         // 棣栬缂╄繘
 }
 
 /**
- * 常用字体选项
+ * 甯哥敤瀛椾綋閫夐」
  */
 export const FONT_OPTIONS: FontOption[] = [
   { name: 'system', value: 'system' },
@@ -251,7 +251,7 @@ export const FONT_OPTIONS: FontOption[] = [
 ];
 
 /**
- * 默认阅读设置
+ * 榛樿闃呰璁剧疆
  */
 export const DEFAULT_READ_SETTINGS: ReadSettings = {
   fontSize: 18,
@@ -273,7 +273,7 @@ export function generateBookId(): string {
 }
 
 /**
- * 格式化文件大小
+ * 鏍煎紡鍖栨枃浠跺ぇ灏?
  */
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 B';
@@ -285,7 +285,7 @@ export function formatFileSize(bytes: number): string {
 }
 
 /**
- * 格式化时间
+ * 鏍煎紡鍖栨椂闂?
  */
 export function formatTime(timestamp: number): string {
   const date = new Date(timestamp);
@@ -294,39 +294,39 @@ export function formatTime(timestamp: number): string {
 
   if (diff < 3600000) {
     const minutes = Math.floor(diff / 60000);
-    return minutes < 1 ? '刚刚' : minutes.toString() + '分钟前';
+    return minutes < 1 ? '鍒氬垰' : minutes.toString() + '鍒嗛挓鍓?;
   }
   if (diff < 86400000) {
-    return Math.floor(diff / 3600000).toString() + '小时前';
+    return Math.floor(diff / 3600000).toString() + '灏忔椂鍓?;
   }
   if (diff < 604800000) {
-    return Math.floor(diff / 86400000).toString() + '天前';
+    return Math.floor(diff / 86400000).toString() + '澶╁墠';
   }
 
-  return (date.getMonth() + 1).toString() + '月' + date.getDate().toString() + '日';
+  return (date.getMonth() + 1).toString() + '鏈? + date.getDate().toString() + '鏃?;
 }
 
 /**
- * 格式化阅读时长
+ * 鏍煎紡鍖栭槄璇绘椂闀?
  */
 export function formatDuration(seconds: number): string {
   if (seconds < 60) {
-    return seconds.toString() + '秒';
+    return seconds.toString() + '绉?;
   } else if (seconds < 3600) {
     const mins = Math.floor(seconds / 60);
-    return mins.toString() + '分钟';
+    return mins.toString() + '鍒嗛挓';
   } else {
     const hours = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
-    return mins > 0 ? hours.toString() + '小时' + mins.toString() + '分钟' : hours.toString() + '小时';
+    return mins > 0 ? hours.toString() + '灏忔椂' + mins.toString() + '鍒嗛挓' : hours.toString() + '灏忔椂';
   }
 }
 
 export const MOCK_BOOKS: BookInfo[] = [
   {
     id: 'book_1',
-    title: '示例书籍',
-    author: '示例作者',
+    title: '绀轰緥涔︾睄',
+    author: '绀轰緥浣滆€?,
     filePath: '/data/example.txt',
     format: BookFormat.TXT,
     fileSize: 1024000,

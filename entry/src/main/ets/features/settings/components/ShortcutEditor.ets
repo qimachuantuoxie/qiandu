@@ -1,20 +1,21 @@
+import { logger } from '.\.\common/utils/Logger';
 /**
- * 快捷入口编辑器组件
+ * 蹇嵎鍏ュ彛缂栬緫鍣ㄧ粍�?
  * Shortcut Entry Editor Component
  *
- * 功能:
- * 1. 支持启用/禁用快捷入口
- * 2. 保存用户自定义配置
+ * 鍔熻�?
+ * 1. 鏀寔鍚�?绂佺敤蹇嵎鍏ュ�?
+ * 2. 淇濆瓨鐢ㄦ埛鑷畾涔夐厤�?
  */
 
-import { toast } from '../../../utils/ToastHelper';
-import { preferenceManager } from '../../../utils/PreferenceManager';
-import { themeManager, COMMON_COLORS, AppColors } from '../../../utils/AppTheme';
-import { fontScaleManager } from '../../../utils/FontScaleManager';
-import { tr } from '../../../utils/I18nManager';
+import { toast } from '../../utils/ToastHelper';
+import { preferenceManager } from '../../utils/PreferenceManager';
+import { themeManager, COMMON_COLORS, AppColors } from '../../utils/AppTheme';
+import { fontScaleManager } from '../../utils/FontScaleManager';
+import { tr } from '../../utils/LocalizationUtil';
 
 /**
- * 快捷入口项
+ * 蹇嵎鍏ュ彛�?
  */
 export interface ShortcutItem {
   id: string;
@@ -26,14 +27,14 @@ export interface ShortcutItem {
 }
 
 /**
- * 默认快捷入口配置
+ * 榛樿蹇嵎鍏ュ彛閰嶇疆
  */
 const DEFAULT_SHORTCUTS: ShortcutItem[] = [
-  { id: 'stats', icon: 'chart_bar_fill', titleKey: 'reading_statistics', color: '#007DFF', url: 'pages/StatisticsPage', enabled: true },
-  { id: 'todo', icon: 'pencil', titleKey: 'todo', color: '#FF6B6B', url: 'pages/TodoPage', enabled: true },
-  { id: 'records', icon: 'book_fill', titleKey: 'read_records', color: '#52C41A', url: 'pages/ReadRecordPage', enabled: true },
-  { id: 'bookmarks', icon: 'bookmark_fill', titleKey: 'bookmarks', color: '#FFA500', url: 'pages/BookmarkPage', enabled: true },
-  { id: 'notes', icon: '✏️', titleKey: 'notes', color: '#9370DB', url: 'pages/NotePage', enabled: true },
+  { id: 'stats', icon: 'chart_bar_fill', titleKey: 'reading_statistics', color: '#007DFF', url: 'features/StatisticsPage', enabled: true },
+  { id: 'todo', icon: 'pencil', titleKey: 'todo', color: '#FF6B6B', url: 'features/TodoPage', enabled: true },
+  { id: 'records', icon: 'book_fill', titleKey: 'read_records', color: '#52C41A', url: 'features/ReadRecordPage', enabled: true },
+  { id: 'bookmarks', icon: 'bookmark_fill', titleKey: 'bookmarks', color: '#FFA500', url: 'features/BookmarkPage', enabled: true },
+  { id: 'notes', icon: 'pencil_and_outline', titleKey: 'notes', color: '#9370DB', url: 'features/NotePage', enabled: true },
   { id: 'smart', icon: 'brain_headphones', titleKey: 'smart_services', color: '#00CED1', url: '', enabled: true }
 ];
 
@@ -67,7 +68,7 @@ export struct ShortcutEditor {
       preferenceManager.setString('shortcuts', JSON.stringify(this.shortcuts));
     } catch (error) {
       const err = error as Error;
-      console.error('保存快捷方式失败:', err.message);
+      logger.error('淇濆瓨蹇嵎鏂瑰紡澶辫触:', err.message);
     }
   }
 
@@ -136,7 +137,7 @@ export struct ShortcutEditor {
   ShortcutListItem(item: ShortcutItem, index: number) {
     Row() {
       Column() {
-        Text('≡')
+        Text('�?)
           .fontSize(fontScaleManager.getScaledFontSize(20))
           .fontColor(this.currentColors.textSecondary)
       }

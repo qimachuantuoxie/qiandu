@@ -1,21 +1,21 @@
-/**
- * 应用路由常量统一管理
- * 所有页面路由URL集中定义,避免硬编码
+﻿/**
+ * 搴旂敤璺敱甯搁噺缁熶竴绠＄悊
+ * 鎵€鏈夐〉闈㈣矾鐢盪RL闆嗕腑瀹氫箟,閬垮厤纭紪鐮?
  */
 
 export const AppRoutes = {
-  // 主页
+  // 涓婚〉
   LOGIN: 'pages/LoginPage',
   MAIN: 'pages/MainPage',
   FEATURES: 'pages/FeaturesPage',
 
-  // 书架
+  // 涔︽灦
   BOOK_DETAIL: 'pages/BookDetailPage',
   BOOK_SOURCE_MANAGE: 'pages/BookSourceManagePage',
   FOLDER_SCANNER: 'pages/FolderScannerPage',
   BOOKMARKS: 'pages/BookmarksPage',
 
-  // 阅读器
+  // 闃呰鍣?
   ENHANCED_READER: 'pages/EnhancedReaderPage',
   COMIC_READER: 'pages/ComicReaderPage',
   READER_SETTINGS: 'pages/ReaderSettingsPage',
@@ -24,18 +24,18 @@ export const AppRoutes = {
   DICTIONARY: 'pages/DictionaryPage',
   WORD_BOOK: 'pages/WordBookPage',
 
-  // 发现
+  // 鍙戠幇
   ONLINE_SEARCH: 'pages/OnlineSearchPage',
   ONLINE_BOOK_DETAIL: 'pages/OnlineBookDetailPage',
   ONLINE_SOURCE_MARKET: 'pages/OnlineSourceMarketPage',
   SOURCE_MARKET: 'pages/SourceMarketPage',
 
-  // 个人中心
+  // 涓汉涓績
   PROFILE: 'pages/ProfilePage',
   READING_STATS: 'pages/ReadingStatsPage',
   STATISTICS: 'pages/StatisticsPage',
 
-  // 设置
+  // 璁剧疆
   SETTINGS: 'pages/SettingsPage',
   PRIVACY_POLICY: 'pages/PrivacyPolicyPage',
   USER_AGREEMENT: 'pages/UserAgreementPage',
@@ -44,25 +44,25 @@ export const AppRoutes = {
   REWARD: 'pages/RewardPage',
   SKILL: 'pages/SkillPage',
 
-  // 待办
+  // 寰呭姙
   TODO: 'pages/TodoPage'
 } as const;
 
 export type AppRouteType = typeof AppRoutes[keyof typeof AppRoutes];
 
 /**
- * 路由参数辅助函数
+ * 璺敱鍙傛暟杈呭姪鍑芥暟
  */
 export class RouteHelper {
   /**
-   * 书籍详情页路由参数
+   * 涔︾睄璇︽儏椤佃矾鐢卞弬鏁?
    */
   static bookDetailParams(bookId: string): Record<string, string> {
     return { bookId: bookId };
   }
 
   /**
-   * 阅读器路由参数
+   * 闃呰鍣ㄨ矾鐢卞弬鏁?
    */
   static readerParams(bookId: string, chapterIndex?: number): Record<string, string | number> {
     const idx = chapterIndex !== undefined ? chapterIndex : 0;
@@ -73,7 +73,7 @@ export class RouteHelper {
   }
 
   /**
-   * 在线书籍详情路由参数
+   * 鍦ㄧ嚎涔︾睄璇︽儏璺敱鍙傛暟
    */
   static onlineBookDetailParams(bookUrl: string, sourceId: string, bookName: string): Record<string, string> {
     return { bookUrl: bookUrl, sourceId: sourceId, bookName: bookName };

@@ -44,39 +44,30 @@ target_include_directories(imagekit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(imagekit PUBLIC libace_napi.z libhilog_ndk.z)
 
 # ============================================
-# DJVU 解析器（需要 djvulibre 库）
+# CHM 解析器库
 # ============================================
-# 注意：需要先编译并集成 djvulibre 库
-# 取消注释并配置路径后启用
-# add_library(djvulibre STATIC IMPORTED)
-# set_target_properties(djvulibre PROPERTIES IMPORTED_LOCATION
-#     ${CMAKE_CURRENT_SOURCE_DIR}/libs/${CMAKE_ANDROID_ARCH_ABI}/libdjvulibre.a)
-
-add_library(djvuparser SHARED
-    native_djvu.cpp
+add_library(chm_parser SHARED
+    chm_parser.cpp
 )
 
-target_include_directories(djvuparser PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-
-# 如果启用了 djvulibre，取消下面的注释
-# target_link_libraries(djvuparser PUBLIC libace_napi.z libhilog_ndk.z djvulibre)
-target_link_libraries(djvuparser PUBLIC libace_napi.z libhilog_ndk.z)
-
-# ============================================
-# CHM 解析器（需要 chmlib 库）
-# ============================================
-# 注意：需要先编译并集成 chmlib 库
-# 取消注释并配置路径后启用
-# add_library(chmlib STATIC IMPORTED)
-# set_target_properties(chmlib PROPERTIES IMPORTED_LOCATION
-#     ${CMAKE_CURRENT_SOURCE_DIR}/libs/${CMAKE_ANDROID_ARCH_ABI}/libchm.a)
-
-add_library(chmparser SHARED
-    native_chm.cpp
+# 链接必要的库
+target_link_libraries(chm_parser PUBLIC
+    libace_napi.z       # NAPI 核心
+    libhilog_ndk.z      # 日志
+    libz.a             # zlib 压缩库
 )
 
-target_include_directories(chmparser PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+# ============================================
+# DjVu 解析器库
+# ============================================
+add_library(djvu_parser SHARED
+    djvu_parser.cpp
+)
 
-# 如果启用了 chmlib，取消下面的注释
-# target_link_libraries(chmparser PUBLIC libace_napi.z libhilog_ndk.z chmlib)
-target_link_libraries(chmparser PUBLIC libace_napi.z libhilog_ndk.z)
+# 链接必要的库
+target_link_libraries(djvu_parser PUBLIC
+    libace_napi.z       # NAPI 核心
+    libhilog_ndk.z      # 日志
+    libjpeg.a           # JPEG 库（DjVu 依赖）
+    libtiff.a           # TIFF 库（DjVu 依赖）
+)

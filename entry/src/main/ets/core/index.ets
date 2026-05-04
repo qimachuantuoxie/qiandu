@@ -1,24 +1,35 @@
-/**
- * 核心模块统一导出
+﻿/**
+ * 鏍稿績妯″潡缁熶竴瀵煎嚭
  * Core Module Export
  */
 
-// 偏好管理
-export { preferenceManager } from '../utils/PreferenceManager';
+// 鍋忓ソ绠＄悊
+export { preferenceManager } from './stores/PreferenceManager';
 
-// 全局状态
-export { UserState, ThemeState, initAppStore } from '../store/AppStore';
+// 鏁版嵁妯″瀷
+export * from './models';
 
-// 管理器
-export { DeviceUtils } from '../utils/DeviceUtils';
-export { I18nManager, i18n, tr, SUPPORTED_LOCALES, LocaleInfo, LocaleCode } from '../utils/I18nManager';
-export { AccountManager, accountManager } from '../utils/AccountManager';
-export { SecureStorage, secureStorage } from '../utils/SecureStorage';
-export { KitManager, kitManager } from '../services/huawei-kit/KitManager';
+// 瑙ｆ瀽鍣?
+export * from './parsers';
 
-// 设计系统
-export { DesignSystem, designSystem } from '../utils/DesignSystem';
-export { LIGHT_THEME, DARK_THEME, ThemeColors } from '../services/reader/UIDesignKitService';
+// 闃呰鍣?
+export * from './reader';
+
+// 鏈嶅姟
+export * from './services';
+
+// 鐘舵€佺鐞?
+export * from './stores';
+
+// 绠＄悊鍣?
+export * from './managers';
+
+// 宸ュ叿鍑芥暟
+export * from './utils';
+
+// 璁捐绯荤粺
+export { DesignSystem, designSystem } from './utils/DesignSystem';
+export { LIGHT_THEME, DARK_THEME, ThemeColors } from './services/reader/UIDesignKitService';
 export {
   IHarmonyColors,
   HarmonyColors,
@@ -29,6 +40,6 @@ export {
   FontSizeTokens,
   IDarkModeColors,
   getDarkModeColors,
-  IGlassCardStyle,
-  createGlassCardStyle
-} from '../utils/HarmonyDesignTokens';
+  IClassCardStyle,
+  createClassCardStyle
+} from './utils/HarmonyDesignTokens';

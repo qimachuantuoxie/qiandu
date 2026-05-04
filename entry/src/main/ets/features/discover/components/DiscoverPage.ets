@@ -1,6 +1,6 @@
-// 发现页组件 - 功能发现入口
-import { router } from '@kit.ArkUI';
-import { navigateTo } from '../../../utils/NavigationHelper';
+// 鍙戠幇椤电粍锟?- 鍔熻兘鍙戠幇鍏ュ彛
+
+import { navigateTo } from '../../../../common/utils/NavigationHelper';
 
 interface DiscoverItem {
   icon: string;
@@ -16,14 +16,14 @@ export struct DiscoverContent {
   onOpenFolderScanner?: () => void;
 
   private readonly discoverItems: DiscoverItem[] = [
-    { icon: '\ud83d\udcda', title: '书源市场', desc: '浏览和导入在线书源', url: 'pages/SourceMarketPage' },
-    { icon: '\ud83d\udce6', title: '在线书源', desc: '发现更多优质书源', url: 'pages/OnlineSourceMarketPage' },
-    { icon: '\ud83d\udcca', title: '阅读统计', desc: '查看您的阅读数据', url: 'pages/StatisticsPage' },
-    { icon: '\ud83d\udcc9', title: '阅读记录', desc: '回顾阅读历史', url: 'pages/ReadRecordPage' },
-    { icon: '\ud83d\udd16', title: '书签管理', desc: '管理您的书签', url: 'pages/BookmarksPage' },
-    { icon: '\ud83d\udcdd', title: '笔记管理', desc: '查看您的读书笔记', url: 'pages/NotesPage' },
-    { icon: '\u2705', title: '待办事项', desc: '管理阅读计划和任务', url: 'pages/TodoPage' },
-    { icon: '\ud83d\udcd6', title: '生词本', desc: '积累您的词汇量', url: 'pages/WordBookPage' }
+    { icon: '\ud83d\udcda', title: '涔︽簮甯傚満', desc: '娴忚�鍜屽�鍏ュ湪绾夸功婧?, url: 'features/source-market/pages/SourceMarketPage' },
+    { icon: '\ud83d\udce6', title: '鍦ㄧ嚎涔︽簮', desc: '鍙戠幇鏇村�浼樿川涔︽簮', url: 'features/source-market/pages/OnlineSourceMarketPage' },
+    { icon: '\ud83d\udcca', title: '闃呰�缁熻�', desc: '鏌ョ湅鎮ㄧ殑闃呰�鏁版嵁', url: 'features/settings/pages/StatisticsPage' },
+    { icon: '\ud83d\udcc9', title: '闃呰�璁板綍', desc: '鍥為【闃呰�鍘嗗彶', url: 'features/settings/pages/ReadRecordPage' },
+    { icon: '\ud83d\udd16', title: '涔︾�绠＄悊', desc: '绠＄悊鎮ㄧ殑涔︾�', url: 'features/bookshelf/pages/BookmarksPage' },
+    { icon: '\ud83d\udcdd', title: '绗旇�绠＄悊', desc: '鏌ョ湅鎮ㄧ殑璇讳功绗旇�', url: 'features/bookshelf/pages/NotesPage' },
+    { icon: '\u2705', title: '寰呭姙浜嬮」', desc: '绠＄悊闃呰�璁″垝鍜屼换鍔?, url: 'features/profile/pages/TodoPage' },
+    { icon: '\ud83d\udcd6', title: '鐢熻瘝鏈?, desc: '绉�疮鎮ㄧ殑璇嶆眹搴?, url: 'features/reader/pages/WordBookPage' },
   ];
 
   private navigateTo(url: string): void {
@@ -32,10 +32,10 @@ export struct DiscoverContent {
 
   build() {
     Column() {
-      // 顶部导航栏
+      // 椤堕儴瀵艰埅锟?
       this.HeaderBar()
 
-      // 功能列表
+      // 鍔熻兘鍒楄〃
       this.DiscoverList()
     }
     .width('100%')
@@ -45,7 +45,7 @@ export struct DiscoverContent {
   @Builder
   HeaderBar() {
     Row() {
-      Text('发现')
+      Text('鍙戠幇')
         .fontSize(22)
         .fontWeight(FontWeight.Bold)
         .fontColor(this.isDarkMode ? '#FFFFFF' : '#1A1A1A')
@@ -75,8 +75,8 @@ export struct DiscoverContent {
           })
         })
 
-        // 扫描文件夹入口
-        this.DiscoverCard('\ud83d\udcc2', '扫描文件夹', '批量导入本地书籍', () => {
+        // 鎵�弿鏂囦欢澶瑰叆锟?
+        this.DiscoverCard('\ud83d\udcc2', '鎵�弿鏂囦欢锟?, '鎵归噺瀵煎叆鏈�湴涔︾睄', () => {
           navigateTo('pages/FolderScannerPage');
         })
       }
@@ -92,31 +92,31 @@ export struct DiscoverContent {
 
   @Builder
   DiscoverCard(icon: string, title: string, desc: string, action: () => void) {
-    Row({ space: 16 }) {
+    Row({ space: Spacing.lg }) {
       Text(icon)
-        .fontSize(32)
-
-      Column({ space: 4 }) {
+        .fontSize(Size.iconXXL)
+    
+      Column({ space: Spacing.xs }) {
         Text(title)
-          .fontSize(16)
+          .fontSize(layoutHelper.getResponsiveFontSize(16))
           .fontWeight(FontWeight.Medium)
           .fontColor(this.isDarkMode ? '#FFFFFF' : '#1A1A1A')
-
+    
         Text(desc)
-          .fontSize(12)
+          .fontSize(layoutHelper.getResponsiveFontSize(12))
           .fontColor(this.isDarkMode ? '#888888' : '#999999')
       }
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
-
-      Text('\u2192')
-        .fontSize(20)
+    
+      Text('→')
+        .fontSize(Size.iconLG)
         .fontColor(this.isDarkMode ? '#555555' : '#CCCCCC')
     }
     .width('100%')
-    .padding(16)
+    .padding(Spacing.lg)
     .backgroundColor(this.isDarkMode ? '#2C2C2E' : '#FFFFFF')
-    .borderRadius(12)
+    .borderRadius(BorderRadius.lg)
     .onClick(() => {
       action();
     })

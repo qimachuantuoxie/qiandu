@@ -1,10 +1,9 @@
-// 书源分类筛选器组件
+// 涔︽簮鍒嗙被绛涢€夊櫒缁勪欢
 import { BookSourceType } from '../../../core/models/source/BookSourceModel';
-import { bookSourceViewModel, SourceFilterState, DEFAULT_FILTER_STATE } from '../../../viewmodels/BookSourceViewModel';
-import { COMMON_COLORS } from '../../../utils/AppTheme';
+import { bookSourceViewModel, SourceFilterState, DEFAULT_FILTER_STATE } from '../../viewmodels/BookSourceViewModel';
+import { COMMON_COLORS } from '../../utils/AppTheme';
 
-// 筛选类型枚举
-enum EnabledStatusFilter {
+// 绛涢€夌被鍨嬫灇涓?enum EnabledStatusFilter {
   ALL = 'all',
   ENABLED = 'enabled',
   DISABLED = 'disabled'
@@ -85,56 +84,56 @@ export struct SourceCategoryFilter {
   private getTypeLabel(type: BookSourceType | 'all'): string {
     switch (type) {
       case 'all':
-        return '全部类型';
+        return '鍏ㄩ儴绫诲瀷';
       case BookSourceType.TEXT:
-        return '文字';
+        return '鏂囧瓧';
       case BookSourceType.IMAGE:
-        return '漫画';
+        return '婕�敾';
       case BookSourceType.AUDIO:
-        return '音频';
+        return '闊抽�';
       default:
-        return '全部类型';
+        return '鍏ㄩ儴绫诲瀷';
     }
   }
 
   private getEnabledLabel(status: 'all' | 'enabled' | 'disabled'): string {
     switch (status) {
       case 'all':
-        return '全部状态';
+        return '鍏ㄩ儴鐘舵€?;
       case 'enabled':
-        return '已启用';
+        return '宸插惎鐢?;
       case 'disabled':
-        return '已禁用';
+        return '宸茬�鐢?;
       default:
-        return '全部状态';
+        return '鍏ㄩ儴鐘舵€?;
     }
   }
 
   private getSyncLabel(status: 'all' | 'synced' | 'unsynced'): string {
     switch (status) {
       case 'all':
-        return '同步状态';
+        return '鍚屾�鐘舵€?;
       case 'synced':
-        return '已同步';
+        return '宸插悓姝?;
       case 'unsynced':
-        return '未同步';
+        return '鏈�悓姝?;
       default:
-        return '同步状态';
+        return '鍚屾�鐘舵€?;
     }
   }
 
   private getTestLabel(status: 'all' | 'available' | 'unavailable' | 'untested'): string {
     switch (status) {
       case 'all':
-        return '测试状态';
+        return '娴嬭瘯鐘舵€?;
       case 'available':
-        return '可用';
+        return '鍙�敤';
       case 'unavailable':
-        return '不可用';
+        return '涓嶅彲鐢?;
       case 'untested':
-        return '未测试';
+        return '鏈�祴璇?;
       default:
-        return '测试状态';
+        return '娴嬭瘯鐘舵€?;
     }
   }
 
@@ -145,7 +144,7 @@ export struct SourceCategoryFilter {
   build() {
     Column() {
       Row() {
-        Text('筛选')
+        Text('绛涢€?)
           .fontSize(14)
           .fontWeight(FontWeight.Medium)
           .fontColor(this.tc('#333333', '#FFFFFF'))
@@ -167,10 +166,10 @@ export struct SourceCategoryFilter {
         if (this.getActiveFilterCount() > 0) {
           Button() {
             Row({ space: 4 }) {
-              Text('×')
+              Text('脳')
                 .fontSize(12)
                 .fontColor(COMMON_COLORS.PRIMARY_BLUE)
-              Text('清除筛选')
+              Text('娓呴櫎绛涢€?)
                 .fontSize(12)
                 .fontColor(COMMON_COLORS.PRIMARY_BLUE)
             }
@@ -215,17 +214,17 @@ export struct SourceCategoryFilter {
 
       if (this.showTypePicker) {
         this.FilterPickerOverlay(
-          ['全部类型', '文字', '漫画', '音频'],
+          ['鍏ㄩ儴绫诲瀷', '鏂囧瓧', '婕�敾', '闊抽�'],
           [BookSourceType.TEXT, BookSourceType.IMAGE, BookSourceType.AUDIO],
           this.filterState.typeFilter,
           (value: string) => {
-            if (value === '全部类型') {
+            if (value === '鍏ㄩ儴绫诲瀷') {
               this.setTypeFilter('all');
-            } else if (value === '文字') {
+            } else if (value === '鏂囧瓧') {
               this.setTypeFilter(BookSourceType.TEXT);
-            } else if (value === '漫画') {
+            } else if (value === '婕�敾') {
               this.setTypeFilter(BookSourceType.IMAGE);
-            } else if (value === '音频') {
+            } else if (value === '闊抽�') {
               this.setTypeFilter(BookSourceType.AUDIO);
             }
             this.showTypePicker = false;
@@ -236,15 +235,15 @@ export struct SourceCategoryFilter {
 
       if (this.showEnabledPicker) {
         this.FilterPickerOverlay(
-          ['全部状态', '已启用', '已禁用'],
+          ['鍏ㄩ儴鐘舵€?, '宸插惎鐢?, '宸茬�鐢?],
           ['enabled', 'disabled'],
           this.filterState.enabledFilter,
           (value: string) => {
-            if (value === '全部状态') {
+            if (value === '鍏ㄩ儴鐘舵€?) {
               this.setEnabledFilter('all');
-            } else if (value === '已启用') {
+            } else if (value === '宸插惎鐢?) {
               this.setEnabledFilter('enabled');
-            } else if (value === '已禁用') {
+            } else if (value === '宸茬�鐢?) {
               this.setEnabledFilter('disabled');
             }
             this.showEnabledPicker = false;
@@ -255,15 +254,15 @@ export struct SourceCategoryFilter {
 
       if (this.showSyncPicker) {
         this.FilterPickerOverlay(
-          ['同步状态', '已同步', '未同步'],
+          ['鍚屾�鐘舵€?, '宸插悓姝?, '鏈�悓姝?],
           ['synced', 'unsynced'],
           this.filterState.syncFilter,
           (value: string) => {
-            if (value === '同步状态') {
+            if (value === '鍚屾�鐘舵€?) {
               this.setSyncFilter('all');
-            } else if (value === '已同步') {
+            } else if (value === '宸插悓姝?) {
               this.setSyncFilter('synced');
-            } else if (value === '未同步') {
+            } else if (value === '鏈�悓姝?) {
               this.setSyncFilter('unsynced');
             }
             this.showSyncPicker = false;
@@ -274,17 +273,17 @@ export struct SourceCategoryFilter {
 
       if (this.showTestPicker) {
         this.FilterPickerOverlay(
-          ['测试状态', '可用', '不可用', '未测试'],
+          ['娴嬭瘯鐘舵€?, '鍙�敤', '涓嶅彲鐢?, '鏈�祴璇?],
           ['available', 'unavailable', 'untested'],
           this.filterState.testFilter,
           (value: string) => {
-            if (value === '测试状态') {
+            if (value === '娴嬭瘯鐘舵€?) {
               this.setTestFilter('all');
-            } else if (value === '可用') {
+            } else if (value === '鍙�敤') {
               this.setTestFilter('available');
-            } else if (value === '不可用') {
+            } else if (value === '涓嶅彲鐢?) {
               this.setTestFilter('unavailable');
-            } else if (value === '未测试') {
+            } else if (value === '鏈�祴璇?) {
               this.setTestFilter('untested');
             }
             this.showTestPicker = false;
@@ -306,7 +305,7 @@ export struct SourceCategoryFilter {
           .fontColor(isActive ? '#FFFFFF' : this.tc('#666666', '#AAAAAA'))
           .maxLines(1)
 
-        Text('▼')
+        Text('鈻?)
           .fontSize(8)
           .fontColor(isActive ? '#FFFFFF' : this.tc('#999999', '#888888'))
       }
@@ -336,7 +335,7 @@ export struct SourceCategoryFilter {
 
       Column({ space: 12 }) {
         Row() {
-          Text('选择筛选条件')
+          Text('閫夋嫨绛涢€夋潯浠?)
             .fontSize(16)
             .fontWeight(FontWeight.Medium)
             .fontColor(this.tc('#333333', '#FFFFFF'))
@@ -344,7 +343,7 @@ export struct SourceCategoryFilter {
           Blank().layoutWeight(1)
 
           Button() {
-            Text('取消')
+            Text('鍙栨秷')
               .fontSize(14)
               .fontColor(this.tc('#666666', '#AAAAAA'))
           }
@@ -386,7 +385,7 @@ export struct SourceCategoryFilter {
         .layoutWeight(1)
 
       if (value === currentValue) {
-        Text('✓')
+        Text('鉁?)
           .fontSize(18)
           .fontColor(COMMON_COLORS.PRIMARY_BLUE)
           .fontWeight(FontWeight.Bold)

@@ -101,6 +101,24 @@
         { "name": "import_success", "value": "成功导入 %{count} 本书" },
         { "name": "import_failed", "value": "导入失败" },
         { "name": "scan_complete", "value": "扫描完成，发现 %{count} 个文档" },
-        { "name": "no_supported_format", "value": "未发现支持的文档格式" }
+        { "name": "no_supported_format", "value": "未发现支持的文档格式" },
+        { "name": "no_bookmarks", "value": "暂无书签" },
+        { "name": "book_detail", "value": "书籍详情" },
+        { "name": "book_management", "value": "书籍管理" },
+        { "name": "light_mode", "value": "浅色模式" },
+        { "name": "dark_mode_label", "value": "深色模式" },
+        { "name": "notes_title", "value": "笔记" },
+        { "name": "no_notes", "value": "暂无笔记" },
+        { "name": "long_press_to_add_note", "value": "长按选中文字添加笔记" },
+        { "name": "all_books", "value": "全部书籍" },
+        { "name": "filter_by_book", "value": "按书籍筛选" },
+        { "name": "export", "value": "导出" },
+        { "name": "source_manage", "value": "书源管理" },
+        { "name": "replace_rules", "value": "替换规则" },
+        { "name": "filter_by_book", "value": "按书籍筛选" },
+        { "name": "all_books", "value": "全部书籍" },
+        { "name": "all_tags", "value": "全部标签" },
+        { "name": "filter_notes", "value": "筛选笔记" },
+        { "name": "unknown_book", "value": "未知书籍" }
     ]
 }

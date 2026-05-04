@@ -1,13 +1,12 @@
-/**
- * Ebook Types - 鐢靛瓙涔︽牸寮忕浉鍏崇被鍨嬪畾涔? * 
- * 鍖呭惈鎵€鏈夌數瀛愪功瑙ｆ瀽鐩稿叧鐨勬帴鍙ｅ拰绫诲瀷瀹氫箟
- * 
+﻿/**
+ * Ebook Types - 閻㈤潧鐡欐稊锔界壐瀵繒娴夐崗宕囪閸ㄥ鐣炬稊? * 
+ * 閸栧懎鎯堥幍鈧張澶屾暩鐎涙劒鍔熺憴锝嗙€介惄绋垮彠閻ㄥ嫭甯撮崣锝呮嫲缁鐎风€规矮绠? * 
  * @since 6.0.0
  */
 
-// ==================== PDF 鐩稿叧绫诲瀷 ====================
+// ==================== PDF 閻╃鍙х猾璇茬€?====================
 
-/** PDF 鏂囨。淇℃伅 */
+/** PDF 閺傚洦銆傛穱鈩冧紖 */
 export interface PdfInfo {
   Title?: string;
   Author?: string;
@@ -18,7 +17,7 @@ export interface PdfInfo {
   ModDate?: string;
 }
 
-/** PDF 澶х翰椤?*/
+/** PDF 婢堆呯堪妞?*/
 export interface PdfOutlineItem {
   title?: string;
   Title?: string;
@@ -27,50 +26,50 @@ export interface PdfOutlineItem {
   children?: PdfOutlineItem[];
 }
 
-/** PDF 涔︾椤?*/
+/** PDF 娑旓妇顒锋い?*/
 export interface PdfBookmarkItem {
   title: string;
   pageIndex: number;
   level: number;
 }
 
-/** PDF 鏂囨。瀵硅薄 */
+/** PDF 閺傚洦銆傜€电钖?*/
 export interface PdfDocument {
   pageCount: number;
   info: PdfInfo;
   outline: PdfOutlineItem[];
 }
 
-// ==================== EPUB 鐩稿叧绫诲瀷 ====================
+// ==================== EPUB 閻╃鍙х猾璇茬€?====================
 
-/** NCX 瀵艰埅鐐?*/
+/** NCX 鐎佃壈鍩呴悙?*/
 export interface NavPoint {
   label: string;
   order: number;
   level: number;
 }
 
-/** EPUB 娓呭崟椤?*/
+/** EPUB 濞撳懎宕熸い?*/
 export interface ManifestItem {
   id: string;
   href: string;
 }
 
-/** EPUB 瀵艰埅椤?*/
+/** EPUB 鐎佃壈鍩呮い?*/
 export interface NavItem {
   label: string;
   level: number;
 }
 
-/** EPUB HTML 鏂囦欢 */
+/** EPUB HTML 閺傚洣娆?*/
 export interface HtmlFile {
   path: string;
   content: string;
 }
 
-// ==================== ZIP 鐩稿叧绫诲瀷 ====================
+// ==================== ZIP 閻╃鍙х猾璇茬€?====================
 
-/** ZIP 鏉＄洰 */
+/** ZIP 閺夛紕娲?*/
 export interface ZipEntry {
   path: string;
   isDirectory: boolean;
@@ -78,14 +77,14 @@ export interface ZipEntry {
   data: ArrayBuffer | null;
 }
 
-/** ZIP 瑙ｆ瀽缁撴灉 */
+/** ZIP 鐟欙絾鐎界紒鎾寸亯 */
 export interface ZipParseResult {
   entries: ZipEntry[];
 }
 
-// ==================== 閫氱敤绫诲瀷 ====================
+// ==================== 闁氨鏁ょ猾璇茬€?====================
 
-/** 涔︾睄鍏冩暟鎹?*/
+/** 娑旓妇鐫勯崗鍐╂殶閹?*/
 export interface BookMetadata {
   title: string;
   author: string;
@@ -100,7 +99,7 @@ export interface BookMetadata {
   modifiedDate?: string;
 }
 
-/** 绔犺妭淇℃伅 */
+/** 缁旂姾濡穱鈩冧紖 */
 export interface LocalChapterInfo {
   id: string;
   title: string;
@@ -109,7 +108,7 @@ export interface LocalChapterInfo {
   level: number;
 }
 
-/** 瑙ｆ瀽缁撴灉 */
+/** 鐟欙絾鐎界紒鎾寸亯 */
 export interface ParseResult {
   metadata: BookMetadata;
   content: string;
@@ -118,9 +117,9 @@ export interface ParseResult {
   error?: string;
 }
 
-// ==================== 鍐呴儴浣跨敤绫诲瀷锛堜笉瀵煎嚭锛?====================
+// ==================== 閸愬懘鍎存担璺ㄦ暏缁鐎烽敍鍫滅瑝鐎电厧鍤敍?====================
 
-/** PDF 淇℃伅缁撴灉锛堝唴閮級 */
+/** PDF 娣団剝浼呯紒鎾寸亯閿涘牆鍞撮柈顭掔礆 */
 export interface PdfInfoResult {
   title?: string;
   author?: string;
@@ -132,7 +131,7 @@ export interface PdfInfoResult {
   pageCount: number;
 }
 
-/** PDF 涔︾缁撴灉锛堝唴閮級 */
+/** PDF 娑旓妇顒风紒鎾寸亯閿涘牆鍞撮柈顭掔礆 */
 export interface PdfBookmarkResult {
   bookmarks: PdfBookmarkItem[];
   count: number;
