@@ -128,7 +128,60 @@ struct OnlineSearchPage {
   build() {
     Column() {
       // 顶部搜索栏
-      this.SearchBar()
+      Row() {
+        // 返回按钮
+        Row() {
+          SymbolGlyph($r('sys.symbol.chevron.left'))
+            .fontSize(24)
+            .fontColor([this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900])
+        }
+        .width(40)
+        .height(40)
+        .borderRadius(HDSBorderRadius.full)
+        .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)')
+        .justifyContent(FlexAlign.Center)
+        .onClick(() => {
+          try { goBack(); } 
+          catch (e) { logger.error('[OnlineSearch] back failed', e); }
+        })
+
+        // 搜索框
+        TextInput({ placeholder: '搜索书籍、作者...', text: this.searchKeyword })
+          .layoutWeight(1)
+          .height(40)
+          .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : '#F2F2F7')
+          .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
+          .fontSize(HDSTypography.sizes.md)
+          .borderRadius(HDSBorderRadius.xl)
+          .margin({ left: HDSSpacing.md })
+          .onChange((value: string) => {
+            this.searchKeyword = value;
+          })
+          .onSubmit(() => {
+            if (this.searchKeyword.trim().length > 0) {
+              this.performSearch();
+            }
+          })
+
+        // 筛选按钮
+        Row() {
+          SymbolGlyph($r('sys.symbol.line.3.horizontal'))
+            .fontSize(20)
+            .fontColor([this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900])
+        }
+        .width(40)
+        .height(40)
+        .borderRadius(HDSBorderRadius.full)
+        .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)')
+        .justifyContent(FlexAlign.Center)
+        .margin({ left: HDSSpacing.sm })
+        .onClick(() => {
+          this.showFilterPanel = !this.showFilterPanel;
+        })
+      }
+      .width('100%')
+      .padding(HDSPacing.lg)
+      .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.surface : HDSColours.neutral.white)
 
       // 主内容区
       if (this.isLoading) {
@@ -145,70 +198,7 @@ struct OnlineSearchPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
-  }
-
-  @Builder
-  SearchBar() {
-    Row() {
-      // 返回按钮
-      Row() {
-        SymbolGlyph($r('sys.symbol.chevron.left'))
-          .fontSize(Size.iconLG)
-          .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
-      }
-      .width(Size.buttonMD)
-      .height(Size.buttonMD)
-      .borderRadius(BorderRadius.full)
-      .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
-      .justifyContent(FlexAlign.Center)
-      .onClick(() => {
-        try { goBack(); } 
-        catch (e) { logger.error('[OnlineSearch] back failed', e); }
-      })
-      .stateStyles({
-        pressed: { .scale({ x: 0.9, y: 0.9 }) },
-        normal: { .scale({ x: 1, y: 1 }) }
-      })
-
-      // 搜索框
-      TextInput({ placeholder: '搜索书籍、作者...', text: this.searchKeyword })
-        .layoutWeight(1)
-        .height(40)
-        .backgroundColor(this.tc('#F2F2F7', '#2C2C2E'))
-        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
-        .fontSize(fontScaleManager.getScaledFontSize(14))
-        .borderRadius(BorderRadius.xl)
-        .margin({ left: Spacing.md })
-        .onChange((value: string) => {
-          this.searchKeyword = value;
-        })
-        .onSubmit(() => {
-          if (this.searchKeyword.trim().length > 0) {
-            this.performSearch();
-          }
-        })
-
-      // 筛选按钮
-      Row() {
-        SymbolGlyph($r('sys.symbol.line.3.horizontal'))
-          .fontSize(Size.iconMD)
-          .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
-      }
-      .width(Size.buttonMD)
-      .height(Size.buttonMD)
-      .borderRadius(BorderRadius.full)
-      .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
-      .justifyContent(FlexAlign.Center)
-      .margin({ left: Spacing.sm })
-      .onClick(() => {
-        this.showFilterPanel = !this.showFilterPanel;
-      })
-    }
-    .width('100%')
-    .padding(Spacing.lg)
-    .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
-    .shadow(getShadow('sm', this.isDarkMode))
+    .backgroundColor(getPageBackgroundColor())
   }
 
   @Builder

@@ -321,73 +321,72 @@ struct BookDetailPage {
       })
         .width('100%')
         .height(8)
-        .borderRadius(BorderRadius.xl)
-        .color(this.currentColors.primary)
-        .backgroundColor(ThemeTokens.borderLight())
-
+        .borderRadius(HDSBorderRadius.xl)
+        .color(HDSColours.primary.blue)
+        .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.border : HDSColours.neutral.gray200)
+  
       Row() {
         Text(`上次阅读：第${this.book!.lastReadChapter || 1}章`)
-          .fontSize(fontScaleManager.getScaledFontSize(12))
-          .fontColor(ThemeTokens.textSecondary())
+          .fontSize(HDSTypography.sizes.sm)
+          .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
         
         Blank()
-
+  
         Text(this.book!.lastReadTime ? new Date(this.book!.lastReadTime).toLocaleDateString() : '未开始')
-          .fontSize(fontScaleManager.getScaledFontSize(12))
-          .fontColor(ThemeTokens.textSecondary())
+          .fontSize(HDSTypography.sizes.sm)
+          .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
       }
       .width('100%')
     }
     .width('100%')
-    .padding(Spacing.xl)
-    .backgroundColor(ThemeTokens.bgSecondary())
-    .borderRadius(BorderRadius.xl)
-    .shadow(getShadow('sm', this.isDarkMode))
+    .padding(HDSPacing.xl)
+    .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.surface : HDSColours.neutral.white)
+    .borderRadius(HDSBorderRadius.xl)
   }
 
   @Builder
   BookInfoCard() {
-    Column({ space: Spacing.md }) {
-      Row() {
-        SymbolGlyph($r('sys.symbol.info.circle'))
-          .fontSize(Size.iconMD)
-          .fontColor([this.currentColors.primary])
-        
-        Text('书籍信息')
-          .fontSize(fontScaleManager.getScaledFontSize(16))
-          .fontWeight(FontWeight.SemiBold)
-          .fontColor(ThemeTokens.textPrimary())
-          .layoutWeight(1)
-          .margin({ left: Spacing.sm })
-      }
-      .width('100%')
+    HDSCard({
+      padding: HDSSpacing.xl,
+      content: () => {
+        Column({ space: HDSSpacing.md }) {
+          Row() {
+            SymbolGlyph($r('sys.symbol.info.circle'))
+              .fontSize(20)
+              .fontColor([HDSColours.primary.blue])
+            
+            Text('书籍信息')
+              .fontSize(HDSTypography.sizes.xl)
+              .fontWeight(FontWeight.SemiBold)
+              .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
+              .layoutWeight(1)
+              .margin({ left: HDSSpacing.sm })
+          }
+          .width('100%')
 
-      Column({ space: Spacing.md }) {
-        this.InfoRow('作者', this.book!.author)
-        this.InfoRow('格式', this.book!.format || '未知')
-        this.InfoRow('大小', this.formatFileSize(this.book!.fileSize || 0))
-        this.InfoRow('添加时间', new Date(this.book!.addTime || Date.now()).toLocaleDateString())
+          Column({ space: HDSSpacing.md }) {
+            this.InfoRow('作者', this.book!.author)
+            this.InfoRow('格式', this.book!.format || '未知')
+            this.InfoRow('大小', this.formatFileSize(this.book!.fileSize || 0))
+            this.InfoRow('添加时间', new Date(this.book!.addTime || Date.now()).toLocaleDateString())
+          }
+          .width('100%')
+        }
       }
-      .width('100%')
-    }
-    .width('100%')
-    .padding(Spacing.xl)
-    .backgroundColor(ThemeTokens.bgSecondary())
-    .borderRadius(BorderRadius.xl)
-    .shadow(getShadow('sm', this.isDarkMode))
+    })
   }
 
   @Builder
   InfoRow(label: string, value: string) {
     Row() {
       Text(label)
-        .fontSize(fontScaleManager.getScaledFontSize(14))
-        .fontColor(ThemeTokens.textSecondary())
+        .fontSize(HDSTypography.sizes.md)
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
         .width(80)
 
       Text(value)
-        .fontSize(fontScaleManager.getScaledFontSize(14))
-        .fontColor(ThemeTokens.textPrimary())
+        .fontSize(HDSTypography.sizes.md)
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
         .maxLines(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
         .layoutWeight(1)
@@ -398,123 +397,115 @@ struct BookDetailPage {
 
   @Builder
   ActionButtons() {
-    Row({ space: Spacing.md }) {
+    Row({ space: HDSSpacing.md }) {
       // 开始阅读按钮
       Button() {
-        Row({ space: Spacing.sm }) {
+        Row({ space: HDSSpacing.sm }) {
           SymbolGlyph($r('sys.symbol.book.open'))
-            .fontSize(Size.iconMD)
-            .fontColor(['#FFFFFF'])
+            .fontSize(20)
+            .fontColor([HDSColours.neutral.white])
           
           Text('开始阅读')
-            .fontSize(fontScaleManager.getScaledFontSize(16))
+            .fontSize(HDSTypography.sizes.xl)
             .fontWeight(FontWeight.SemiBold)
-            .fontColor('#FFFFFF')
+            .fontColor(HDSColours.neutral.white)
         }
       }
       .layoutWeight(2)
-      .height(Size.buttonLG + Spacing.sm)
+      .height(56)
       .linearGradient({
         direction: GradientDirection.Right,
-        colors: [COMMON_COLORS.PRIMARY_BLUE, COMMON_COLORS.PRIMARY_BLUE + 'CC']
+        colors: [HDSColours.primary.blue, HDSColours.primary.blue + 'CC']
       })
-      .borderRadius(BorderRadius.xl)
+      .borderRadius(HDSBorderRadius.xl)
       .shadow({
         radius: 8,
-        color: COMMON_COLORS.PRIMARY_BLUE + '40',
+        color: HDSColours.primary.blue + '40',
         offsetY: 4
       })
       .onClick(() => this.onReadClick())
-      .stateStyles({
-        pressed: { .scale({ x: 0.98, y: 0.98 }) },
-        normal: { .scale({ x: 1, y: 1 }) }
-      })
 
       // 更多操作按钮
       Button() {
         SymbolGlyph($r('sys.symbol.trash'))
-          .fontSize(Size.iconMD)
-          .fontColor(['#FFFFFF'])
+          .fontSize(20)
+          .fontColor([HDSColours.neutral.white])
       }
       .layoutWeight(1)
-      .height(Size.buttonLG + Spacing.sm)
+      .height(56)
       .backgroundColor('#FF4D4F')
-      .borderRadius(BorderRadius.xl)
+      .borderRadius(HDSBorderRadius.xl)
       .onClick(() => this.onDeleteClick())
-      .stateStyles({
-        pressed: { .scale({ x: 0.98, y: 0.98 }) },
-        normal: { .scale({ x: 1, y: 1 }) }
-      })
     }
     .width('100%')
   }
 
   @Builder
   GroupManagement() {
-    Column({ space: Spacing.md }) {
-      Row() {
-        SymbolGlyph($r('sys.symbol.folder'))
-          .fontSize(Size.iconMD)
-          .fontColor([this.currentColors.primary])
-        
-        Text('分组管理')
-          .fontSize(fontScaleManager.getScaledFontSize(16))
-          .fontWeight(FontWeight.SemiBold)
-          .fontColor(ThemeTokens.textPrimary())
-          .layoutWeight(1)
-          .margin({ left: Spacing.sm })
-      }
-      .width('100%')
-
-      Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
-        ForEach(this.groups, (group: BookshelfGroup) => {
-          Row({ space: Spacing.xs }) {
-            SymbolGlyph($r(this.isInGroup(group.id) ? 'sys.symbol.checkmark.circle.fill' : 'sys.symbol.circle'))
-              .fontSize(Size.iconXS)
-              .fontColor([this.isInGroup(group.id) ? this.currentColors.primary : ThemeTokens.textSecondary()])
+    HDSCard({
+      padding: HDSSpacing.xl,
+      content: () => {
+        Column({ space: HDSSpacing.md }) {
+          Row() {
+            SymbolGlyph($r('sys.symbol.folder'))
+              .fontSize(20)
+              .fontColor([HDSColours.primary.blue])
             
-            Text(group.name)
-              .fontSize(fontScaleManager.getScaledFontSize(13))
-              .fontColor(this.isInGroup(group.id) ? this.currentColors.primary : ThemeTokens.textPrimary())
+            Text('分组管理')
+              .fontSize(HDSTypography.sizes.xl)
+              .fontWeight(FontWeight.SemiBold)
+              .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
+              .layoutWeight(1)
+              .margin({ left: HDSSpacing.sm })
           }
-          .padding({ 
-            left: Spacing.md, 
-            right: Spacing.md, 
-            top: Spacing.sm, 
-            bottom: Spacing.sm 
-          })
-          .backgroundColor(this.isInGroup(group.id) ? this.currentColors.primary + '15' : ThemeTokens.bgTertiary())
-          .borderRadius(BorderRadius.xl)
-          .border({ 
-            width: 1, 
-            color: this.isInGroup(group.id) ? this.currentColors.primary : 'transparent' 
-          })
-          .onClick(() => {
-            if (this.book) {
-              const index = this.bookGroups.indexOf(group.id);
-              let newGroups: string[] = [];
-              if (index > -1) {
-                newGroups = this.bookGroups.slice();
-                newGroups.splice(index, 1);
-              } else {
-                newGroups = this.bookGroups.slice();
-                newGroups.push(group.id);
+          .width('100%')
+
+          Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
+            ForEach(this.groups, (group: BookshelfGroup) => {
+              Row({ space: HDSSpacing.xs }) {
+                SymbolGlyph($r(this.isInGroup(group.id) ? 'sys.symbol.checkmark.circle.fill' : 'sys.symbol.circle'))
+                  .fontSize(12)
+                  .fontColor([this.isInGroup(group.id) ? HDSColours.primary.blue : (this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)])
+                
+                Text(group.name)
+                  .fontSize(HDSTypography.sizes.sm)
+                  .fontColor(this.isInGroup(group.id) ? HDSColours.primary.blue : (this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900))
               }
-              this.bookGroups = newGroups;
-              this.book.groupIds = this.bookGroups;
-              bookViewModel.updateBook(this.book);
-            }
-          })
-          .margin({ right: Spacing.sm, bottom: Spacing.sm })
-        }, (group: BookshelfGroup) => group.id)
+              .padding({ 
+                left: HDSSpacing.md, 
+                right: HDSSpacing.md, 
+                top: HDSSpacing.sm, 
+                bottom: HDSSpacing.sm 
+              })
+              .backgroundColor(this.isInGroup(group.id) ? HDSColours.primary.blue + '15' : (this.isDarkMode ? HDSColours.neutralDark.cardBackground : HDSColours.neutral.gray100))
+              .borderRadius(HDSBorderRadius.xl)
+              .border({ 
+                width: 1, 
+                color: this.isInGroup(group.id) ? HDSColours.primary.blue : Color.Transparent 
+              })
+              .onClick(() => {
+                if (this.book) {
+                  const index = this.bookGroups.indexOf(group.id);
+                  let newGroups: string[] = [];
+                  if (index > -1) {
+                    newGroups = this.bookGroups.slice();
+                    newGroups.splice(index, 1);
+                  } else {
+                    newGroups = this.bookGroups.slice();
+                    newGroups.push(group.id);
+                  }
+                  this.bookGroups = newGroups;
+                  this.book.groupIds = this.bookGroups;
+                  bookViewModel.updateBook(this.book);
+                }
+              })
+              .margin({ right: HDSSpacing.sm, bottom: HDSSpacing.sm })
+            }, (group: BookshelfGroup) => group.id)
+          }
+          .width('100%')
+        }
       }
-      .width('100%')
-    }
-    .width('100%')
-    .padding(Spacing.xl)
-    .backgroundColor(ThemeTokens.bgSecondary())
-    .borderRadius(BorderRadius.xl)
-    .shadow(getShadow('sm', this.isDarkMode))
+    })
   }
 }
 

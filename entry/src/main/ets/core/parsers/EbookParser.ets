@@ -125,6 +125,9 @@ export class EbookParser {
   }
 
   private static async parseWithNativeParser(filePath: string, format: BookFormat): Promise<ParseResult | null> {
+    // TODO: 原生解析模块待实现 - Return null to use fallback
+    return null;
+  }
     // TODO: 原生解析模块待实现
     return null;
   }

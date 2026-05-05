@@ -219,7 +219,34 @@ struct NotesPage {
   build() {
     Column() {
       // 顶部导航栏
-      this.Header()
+      PageHeader({
+        title: tr('notes_title'),
+        subtitle: this.notes.length + ' 条笔记',
+        showBack: true,
+        onBack: () => {
+          try {
+            goBack();
+          } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            logger.error('[NotesPage] back failed:', msg);
+          }
+        },
+        rightContent: () => {
+          Row() {
+            SymbolGlyph($r('sys.symbol.tag.fill'))
+              .fontSize(20)
+              .fontColor([this.selectedTag ? HDSColours.primary.blue : (this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)])
+          }
+          .width(40)
+          .height(40)
+          .borderRadius(HDSBorderRadius.full)
+          .backgroundColor(this.selectedTag ? HDSColours.primary.blue + '15' : (this.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'))
+          .justifyContent(FlexAlign.Center)
+          .onClick(() => {
+            this.showTagFilterDialog();
+          })
+        }
+      })
 
       // 搜索和筛选栏
       this.SearchBar()
@@ -228,7 +255,7 @@ struct NotesPage {
       if (this.getFilteredNotes().length === 0) {
         this.EmptyState()
       } else {
-        List({ space: Spacing.md }) {
+        List({ space: HDSSpacing.md }) {
           ForEach(this.getFilteredNotes(), (note: NoteWithBook) => {
             ListItem() {
               this.NoteItem(note)
@@ -238,10 +265,10 @@ struct NotesPage {
         .width('100%')
         .layoutWeight(1)
         .padding({ 
-          left: Spacing.lg, 
-          right: Spacing.lg,
-          top: Spacing.sm,
-          bottom: Spacing.xxxl
+          left: HDSSpacing.lg, 
+          right: HDSSpacing.lg,
+          top: HDSSpacing.sm,
+          bottom: HDSSpacing.xxxl
         })
         .scrollBar(BarState.Auto)
         .edgeEffect(EdgeEffect.Spring)
@@ -249,87 +276,24 @@ struct NotesPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
-  }
-
-  @Builder
-  Header() {
-    Row() {
-      // 返回按钮
-      Row() {
-        SymbolGlyph($r('sys.symbol.chevron.left'))
-          .fontSize(Size.iconLG)
-          .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
-      }
-      .width(Size.buttonMD)
-      .height(Size.buttonMD)
-      .borderRadius(BorderRadius.full)
-      .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
-      .justifyContent(FlexAlign.Center)
-      .onClick(() => {
-        try {
-          goBack();
-        } catch (error) {
-          const msg = error instanceof Error ? error.message : String(error);
-          logger.error('[NotesPage] back failed:', msg);
-        }
-      })
-      .stateStyles({
-        pressed: { .scale({ x: 0.9, y: 0.9 }) },
-        normal: { .scale({ x: 1, y: 1 }) }
-      })
-
-      Column({ space: Spacing.xs }) {
-        Text(tr('notes_title'))
-          .fontSize(fontScaleManager.getScaledFontSize(18))
-          .fontWeight(FontWeight.SemiBold)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
-
-        Text(this.notes.length + ' 条笔记')
-          .fontSize(fontScaleManager.getScaledFontSize(12))
-          .fontColor(this.tc('#8E8E93', '#8E8E93'))
-      }
-      .layoutWeight(1)
-      .alignItems(HorizontalAlign.Start)
-      .margin({ left: Spacing.md })
-
-      // 标签筛选按钮
-      Row() {
-        SymbolGlyph($r('sys.symbol.tag.fill'))
-          .fontSize(Size.iconMD)
-          .fontColor([this.selectedTag ? COMMON_COLORS.PRIMARY_BLUE : this.tc('#8E8E93', '#8E8E93')])
-      }
-      .width(Size.buttonMD)
-      .height(Size.buttonMD)
-      .borderRadius(BorderRadius.full)
-      .backgroundColor(this.selectedTag ? COMMON_COLORS.PRIMARY_BLUE + '15' : this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
-      .justifyContent(FlexAlign.Center)
-      .onClick(() => {
-        this.showTagFilterDialog();
-      })
-    }
-    .width('100%')
-    .height(Size.buttonLG + Spacing.sm)
-    .padding({ left: Spacing.lg, right: Spacing.lg })
-    .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
-    .shadow(getShadow('sm', this.isDarkMode))
+    .backgroundColor(getPageBackgroundColor())
   }
 
   @Builder
   SearchBar() {
-    Column({ space: Spacing.sm }) {
-      Row({ space: Spacing.sm }) {
+    Column({ space: HDSSpacing.sm }) {
+      Row({ space: HDSSpacing.sm }) {
         // 搜索图标
         SymbolGlyph($r('sys.symbol.magnifyingglass'))
-          .fontSize(Size.iconSM)
-          .fontColor([this.tc('#8E8E93', '#8E8E93')])
-          .margin({ left: Spacing.md })
+          .fontSize(16)
+          .fontColor([this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600])
+          .margin({ left: HDSSpacing.md })
 
         // 搜索输入框
         TextInput({ placeholder: '搜索笔记...', text: $$this.searchText })
-          .placeholderColor(this.tc('#C7C7CC', '#8E8E93'))
-          .fontSize(fontScaleManager.getScaledFontSize(14))
-          .height(Size.inputSM)
+          .placeholderColor(this.isDarkMode ? HDSColours.neutralDark.textHint : HDSColours.neutral.gray400)
+          .fontSize(HDSTypography.sizes.md)
+          .height(40)
           .backgroundColor(Color.Transparent)
           .layoutWeight(1)
           .onChange((value: string) => {
@@ -341,11 +305,11 @@ struct NotesPage {
         if (this.searchText) {
           Row() {
             SymbolGlyph($r('sys.symbol.xmark.circle.fill'))
-              .fontSize(Size.iconSM)
-              .fontColor([this.tc('#8E8E93', '#8E8E93')])
+              .fontSize(16)
+              .fontColor([this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600])
           }
-          .width(Size.buttonSM)
-          .height(Size.buttonSM)
+          .width(32)
+          .height(32)
           .justifyContent(FlexAlign.Center)
           .onClick(() => {
             this.searchText = '';
@@ -354,31 +318,31 @@ struct NotesPage {
         }
       }
       .width('100%')
-      .height(Size.inputSM)
-      .padding({ left: Spacing.sm, right: Spacing.sm })
-      .backgroundColor(this.tc('#F2F2F7', '#2C2C2E'))
-      .borderRadius(BorderRadius.xl)
+      .height(40)
+      .padding({ left: HDSSpacing.sm, right: HDSSpacing.sm })
+      .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : '#F2F2F7')
+      .borderRadius(HDSBorderRadius.xl)
 
       // 激活的筛选标签
       if (this.selectedTag) {
-        Row({ space: Spacing.sm }) {
+        Row({ space: HDSSpacing.sm }) {
           SymbolGlyph($r('sys.symbol.tag.fill'))
-            .fontSize(Size.iconSM)
-            .fontColor([COMMON_COLORS.PRIMARY_BLUE])
+            .fontSize(16)
+            .fontColor([HDSColours.primary.blue])
           
           Text(this.selectedTag)
-            .fontSize(fontScaleManager.getScaledFontSize(12))
-            .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+            .fontSize(HDSTypography.sizes.sm)
+            .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
           
           Blank()
 
           Row() {
             SymbolGlyph($r('sys.symbol.xmark'))
-              .fontSize(Size.iconXS)
-              .fontColor([COMMON_COLORS.PRIMARY_BLUE])
+              .fontSize(12)
+              .fontColor([HDSColours.primary.blue])
           }
-          .width(Size.buttonSM)
-          .height(Size.buttonSM)
+          .width(32)
+          .height(32)
           .justifyContent(FlexAlign.Center)
           .onClick(() => { 
             this.selectedTag = '';
@@ -387,16 +351,23 @@ struct NotesPage {
         }
         .width('100%')
         .padding({ 
-          left: Spacing.md, 
-          right: Spacing.md, 
-          top: Spacing.sm, 
-          bottom: Spacing.sm 
+          left: HDSSpacing.md, 
+          right: HDSSpacing.md, 
+          top: HDSSpacing.sm, 
+          bottom: HDSSpacing.sm 
         })
-        .backgroundColor(COMMON_COLORS.PRIMARY_BLUE + '10')
-        .borderRadius(BorderRadius.lg)
+        .backgroundColor(HDSColours.primary.blue + '10')
+        .borderRadius(HDSBorderRadius.lg)
       }
     }
     .width('100%')
+    .padding({ 
+      left: HDSSpacing.lg, 
+      right: HDSSpacing.lg, 
+      top: HDSSpacing.md, 
+      bottom: HDSSpacing.sm 
+    })
+  }
     .padding({ 
       left: Spacing.lg, 
       right: Spacing.lg, 
@@ -458,22 +429,22 @@ struct NotesPage {
         }
 
         // 书籍信息
-        Column({ space: Spacing.xs }) {
+        Column({ space: HDSSpacing.xs }) {
           Text(noteWithBook.book?.title || '未知书籍')
-            .fontSize(fontScaleManager.getScaledFontSize(13))
+            .fontSize(HDSTypography.sizes.sm)
             .fontWeight(FontWeight.Medium)
-            .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+            .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
             .maxLines(1)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
 
-          Row({ space: Spacing.xs }) {
+          Row({ space: HDSSpacing.xs }) {
             SymbolGlyph($r('sys.symbol.clock'))
-              .fontSize(Size.iconXS)
-              .fontColor([this.tc('#8E8E93', '#8E8E93')])
+              .fontSize(12)
+              .fontColor([this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600])
             
             Text(this.formatTime(noteWithBook.note.createTime))
-              .fontSize(fontScaleManager.getScaledFontSize(11))
-              .fontColor(this.tc('#8E8E93', '#8E8E93'))
+              .fontSize(HDSTypography.sizes.xs)
+              .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
           }
         }
         .alignItems(HorizontalAlign.Start)
@@ -482,12 +453,12 @@ struct NotesPage {
         // 删除按钮
         Row() {
           SymbolGlyph($r('sys.symbol.trash'))
-            .fontSize(Size.iconSM)
+            .fontSize(16)
             .fontColor(['#FF4D4F'])
         }
-        .width(Size.buttonSM)
-        .height(Size.buttonSM)
-        .borderRadius(BorderRadius.full)
+        .width(32)
+        .height(32)
+        .borderRadius(HDSBorderRadius.full)
         .backgroundColor('#FF4D4F15')
         .justifyContent(FlexAlign.Center)
         .onClick(() => this.confirmDelete(noteWithBook))
@@ -496,37 +467,37 @@ struct NotesPage {
 
       // 高亮文本
       if (noteWithBook.note.highlight) {
-        Column({ space: Spacing.xs }) {
-          Row({ space: Spacing.xs }) {
+        Column({ space: HDSSpacing.xs }) {
+          Row({ space: HDSSpacing.xs }) {
             SymbolGlyph($r('sys.symbol.quote.opening'))
-              .fontSize(Size.iconSM)
-              .fontColor([COMMON_COLORS.PRIMARY_BLUE])
+              .fontSize(16)
+              .fontColor([HDSColours.primary.blue])
             
             Text('高亮')
-              .fontSize(fontScaleManager.getScaledFontSize(11))
+              .fontSize(HDSTypography.sizes.xs)
               .fontWeight(FontWeight.Medium)
-              .fontColor(COMMON_COLORS.PRIMARY_BLUE)
+              .fontColor(HDSColours.primary.blue)
           }
 
           Text(noteWithBook.note.highlight)
-            .fontSize(fontScaleManager.getScaledFontSize(13))
-            .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+            .fontSize(HDSTypography.sizes.sm)
+            .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
             .lineHeight(20)
-            .padding({ left: Spacing.md })
+            .padding({ left: HDSSpacing.md })
             .borderLeftWidth(3)
-            .borderLeftColor(COMMON_COLORS.PRIMARY_BLUE)
+            .borderLeftColor(HDSColours.primary.blue)
         }
         .width('100%')
         .alignItems(HorizontalAlign.Start)
-        .padding(Spacing.md)
-        .backgroundColor(this.tc('#F8F9FA', '#2C2C2E'))
-        .borderRadius(BorderRadius.md)
+        .padding(HDSPacing.md)
+        .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : '#F8F9FA')
+        .borderRadius(HDSBorderRadius.md)
       }
 
       // 笔记内容
       Text(noteWithBook.note.content)
-        .fontSize(fontScaleManager.getScaledFontSize(14))
-        .fontColor(this.tc('#3A3A3C', '#E5E5EA'))
+        .fontSize(HDSTypography.sizes.md)
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : '#3A3A3C')
         .lineHeight(22)
         .maxLines(4)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
@@ -536,68 +507,57 @@ struct NotesPage {
       if (noteWithBook.previewTags.length > 0) {
         Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
           ForEach(noteWithBook.previewTags, (tag: string) => {
-            Row({ space: Spacing.xs }) {
+            Row({ space: HDSSpacing.xs }) {
               SymbolGlyph($r('sys.symbol.tag'))
-                .fontSize(Size.iconXS)
-                .fontColor([this.currentColors.primary])
+                .fontSize(12)
+                .fontColor([HDSColours.primary.blue])
               
               Text(tag)
-                .fontSize(fontScaleManager.getScaledFontSize(11))
-                .fontColor(this.currentColors.primary)
+                .fontSize(HDSTypography.sizes.xs)
+                .fontColor(HDSColours.primary.blue)
             }
             .padding({ 
-              left: Spacing.sm, 
-              right: Spacing.sm, 
-              top: Spacing.xs, 
-              bottom: Spacing.xs 
+              left: HDSSpacing.sm, 
+              right: HDSSpacing.sm, 
+              top: HDSSpacing.xs, 
+              bottom: HDSSpacing.xs 
             })
-            .backgroundColor(this.currentColors.primary + '10')
-            .borderRadius(BorderRadius.xl)
-            .margin({ right: Spacing.xs, bottom: Spacing.xs })
+            .backgroundColor(HDSColours.primary.blue + '10')
+            .borderRadius(HDSBorderRadius.xl)
+            .margin({ right: HDSSpacing.xs, bottom: HDSSpacing.xs })
           }, (tag: string) => tag)
         }
         .width('100%')
       }
     }
     .width('100%')
-    .padding(Spacing.lg)
-    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-    .borderRadius(BorderRadius.xl)
-    .shadow(getShadow('sm', this.isDarkMode))
-    .stateStyles({
-      pressed: { 
-        .scale({ x: 0.98, y: 0.98 }),
-        .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
-      },
-      normal: { 
-        .scale({ x: 1, y: 1 }),
-        .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-      }
-    })
+    .padding(HDSPacing.lg)
+    .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : HDSColours.neutral.white)
+    .borderRadius(HDSBorderRadius.xl)
   }
 
   @Builder
   EmptyState() {
-    Column({ space: Spacing.xl }) {
+    Column({ space: HDSSpacing.xl }) {
       Column() {
         SymbolGlyph($r('sys.symbol.note.text'))
-          .fontSize(Size.iconXXXL * 1.5)
-          .fontColor([this.tc('#D1D1D6', '#48484A')])
+          .fontSize(48)
+          .fontColor([this.isDarkMode ? HDSColours.neutralDark.textHint : HDSColours.neutral.gray300])
       }
       .width(100)
       .height(100)
-      .borderRadius(BorderRadius.full)
-      .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+      .borderRadius(HDSBorderRadius.full)
+      .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)')
       .justifyContent(FlexAlign.Center)
 
       Text('暂无笔记')
-        .fontSize(fontScaleManager.getScaledFontSize(16))
+        .fontSize(HDSTypography.sizes.xl)
         .fontWeight(FontWeight.Medium)
-        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
 
       Text('阅读时添加笔记，记录精彩瞬间')
-        .fontSize(fontScaleManager.getScaledFontSize(13))
-        .fontColor(this.tc('#8E8E93', '#8E8E93'))
+        .fontSize(HDSTypography.sizes.sm)
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
     }
     .width('100%')
     .layoutWeight(1)

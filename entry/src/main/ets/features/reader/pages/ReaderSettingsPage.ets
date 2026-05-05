@@ -217,55 +217,54 @@ struct ReaderSettingsPage {
 
   @Builder
   buildDisplaySettings() {
-    Column({ space: Spacing.lg }) {
+    Column({ space: HDSSpacing.lg }) {
       // 背景颜色选择
-      Column({ space: Spacing.md }) {
+      Column({ space: HDSSpacing.md }) {
         Row() {
           SymbolGlyph($r('sys.symbol.paintpalette'))
-            .fontSize(Size.iconMD)
-            .fontColor([this.currentColors.primary])
+            .fontSize(20)
+            .fontColor([HDSColours.primary.blue])
           
           Text('背景颜色')
-            .fontSize(fontScaleManager.getScaledFontSize(16))
+            .fontSize(HDSTypography.sizes.xl)
             .fontWeight(FontWeight.SemiBold)
-            .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+            .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
             .layoutWeight(1)
-            .margin({ left: Spacing.sm })
+            .margin({ left: HDSSpacing.sm })
         }
         .width('100%')
 
         Grid() {
           ForEach(this.backgroundColorOptions, (color: string, index: number) => {
             GridItem() {
-              Column({ space: Spacing.xs }) {
+              Column({ space: HDSSpacing.xs }) {
                 // 颜色圆圈
                 Stack() {
                   Circle()
                     .width(50)
                     .height(50)
                     .fill(color)
-                    .shadow(getShadow('md', this.isDarkMode))
                   
                   // 选中指示器
                   if (readerSettingsViewModel.backgroundColor === color) {
                     Row() {
                       SymbolGlyph($r('sys.symbol.checkmark'))
-                        .fontSize(Size.iconSM)
-                        .fontColor(['#FFFFFF'])
+                        .fontSize(16)
+                        .fontColor([HDSColours.neutral.white])
                     }
-                    .width(Size.buttonSM)
-                    .height(Size.buttonSM)
-                    .borderRadius(BorderRadius.full)
-                    .backgroundColor(this.currentColors.primary)
+                    .width(32)
+                    .height(32)
+                    .borderRadius(HDSBorderRadius.full)
+                    .backgroundColor(HDSColours.primary.blue)
                     .justifyContent(FlexAlign.Center)
                     .position({ x: 35, y: 35 })
                   }
                 }
 
                 Text(this.backgroundColorNames[index])
-                  .fontSize(fontScaleManager.getScaledFontSize(12))
+                  .fontSize(HDSTypography.sizes.sm)
                   .fontColor(readerSettingsViewModel.backgroundColor === color ? 
-                    this.currentColors.primary : this.tc('#8E8E93', '#8E8E93'))
+                    HDSColours.primary.blue : (this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600))
                   .fontWeight(readerSettingsViewModel.backgroundColor === color ? 
                     FontWeight.Medium : FontWeight.Regular)
               }
@@ -277,78 +276,72 @@ struct ReaderSettingsPage {
         .width('100%')
       }
       .width('100%')
-      .padding(Spacing.xl)
-      .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-      .borderRadius(BorderRadius.xl)
-      .shadow(getShadow('sm', this.isDarkMode))
+      .padding(HDSPacing.xl)
+      .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : '#FFFFFF')
+      .borderRadius(HDSBorderRadius.xl)
 
       // 字体大小选择
-      Column({ space: Spacing.md }) {
+      Column({ space: HDSSpacing.md }) {
         Row() {
           SymbolGlyph($r('sys.symbol.textformat.size'))
-            .fontSize(Size.iconMD)
-            .fontColor([this.currentColors.primary])
+            .fontSize(20)
+            .fontColor([HDSColours.primary.blue])
           
           Text('字体大小')
-            .fontSize(fontScaleManager.getScaledFontSize(16))
+            .fontSize(HDSTypography.sizes.xl)
             .fontWeight(FontWeight.SemiBold)
-            .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+            .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
             .layoutWeight(1)
-            .margin({ left: Spacing.sm })
+            .margin({ left: HDSSpacing.sm })
         }
         .width('100%')
 
         Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
           ForEach(this.fontSizeOptions, (size: number) => {
             Text(size.toString())
-              .fontSize(fontScaleManager.getScaledFontSize(14))
+              .fontSize(HDSTypography.sizes.md)
               .padding({ 
-                left: Spacing.md, 
-                right: Spacing.md, 
-                top: Spacing.sm, 
-                bottom: Spacing.sm 
+                left: HDSSpacing.md, 
+                right: HDSSpacing.md, 
+                top: HDSSpacing.sm, 
+                bottom: HDSSpacing.sm 
               })
               .backgroundColor(readerSettingsViewModel.fontSize === size ? 
-                this.currentColors.primary : this.bg('#F2F2F7', '#2C2C2E'))
+                HDSColours.primary.blue : (this.isDarkMode ? HDSColours.neutralDark.cardBackground : '#F2F2F7'))
               .fontColor(readerSettingsViewModel.fontSize === size ? 
-                '#FFFFFF' : this.tc('#1A1A1A', '#FFFFFF'))
-              .borderRadius(BorderRadius.xl)
+                HDSColours.neutral.white : (this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900))
+              .borderRadius(HDSBorderRadius.xl)
               .fontWeight(readerSettingsViewModel.fontSize === size ? 
                 FontWeight.Medium : FontWeight.Regular)
               .onClick(() => { readerSettingsViewModel.fontSize = size; })
-              .stateStyles({
-                pressed: { .scale({ x: 0.95, y: 0.95 }) },
-                normal: { .scale({ x: 1, y: 1 }) }
-              })
-              .margin({ right: Spacing.sm, bottom: Spacing.sm })
+              .margin({ right: HDSSpacing.sm, bottom: HDSSpacing.sm })
           }, (size: number) => size.toString())
         }
         .width('100%')
       }
       .width('100%')
-      .padding(Spacing.xl)
-      .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-      .borderRadius(BorderRadius.xl)
-      .shadow(getShadow('sm', this.isDarkMode))
+      .padding(HDSPacing.xl)
+      .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : '#FFFFFF')
+      .borderRadius(HDSBorderRadius.xl)
 
       // 行间距滑块
-      Column({ space: Spacing.md }) {
+      Column({ space: HDSSpacing.md }) {
         Row() {
           SymbolGlyph($r('sys.symbol.textformat.line.spacing'))
-            .fontSize(Size.iconMD)
-            .fontColor([this.currentColors.primary])
+            .fontSize(20)
+            .fontColor([HDSColours.primary.blue])
           
           Text('行间距')
-            .fontSize(fontScaleManager.getScaledFontSize(16))
+            .fontSize(HDSTypography.sizes.xl)
             .fontWeight(FontWeight.SemiBold)
-            .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+            .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
             .layoutWeight(1)
-            .margin({ left: Spacing.sm })
+            .margin({ left: HDSSpacing.sm })
 
           Text(readerSettingsViewModel.lineHeight.toFixed(1))
-            .fontSize(fontScaleManager.getScaledFontSize(14))
+            .fontSize(HDSTypography.sizes.md)
             .fontWeight(FontWeight.Medium)
-            .fontColor(this.currentColors.primary)
+            .fontColor(HDSColours.primary.blue)
         }
         .width('100%')
 
@@ -357,70 +350,69 @@ struct ReaderSettingsPage {
           min: 1.2, max: 2.5, step: 0.1, style: SliderStyle.OutSet
         })
           .width('100%')
-          .selectedColor(this.currentColors.primary)
+          .selectedColor(HDSColours.primary.blue)
           .trackThickness(6)
           .onChange((value: number) => { readerSettingsViewModel.lineHeight = value; })
       }
       .width('100%')
-      .padding(Spacing.xl)
-      .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-      .borderRadius(BorderRadius.xl)
-      .shadow(getShadow('sm', this.isDarkMode))
+      .padding(HDSPacing.xl)
+      .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : '#FFFFFF')
+      .borderRadius(HDSBorderRadius.xl)
     }
   }
 
   @Builder
   buildTTSSettings() {
-    Column({ space: Spacing.lg }) {
+    Column({ space: HDSSpacing.lg }) {
       // TTS语音选择
-      Column({ space: Spacing.md }) {
+      Column({ space: HDSSpacing.md }) {
         Row() {
           SymbolGlyph($r('sys.symbol.waveform'))
-            .fontSize(Size.iconMD)
-            .fontColor([this.currentColors.primary])
+            .fontSize(20)
+            .fontColor([HDSColours.primary.blue])
           
           Text('TTS语音')
-            .fontSize(fontScaleManager.getScaledFontSize(16))
+            .fontSize(HDSTypography.sizes.xl)
             .fontWeight(FontWeight.SemiBold)
-            .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+            .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
             .layoutWeight(1)
-            .margin({ left: Spacing.sm })
+            .margin({ left: HDSSpacing.sm })
         }
         .width('100%')
 
-        List({ space: Spacing.sm }) {
+        List({ space: HDSSpacing.sm }) {
           ForEach(this.voiceOptions, (voice: string, index: number) => {
             ListItem() {
-              Row({ space: Spacing.md }) {
+              Row({ space: HDSSpacing.md }) {
                 Column() {
                   SymbolGlyph($r('sys.symbol.person.fill'))
-                    .fontSize(Size.iconLG)
+                    .fontSize(24)
                     .fontColor([readerSettingsViewModel.ttsVoice === voice ? 
-                      this.currentColors.primary : this.tc('#8E8E93', '#8E8E93')])
+                      HDSColours.primary.blue : (this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)])
                 }
-                .width(Size.avatarMD)
-                .height(Size.avatarMD)
-                .borderRadius(BorderRadius.full)
+                .width(40)
+                .height(40)
+                .borderRadius(HDSBorderRadius.full)
                 .backgroundColor(readerSettingsViewModel.ttsVoice === voice ? 
-                  this.currentColors.primary + '15' : this.bg('#F2F2F7', '#2C2C2E'))
+                  HDSColours.primary.blue + '15' : (this.isDarkMode ? HDSColours.neutralDark.cardBackground : '#F2F2F7'))
                 .justifyContent(FlexAlign.Center)
 
                 Text(voice)
-                  .fontSize(fontScaleManager.getScaledFontSize(15))
-                  .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+                  .fontSize(HDSTypography.sizes.md)
+                  .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
                   .layoutWeight(1)
 
                 if (readerSettingsViewModel.ttsVoice === voice) {
                   SymbolGlyph($r('sys.symbol.checkmark.circle.fill'))
-                    .fontSize(Size.iconMD)
-                    .fontColor([this.currentColors.primary])
+                    .fontSize(20)
+                    .fontColor([HDSColours.primary.blue])
                 }
               }
               .width('100%')
-              .padding(Spacing.lg)
+              .padding(HDSPacing.lg)
               .backgroundColor(readerSettingsViewModel.ttsVoice === voice ? 
-                this.currentColors.primary + '08' : 'transparent')
-              .borderRadius(BorderRadius.lg)
+                HDSColours.primary.blue + '08' : Color.Transparent)
+              .borderRadius(HDSBorderRadius.lg)
               .onClick(() => { readerSettingsViewModel.ttsVoice = voice; })
             }
           }, (voice: string, index: number) => voice)
@@ -428,54 +420,51 @@ struct ReaderSettingsPage {
         .width('100%')
       }
       .width('100%')
-      .padding(Spacing.xl)
-      .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-      .borderRadius(BorderRadius.xl)
-      .shadow(getShadow('sm', this.isDarkMode))
+      .padding(HDSPacing.xl)
+      .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : '#FFFFFF')
+      .borderRadius(HDSBorderRadius.xl)
     }
   }
 
   @Builder
   buildComicSettings() {
-    Column({ space: Spacing.lg }) {
+    Column({ space: HDSSpacing.lg }) {
       Text('漫画阅读设置')
-        .fontSize(fontScaleManager.getScaledFontSize(16))
+        .fontSize(HDSTypography.sizes.xl)
         .fontWeight(FontWeight.SemiBold)
-        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
         .width('100%')
 
       Column() {
         Text('功能开发中...')
-          .fontSize(fontScaleManager.getScaledFontSize(14))
-          .fontColor(this.tc('#8E8E93', '#8E8E93'))
-          .padding(Spacing.xl)
+          .fontSize(HDSTypography.sizes.md)
+          .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
+          .padding(HDSPacing.xl)
       }
       .width('100%')
-      .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-      .borderRadius(BorderRadius.xl)
-      .shadow(getShadow('sm', this.isDarkMode))
+      .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : '#FFFFFF')
+      .borderRadius(HDSBorderRadius.xl)
     }
   }
 
   @Builder
   buildScreenSettings() {
-    Column({ space: Spacing.lg }) {
+    Column({ space: HDSSpacing.lg }) {
       Text('屏幕设置')
-        .fontSize(fontScaleManager.getScaledFontSize(16))
+        .fontSize(HDSTypography.sizes.xl)
         .fontWeight(FontWeight.SemiBold)
-        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
         .width('100%')
 
       Column() {
         Text('功能开发中...')
-          .fontSize(fontScaleManager.getScaledFontSize(14))
-          .fontColor(this.tc('#8E8E93', '#8E8E93'))
-          .padding(Spacing.xl)
+          .fontSize(HDSTypography.sizes.md)
+          .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
+          .padding(HDSPacing.xl)
       }
       .width('100%')
-      .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-      .borderRadius(BorderRadius.xl)
-      .shadow(getShadow('sm', this.isDarkMode))
+      .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : '#FFFFFF')
+      .borderRadius(HDSBorderRadius.xl)
     }
   }
 }

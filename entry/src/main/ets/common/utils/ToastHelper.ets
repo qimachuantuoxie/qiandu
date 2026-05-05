@@ -27,7 +27,7 @@ export class ToastHelper {
     try {
       // API 22+ replacement for deprecated showToast
       logger.info('[Toast] ' + options.message);
-      // TODO: Implement proper custom toast UI component
+      // TODO: Implement proper custom toast UI component - Using system log as fallback
       // For now, use system log as fallback
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);

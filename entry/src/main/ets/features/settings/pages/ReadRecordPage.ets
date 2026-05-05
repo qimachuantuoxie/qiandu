@@ -83,45 +83,18 @@ struct ReadRecordPage {
   build() {
     Column() {
       // 顶部导航栏
-      Row() {
-        Row() {
-          SymbolGlyph($r('sys.symbol.chevron.left'))
-            .fontSize(Size.iconLG)
-            .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
-        }
-        .width(Size.buttonMD)
-        .height(Size.buttonMD)
-        .borderRadius(BorderRadius.full)
-        .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
-        .justifyContent(FlexAlign.Center)
-        .onClick(() => {
+      PageHeader({
+        title: '阅读记录',
+        showBack: true,
+        onBack: () => {
           try {
             goBack();
           } catch (error) {
             const msg = error instanceof Error ? error.message : String(error);
             logger.error('[ReadRecordPage] back failed:', msg);
           }
-        })
-        .stateStyles({
-          pressed: { .scale({ x: 0.9, y: 0.9 }) },
-          normal: { .scale({ x: 1, y: 1 }) }
-        })
-
-        Text('阅读记录')
-          .fontSize(fontScaleManager.getScaledFontSize(18))
-          .fontWeight(FontWeight.SemiBold)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
-          .layoutWeight(1)
-          .textAlign(TextAlign.Center)
-
-        Blank()
-          .width(Size.buttonMD)
-      }
-      .width('100%')
-      .height(Size.buttonLG + Spacing.sm)
-      .padding({ left: Spacing.lg, right: Spacing.lg })
-      .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
-      .shadow(getShadow('sm', this.isDarkMode))
+        }
+      })
 
       // 统计卡片
       this.StatCards()
@@ -133,7 +106,7 @@ struct ReadRecordPage {
       if (this.books.length === 0) {
         this.EmptyState()
       } else {
-        List({ space: Spacing.md }) {
+        List({ space: HDSSpacing.md }) {
           ForEach(this.books, (book: BookInfo) => {
             ListItem() {
               this.BookItem(book)
@@ -143,10 +116,10 @@ struct ReadRecordPage {
         .width('100%')
         .layoutWeight(1)
         .padding({ 
-          left: Spacing.lg, 
-          right: Spacing.lg,
-          top: Spacing.md,
-          bottom: Spacing.xxxl
+          left: HDSSpacing.lg, 
+          right: HDSSpacing.lg,
+          top: HDSSpacing.md,
+          bottom: HDSSpacing.xxxl
         })
         .scrollBar(BarState.Auto)
         .edgeEffect(EdgeEffect.Spring)
@@ -154,46 +127,48 @@ struct ReadRecordPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
+    .backgroundColor(getPageBackgroundColor())
   }
 
   @Builder
   StatCards() {
-    Row({ space: Spacing.md }) {
-      // 今日阅读
-      this.StatCard('今日阅读', formatDuration(this.getTodayReadingTime()), 'clock.fill', this.currentColors.primary)
-      
-      // 累计阅读
-      this.StatCard('累计阅读', formatDuration(this.getTotalReadingTime()), 'book.fill', '#4CAF50')
-      
-      // 阅读书籍
-      this.StatCard('阅读书籍', this.getTotalReadBooks().toString(), 'bookmark.fill', '#FF9800')
-    }
-    .width('100%')
-    .padding(Spacing.lg)
+    HDSCard({
+      padding: HDSSpacing.lg,
+      content: () => {
+        Row({ space: HDSSpacing.md }) {
+          // 今日阅读
+          this.StatCard('今日阅读', formatDuration(this.getTodayReadingTime()), 'clock.fill', HDSColours.primary.blue)
+          
+          // 累计阅读
+          this.StatCard('累计阅读', formatDuration(this.getTotalReadingTime()), 'book.fill', '#4CAF50')
+          
+          // 阅读书籍
+          this.StatCard('阅读书籍', this.getTotalReadBooks().toString(), 'bookmark.fill', '#FF9800')
+        }
+      }
+    })
   }
 
   @Builder
   StatCard(title: string, value: string, iconName: string, color: string) {
-    Column({ space: Spacing.sm }) {
+    Column({ space: HDSSpacing.sm }) {
       SymbolGlyph($r(`sys.symbol.${iconName}`))
-        .fontSize(this.screenInfo?.isTablet ? Size.iconXXL : Size.iconXL)
+        .fontSize(28)
         .fontColor([color])
 
       Text(value)
-        .fontSize(fontScaleManager.getScaledFontSize(this.screenInfo?.isTablet ? 20 : 18))
+        .fontSize(HDSTypography.sizes.xxl)
         .fontWeight(FontWeight.Bold)
-        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
 
       Text(title)
-        .fontSize(fontScaleManager.getScaledFontSize(12))
-        .fontColor(this.tc('#8E8E93', '#8E8E93'))
+        .fontSize(HDSTypography.sizes.sm)
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
     }
     .layoutWeight(1)
-    .padding(Spacing.md)
-    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-    .borderRadius(BorderRadius.lg)
-    .shadow(getShadow('sm', this.isDarkMode))
+    .padding(HDSPacing.md)
+    .backgroundColor(color + '15')
+    .borderRadius(HDSBorderRadius.lg)
   }
 
   private getTodayReadingTime(): number {

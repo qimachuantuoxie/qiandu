@@ -26,7 +26,7 @@ export struct DiscoverContent {
     { icon: 'clock.fill', title: '阅读记录', desc: '回顾阅读历史', url: 'features/settings/pages/ReadRecordPage' },
     { icon: 'bookmark.fill', title: '书签管理', desc: '管理您的书签', url: 'features/bookshelf/pages/BookmarksPage' },
     { icon: 'note.text', title: '笔记管理', desc: '查看您的读书笔记', url: 'features/bookshelf/pages/NotesPage' },
-    { icon: 'checkmark.circle.fill', title: '待办事项', desc: '管理阅读计划和任务', url: 'features/profile/pages/TodoPage' },
+    { icon: 'checkmark.circle.fill', title: '待办事项', desc: '管理阅读计划和任务', url: 'features/discover/pages/TodoPage' },
     { icon: 'character.book.closed', title: '生词本', desc: '积累您的词汇量', url: 'features/reader/pages/WordBookPage' },
   ];
 

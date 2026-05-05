@@ -90,7 +90,14 @@ struct OnlineBookDetailPage {
   build() {
     Column() {
       // 顶部导航栏
-      this.NavBar()
+      PageHeader({
+        title: this.bookName || '书籍详情',
+        showBack: true,
+        onBack: () => {
+          try { goBack(); } 
+          catch (e) { logger.error('[OnlineBookDetail] back failed', e); }
+        }
+      })
 
       if (this.isLoading) {
         this.LoadingView()
@@ -107,59 +114,20 @@ struct OnlineBookDetailPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
-  }
-
-  @Builder
-  NavBar() {
-    Row() {
-      Row() {
-        SymbolGlyph($r('sys.symbol.chevron.left'))
-          .fontSize(Size.iconLG)
-          .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
-      }
-      .width(Size.buttonMD)
-      .height(Size.buttonMD)
-      .borderRadius(BorderRadius.full)
-      .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
-      .justifyContent(FlexAlign.Center)
-      .onClick(() => {
-        try { goBack(); } 
-        catch (e) { logger.error('[OnlineBookDetail] back failed', e); }
-      })
-      .stateStyles({
-        pressed: { .scale({ x: 0.9, y: 0.9 }) },
-        normal: { .scale({ x: 1, y: 1 }) }
-      })
-
-      Text(this.bookName || '书籍详情')
-        .fontSize(fontScaleManager.getScaledFontSize(18))
-        .fontWeight(FontWeight.SemiBold)
-        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
-        .layoutWeight(1)
-        .textAlign(TextAlign.Center)
-
-      Blank()
-        .width(Size.buttonMD)
-    }
-    .width('100%')
-    .height(Size.buttonLG + Spacing.sm)
-    .padding({ left: Spacing.lg, right: Spacing.lg })
-    .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
-    .shadow(getShadow('sm', this.isDarkMode))
+    .backgroundColor(getPageBackgroundColor())
   }
 
   @Builder
   LoadingView() {
-    Column({ space: Spacing.lg }) {
+    Column({ space: HDSSpacing.lg }) {
       LoadingProgress()
         .width(50)
         .height(50)
-        .color(COMMON_COLORS.PRIMARY_BLUE)
+        .color(HDSColours.primary.blue)
 
       Text('加载中...')
-        .fontSize(fontScaleManager.getScaledFontSize(15))
-        .fontColor(this.tc('#8E8E93', '#8E8E93'))
+        .fontSize(HDSTypography.sizes.md)
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
     }
     .width('100%')
     .layoutWeight(1)
@@ -170,22 +138,21 @@ struct OnlineBookDetailPage {
   TabBar() {
     Row() {
       Text('详情')
-        .fontSize(fontScaleManager.getScaledFontSize(15))
+        .fontSize(HDSTypography.sizes.md)
         .fontWeight(this.currentTab === 0 ? FontWeight.Medium : FontWeight.Regular)
-        .fontColor(this.currentTab === 0 ? this.currentColors.primary : this.tc('#8E8E93', '#8E8E93'))
-        .padding({ left: Spacing.xl, right: Spacing.xl, top: Spacing.md, bottom: Spacing.md })
+        .fontColor(this.currentTab === 0 ? HDSColours.primary.blue : (this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600))
+        .padding({ left: HDSSpacing.xl, right: HDSSpacing.xl, top: HDSSpacing.md, bottom: HDSSpacing.md })
         .onClick(() => { this.currentTab = 0; })
       
       Text(`目录 (${this.toc.length})`)
-        .fontSize(fontScaleManager.getScaledFontSize(15))
+        .fontSize(HDSTypography.sizes.md)
         .fontWeight(this.currentTab === 1 ? FontWeight.Medium : FontWeight.Regular)
-        .fontColor(this.currentTab === 1 ? this.currentColors.primary : this.tc('#8E8E93', '#8E8E93'))
-        .padding({ left: Spacing.xl, right: Spacing.xl, top: Spacing.md, bottom: Spacing.md })
+        .fontColor(this.currentTab === 1 ? HDSColours.primary.blue : (this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600))
+        .padding({ left: HDSSpacing.xl, right: HDSSpacing.xl, top: HDSSpacing.md, bottom: HDSSpacing.md })
         .onClick(() => { this.currentTab = 1; })
     }
     .width('100%')
-    .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
-    .shadow(getShadow('sm', this.isDarkMode))
+    .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.surface : HDSColours.neutral.white)
   }
 
   @Builder

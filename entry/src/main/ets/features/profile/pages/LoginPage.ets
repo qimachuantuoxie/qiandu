@@ -175,14 +175,14 @@ struct LoginPage {
         // 返回按钮
         Row() {
           Row() {
-            Text('<')
+            SymbolGlyph($r('sys.symbol.chevron.left'))
               .fontSize(24)
-              .fontColor('#FFFFFF')
+              .fontColor([HDSColours.neutral.white])
               .fontWeight(FontWeight.Bold)
           }
-          .width(Size.buttonMD)
-          .height(Size.buttonMD)
-          .borderRadius(BorderRadius.full)
+          .width(40)
+          .height(40)
+          .borderRadius(HDSBorderRadius.full)
           .backgroundColor('rgba(255,255,255,0.2)')
           .justifyContent(FlexAlign.Center)
           .onClick(() => {
@@ -193,13 +193,9 @@ struct LoginPage {
               logger.error('[LoginPage] back failed:', msg);
             }
           })
-          .stateStyles({
-            pressed: { .scale({ x: 0.9, y: 0.9 }) },
-            normal: { .scale({ x: 1, y: 1 }) }
-          })
         }
         .width('100%')
-        .padding({ left: Spacing.lg, top: Spacing.xl })
+        .padding({ left: HDSSpacing.lg, top: HDSSpacing.xl })
         .alignItems(HorizontalAlign.Start)
 
         Blank()

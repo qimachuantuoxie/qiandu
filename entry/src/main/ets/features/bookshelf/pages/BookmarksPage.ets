@@ -462,45 +462,34 @@ struct BookmarksPage {
         .fontColor([ThemeTokens.textTertiary()])
     }
     .width('100%')
-    .padding(Spacing.lg)
-    .backgroundColor(ThemeTokens.bgSecondary())
-    .borderRadius(BorderRadius.xl)
-    .shadow(getShadow('sm', this.isDarkMode))
+    .padding(HDSPacing.lg)
+    .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : HDSColours.neutral.white)
+    .borderRadius(HDSBorderRadius.xl)
     .onClick(() => this.goToBookmark(bookmarkWithBook))
-    .stateStyles({
-      pressed: {
-        scale: { x: 0.98, y: 0.98 },
-        backgroundColor: ThemeTokens.bgHover()
-      },
-      normal: {
-        scale: { x: 1, y: 1 },
-        backgroundColor: ThemeTokens.bgSecondary()
-      }
-    })
   }
 
   @Builder
   EmptyState() {
-    Column({ space: Spacing.xl }) {
+    Column({ space: HDSSpacing.xl }) {
       Column() {
         SymbolGlyph($r('sys.symbol.bookmark'))
-          .fontSize(Size.iconXXXL * 1.5)
-          .fontColor([ThemeTokens.textDisabled()])
+          .fontSize(48)
+          .fontColor([this.isDarkMode ? HDSColours.neutralDark.textHint : HDSColours.neutral.gray300])
       }
       .width(100)
       .height(100)
-      .borderRadius(BorderRadius.full)
-      .backgroundColor(ThemeTokens.bgHover())
+      .borderRadius(HDSBorderRadius.full)
+      .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : HDSColours.neutral.gray100)
       .justifyContent(FlexAlign.Center)
 
       Text('暂无书签')
-        .fontSize(fontScaleManager.getScaledFontSize(16))
+        .fontSize(HDSTypography.sizes.xl)
         .fontWeight(FontWeight.Medium)
-        .fontColor(ThemeTokens.textPrimary())
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
 
       Text('阅读时添加书签，方便快速跳转')
-        .fontSize(fontScaleManager.getScaledFontSize(13))
-        .fontColor(ThemeTokens.textSecondary())
+        .fontSize(HDSTypography.sizes.sm)
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
     }
     .width('100%')
     .layoutWeight(1)

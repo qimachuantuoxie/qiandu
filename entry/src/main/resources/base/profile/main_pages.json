@@ -28,7 +28,7 @@
     "features/reader/pages/WordBookPage",
     "features/profile/pages/RewardPage",
     "features/profile/pages/SkillPage",
-    "features/profile/pages/TodoPage",
+    "features/discover/pages/TodoPage",
     "features/profile/pages/EyeTrackingCalibrationPage"
   ]
 }

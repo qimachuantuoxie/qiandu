@@ -272,7 +272,29 @@ struct FolderScannerPage {
   build() {
     Column() {
       // 顶部导航栏
-      this.NavBar()
+      PageHeader({
+        title: '文件夹扫描',
+        showBack: true,
+        onBack: () => {
+          try { goBack(); } 
+          catch (e) { logger.error('[FolderScannerPage] back failed', e); }
+        },
+        rightContent: this.scanHistory.length > 0 ? () => {
+          Row() {
+            SymbolGlyph($r('sys.symbol.clock'))
+              .fontSize(20)
+              .fontColor([HDSColours.primary.blue])
+          }
+          .width(40)
+          .height(40)
+          .borderRadius(HDSBorderRadius.full)
+          .backgroundColor(HDSColours.primary.blue + '15')
+          .justifyContent(FlexAlign.Center)
+          .onClick(() => {
+            this.showHistory = !this.showHistory;
+          })
+        } : undefined
+      })
 
       if (this.currentFolder.length === 0) {
         // 空状态
@@ -287,109 +309,52 @@ struct FolderScannerPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
-  }
-
-  @Builder
-  NavBar() {
-    Row() {
-      Row() {
-        SymbolGlyph($r('sys.symbol.chevron.left'))
-          .fontSize(Size.iconLG)
-          .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
-      }
-      .width(Size.buttonMD)
-      .height(Size.buttonMD)
-      .borderRadius(BorderRadius.full)
-      .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
-      .justifyContent(FlexAlign.Center)
-      .onClick(() => {
-        try { goBack(); } 
-        catch (e) { logger.error('[FolderScannerPage] back failed', e); }
-      })
-      .stateStyles({
-        pressed: { .scale({ x: 0.9, y: 0.9 }) },
-        normal: { .scale({ x: 1, y: 1 }) }
-      })
-
-      Text('文件夹扫描')
-        .fontSize(fontScaleManager.getScaledFontSize(18))
-        .fontWeight(FontWeight.SemiBold)
-        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
-        .layoutWeight(1)
-        .textAlign(TextAlign.Center)
-
-      // 历史记录按钮
-      if (this.scanHistory.length > 0) {
-        Row() {
-          SymbolGlyph($r('sys.symbol.clock'))
-            .fontSize(Size.iconMD)
-            .fontColor([this.currentColors.primary])
-        }
-        .width(Size.buttonMD)
-        .height(Size.buttonMD)
-        .borderRadius(BorderRadius.full)
-        .backgroundColor(this.currentColors.primary + '15')
-        .justifyContent(FlexAlign.Center)
-        .onClick(() => {
-          this.showHistory = !this.showHistory;
-        })
-      }
-    }
-    .width('100%')
-    .height(Size.buttonLG + Spacing.sm)
-    .padding({ left: Spacing.lg, right: Spacing.lg })
-    .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
-    .shadow(getShadow('sm', this.isDarkMode))
+    .backgroundColor(getPageBackgroundColor())
   }
 
   @Builder
   EmptyState() {
-    Column({ space: Spacing.xl }) {
+    Column({ space: HDSSpacing.xl }) {
       Column() {
         SymbolGlyph($r('sys.symbol.folder'))
-          .fontSize(Size.iconXXXL * 1.5)
-          .fontColor([this.tc('#D1D1D6', '#48484A')])
+          .fontSize(48)
+          .fontColor([this.isDarkMode ? HDSColours.neutralDark.textHint : HDSColours.neutral.gray300])
       }
       .width(100)
       .height(100)
-      .borderRadius(BorderRadius.full)
-      .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+      .borderRadius(HDSBorderRadius.full)
+      .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)')
       .justifyContent(FlexAlign.Center)
 
       Text('选择文件夹开始扫描')
-        .fontSize(fontScaleManager.getScaledFontSize(16))
+        .fontSize(HDSTypography.sizes.xl)
         .fontWeight(FontWeight.Medium)
-        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
 
       Button() {
-        Row({ space: Spacing.sm }) {
+        Row({ space: HDSSpacing.sm }) {
           SymbolGlyph($r('sys.symbol.folder.badge.plus'))
-            .fontSize(Size.iconMD)
-            .fontColor(['#FFFFFF'])
+            .fontSize(20)
+            .fontColor([HDSColours.neutral.white])
           
           Text('选择文件夹')
-            .fontSize(fontScaleManager.getScaledFontSize(16))
+            .fontSize(HDSTypography.sizes.xl)
             .fontWeight(FontWeight.SemiBold)
-            .fontColor('#FFFFFF')
+            .fontColor(HDSColours.neutral.white)
         }
       }
-      .height(Size.buttonLG + Spacing.sm)
+      .height(56)
       .linearGradient({
         direction: GradientDirection.Right,
-        colors: [COMMON_COLORS.PRIMARY_BLUE, COMMON_COLORS.PRIMARY_BLUE + 'CC']
+        colors: [HDSColours.primary.blue, HDSColours.primary.blue + 'CC']
       })
-      .borderRadius(BorderRadius.xl)
+      .borderRadius(HDSBorderRadius.xl)
       .shadow({
         radius: 8,
-        color: COMMON_COLORS.PRIMARY_BLUE + '40',
+        color: HDSColours.primary.blue + '40',
         offsetY: 4
       })
       .onClick(() => this.onSelectFolder())
-      .stateStyles({
-        pressed: { .scale({ x: 0.98, y: 0.98 }) },
-        normal: { .scale({ x: 1, y: 1 }) }
-      })
     }
     .width('100%')
     .layoutWeight(1)
@@ -398,33 +363,33 @@ struct FolderScannerPage {
 
   @Builder
   ScanningView() {
-    Column({ space: Spacing.xxl }) {
+    Column({ space: HDSSpacing.xxl }) {
       LoadingProgress()
         .width(60)
         .height(60)
-        .color(COMMON_COLORS.PRIMARY_BLUE)
+        .color(HDSColours.primary.blue)
 
-      Column({ space: Spacing.md }) {
+      Column({ space: HDSSpacing.md }) {
         Text('正在扫描...')
-          .fontSize(fontScaleManager.getScaledFontSize(16))
+          .fontSize(HDSTypography.sizes.xl)
           .fontWeight(FontWeight.Medium)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
 
         Text(`已发现 ${this.scannedFilesCount} 个文档`)
-          .fontSize(fontScaleManager.getScaledFontSize(14))
-          .fontColor(this.tc('#8E8E93', '#8E8E93'))
+          .fontSize(HDSTypography.sizes.md)
+          .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
       }
 
       Progress({ value: this.scanProgress, total: 100, type: ProgressType.Linear })
         .width('80%')
         .height(8)
-        .borderRadius(BorderRadius.xl)
-        .color(COMMON_COLORS.PRIMARY_BLUE)
-        .backgroundColor(this.tc('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.1)'))
+        .borderRadius(HDSBorderRadius.xl)
+        .color(HDSColours.primary.blue)
+        .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')
 
       Text(`${this.scanProgress}%`)
-        .fontSize(fontScaleManager.getScaledFontSize(14))
-        .fontColor(COMMON_COLORS.PRIMARY_BLUE)
+        .fontSize(HDSTypography.sizes.md)
+        .fontColor(HDSColours.primary.blue)
     }
     .width('100%')
     .layoutWeight(1)
@@ -437,45 +402,41 @@ struct FolderScannerPage {
       // 操作栏
       Row() {
         Text(`共 ${this.scannedDocs.length} 个文档`)
-          .fontSize(fontScaleManager.getScaledFontSize(14))
-          .fontColor(this.tc('#8E8E93', '#8E8E93'))
+          .fontSize(HDSTypography.sizes.md)
+          .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
 
         Blank()
 
         // 全选
         Text(this.selectedDocs.size === this.scannedDocs.length ? '取消全选' : '全选')
-          .fontSize(fontScaleManager.getScaledFontSize(13))
-          .fontColor(this.currentColors.primary)
+          .fontSize(HDSTypography.sizes.sm)
+          .fontColor(HDSColours.primary.blue)
           .onClick(() => this.selectAll())
 
         // 导入按钮
         Button() {
-          Row({ space: Spacing.xs }) {
+          Row({ space: HDSSpacing.xs }) {
             SymbolGlyph($r('sys.symbol.square.and.arrow.down'))
-              .fontSize(Size.iconSM)
-              .fontColor(['#FFFFFF'])
+              .fontSize(16)
+              .fontColor([HDSColours.neutral.white])
             
             Text(`导入 (${this.selectedDocs.size})`)
-              .fontSize(fontScaleManager.getScaledFontSize(13))
-              .fontColor('#FFFFFF')
+              .fontSize(HDSTypography.sizes.sm)
+              .fontColor(HDSColours.neutral.white)
           }
         }
-        .height(Size.buttonSM + Spacing.sm)
-        .backgroundColor(COMMON_COLORS.PRIMARY_BLUE)
-        .borderRadius(BorderRadius.xl)
-        .margin({ left: Spacing.md })
+        .height(40)
+        .backgroundColor(HDSColours.primary.blue)
+        .borderRadius(HDSBorderRadius.xl)
+        .margin({ left: HDSSpacing.md })
         .enabled(this.selectedDocs.size > 0 && !this.isImporting)
         .onClick(() => this.importSelected())
-        .stateStyles({
-          pressed: { .scale({ x: 0.95, y: 0.95 }) },
-          normal: { .scale({ x: 1, y: 1 }) }
-        })
       }
       .width('100%')
-      .padding({ left: Spacing.lg, right: Spacing.lg, top: Spacing.md, bottom: Spacing.sm })
+      .padding({ left: HDSSpacing.lg, right: HDSSpacing.lg, top: HDSSpacing.md, bottom: HDSSpacing.sm })
 
       // 文档列表
-      List({ space: Spacing.md }) {
+      List({ space: HDSSpacing.md }) {
         ForEach(this.scannedDocs, (doc: ScannedDocument) => {
           ListItem() {
             this.DocumentItem(doc)
@@ -484,7 +445,7 @@ struct FolderScannerPage {
       }
       .width('100%')
       .layoutWeight(1)
-      .padding({ left: Spacing.lg, right: Spacing.lg, bottom: Spacing.xxxl })
+      .padding({ left: HDSSpacing.lg, right: HDSSpacing.lg, bottom: HDSSpacing.xxxl })
       .scrollBar(BarState.Auto)
       .edgeEffect(EdgeEffect.Spring)
     }
@@ -494,54 +455,53 @@ struct FolderScannerPage {
 
   @Builder
   DocumentItem(doc: ScannedDocument) {
-    Row({ space: Spacing.lg }) {
+    Row({ space: HDSSpacing.lg }) {
       // 复选框
       Toggle({ type: ToggleType.Checkbox, isOn: this.selectedDocs.has(doc.id) })
-        .selectedColor(COMMON_COLORS.PRIMARY_BLUE)
+        .selectedColor(HDSColours.primary.blue)
         .onChange(() => this.toggleSelect(doc.id))
 
       // 文件图标
       Column() {
         SymbolGlyph($r('sys.symbol.doc.text'))
-          .fontSize(Size.iconXL)
-          .fontColor([this.currentColors.primary])
+          .fontSize(24)
+          .fontColor([HDSColours.primary.blue])
       }
       .width(50)
       .height(50)
-      .borderRadius(BorderRadius.lg)
-      .backgroundColor(this.currentColors.primary + '15')
+      .borderRadius(HDSBorderRadius.lg)
+      .backgroundColor(HDSColours.primary.blue + '15')
       .justifyContent(FlexAlign.Center)
 
       // 文件信息
-      Column({ space: Spacing.sm }) {
+      Column({ space: HDSSpacing.sm }) {
         Text(doc.name)
-          .fontSize(fontScaleManager.getScaledFontSize(15))
+          .fontSize(HDSTypography.sizes.md)
           .fontWeight(FontWeight.Medium)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
 
-        Row({ space: Spacing.sm }) {
+        Row({ space: HDSSpacing.sm }) {
           Text(doc.format.toUpperCase())
-            .fontSize(fontScaleManager.getScaledFontSize(11))
-            .padding({ left: Spacing.sm, right: Spacing.sm, top: Spacing.xs, bottom: Spacing.xs })
-            .backgroundColor(this.currentColors.primary + '15')
-            .fontColor(this.currentColors.primary)
-            .borderRadius(BorderRadius.xl)
+            .fontSize(HDSTypography.sizes.xs)
+            .padding({ left: HDSSpacing.sm, right: HDSSpacing.sm, top: HDSSpacing.xs, bottom: HDSSpacing.xs })
+            .backgroundColor(HDSColours.primary.blue + '15')
+            .fontColor(HDSColours.primary.blue)
+            .borderRadius(HDSBorderRadius.xl)
 
           Text(this.formatFileSize(doc.size))
-            .fontSize(fontScaleManager.getScaledFontSize(11))
-            .fontColor(this.tc('#8E8E93', '#8E8E93'))
+            .fontSize(HDSTypography.sizes.xs)
+            .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
         }
       }
       .layoutWeight(1)
       .alignItems(HorizontalAlign.Start)
     }
     .width('100%')
-    .padding(Spacing.lg)
-    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-    .borderRadius(BorderRadius.xl)
-    .shadow(getShadow('sm', this.isDarkMode))
+    .padding(HDSPacing.lg)
+    .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : HDSColours.neutral.white)
+    .borderRadius(HDSBorderRadius.xl)
   }
 
 }
