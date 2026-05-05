@@ -171,48 +171,33 @@ struct ReadRecordPage {
     .borderRadius(HDSBorderRadius.lg)
   }
 
-  private getTodayReadingTime(): number {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return this.books.reduce((total: number, book: BookInfo) => {
-      if (book.lastReadTime && book.lastReadTime >= today.getTime()) {
-        return total + (book.todayReadingTime || 0);
-      }
-      return total;
-    }, 0);
-  }
-
   @Builder
   TabBar() {
     Scroll() {
-      Row({ space: Spacing.sm }) {
+      Row({ space: HDSSpacing.sm }) {
         ForEach(Object.values(TabType), (tab: TabType) => {
           Text(tab)
             .fontSize(fontScaleManager.getScaledFontSize(14))
             .padding({ 
-              left: Spacing.lg, 
-              right: Spacing.lg, 
-              top: Spacing.sm, 
-              bottom: Spacing.sm 
+              left: HDSSpacing.lg, 
+              right: HDSSpacing.lg, 
+              top: HDSSpacing.sm, 
+              bottom: HDSSpacing.sm 
             })
             .backgroundColor(this.currentTab === tab ? 
-              this.currentColors.primary : this.bg('#F2F2F7', '#2C2C2E'))
+              HDSColours.primary.blue : (this.isDarkMode ? HDSColours.neutralDark.surface : '#F2F2F7'))
             .fontColor(this.currentTab === tab ? 
-              '#FFFFFF' : this.tc('#1A1A1A', '#FFFFFF'))
-            .borderRadius(BorderRadius.xl)
+              HDSColours.neutral.white : (this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900))
+            .borderRadius(HDSBorderRadius.xl)
             .fontWeight(this.currentTab === tab ? 
               FontWeight.Medium : FontWeight.Regular)
             .onClick(() => { 
               this.currentTab = tab;
               this.loadBooks();
             })
-            .stateStyles({
-              pressed: { .scale({ x: 0.95, y: 0.95 }) },
-              normal: { .scale({ x: 1, y: 1 }) }
-            })
         }, (tab: TabType) => tab)
       }
-      .padding({ left: Spacing.lg, right: Spacing.lg })
+      .padding({ left: HDSSpacing.lg, right: HDSSpacing.lg })
     }
     .width('100%')
     .scrollable(ScrollDirection.Horizontal)
@@ -221,25 +206,25 @@ struct ReadRecordPage {
 
   @Builder
   BookItem(book: BookInfo) {
-    Row({ space: Spacing.lg }) {
+    Row({ space: HDSSpacing.lg }) {
       // 封面
       Stack() {
         if (book.coverPath) {
           Image(book.coverPath)
             .width(this.screenInfo?.isTablet ? 70 : 60)
             .height(this.screenInfo?.isTablet ? 95 : 80)
-            .borderRadius(BorderRadius.md)
+            .borderRadius(HDSBorderRadius.md)
             .objectFit(ImageFit.Cover)
         } else {
           Column() {
             SymbolGlyph($r('sys.symbol.book.fill'))
-              .fontSize(Size.iconXL)
-              .fontColor([this.currentColors.primary])
+              .fontSize(24)
+              .fontColor([HDSColours.primary.blue])
           }
           .width(this.screenInfo?.isTablet ? 70 : 60)
           .height(this.screenInfo?.isTablet ? 95 : 80)
-          .borderRadius(BorderRadius.md)
-          .backgroundColor(this.currentColors.primary + '15')
+          .borderRadius(HDSBorderRadius.md)
+          .backgroundColor(HDSColours.primary.blue + '15')
           .justifyContent(FlexAlign.Center)
         }
 
@@ -248,50 +233,50 @@ struct ReadRecordPage {
           Text(`${book.progress}%`)
             .fontSize(fontScaleManager.getScaledFontSize(10))
             .fontWeight(FontWeight.Medium)
-            .fontColor('#FFFFFF')
+            .fontColor(HDSColours.neutral.white)
             .padding({ 
-              left: Spacing.sm, 
-              right: Spacing.sm, 
-              top: Spacing.xs, 
-              bottom: Spacing.xs 
+              left: HDSSpacing.sm, 
+              right: HDSSpacing.sm, 
+              top: HDSSpacing.xs, 
+              bottom: HDSSpacing.xs 
             })
             .backgroundColor('rgba(0,0,0,0.6)')
-            .borderRadius(BorderRadius.xl)
+            .borderRadius(HDSBorderRadius.xl)
             .position({ bottom: 5, right: 5 })
         }
       }
 
       // 信息
-      Column({ space: Spacing.sm }) {
+      Column({ space: HDSSpacing.sm }) {
         Text(book.title)
           .fontSize(fontScaleManager.getScaledFontSize(this.screenInfo?.isTablet ? 16 : 15))
           .fontWeight(FontWeight.SemiBold)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .width('100%')
 
         Text(book.author)
           .fontSize(fontScaleManager.getScaledFontSize(12))
-          .fontColor(this.tc('#8E8E93', '#8E8E93'))
+          .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
 
-        Row({ space: Spacing.sm }) {
-          Row({ space: Spacing.xs }) {
+        Row({ space: HDSSpacing.sm }) {
+          Row({ space: HDSSpacing.xs }) {
             SymbolGlyph($r('sys.symbol.clock'))
-              .fontSize(Size.iconXS)
-              .fontColor([this.tc('#8E8E93', '#8E8E93')])
+              .fontSize(12)
+              .fontColor([this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600])
             
             Text(formatDuration(book.totalReadingTime || 0))
               .fontSize(fontScaleManager.getScaledFontSize(11))
-              .fontColor(this.tc('#8E8E93', '#8E8E93'))
+              .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
           }
 
           if (book.readStatus === 2) {
-            Row({ space: Spacing.xs }) {
+            Row({ space: HDSSpacing.xs }) {
               SymbolGlyph($r('sys.symbol.checkmark.circle.fill'))
-                .fontSize(Size.iconXS)
+                .fontSize(12)
                 .fontColor(['#52C41A'])
               
               Text('已读完')

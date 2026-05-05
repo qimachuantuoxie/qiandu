@@ -158,7 +158,7 @@ struct OnlineBookDetailPage {
   @Builder
   DetailTab() {
     Scroll() {
-      Column({ space: Spacing.lg }) {
+      Column({ space: HDSSpacing.lg }) {
         // 书籍信息卡片
         this.BookCard()
 
@@ -174,7 +174,7 @@ struct OnlineBookDetailPage {
         }
       }
       .width('100%')
-      .padding(Spacing.lg)
+      .padding(HDSPacing.lg)
     }
     .width('100%')
     .layoutWeight(1)
@@ -182,63 +182,62 @@ struct OnlineBookDetailPage {
 
   @Builder
   BookCard() {
-    Row({ space: Spacing.lg }) {
+    Row({ space: HDSSpacing.lg }) {
       // 封面
       if (this.bookDetail!.coverUrl) {
         Image(this.bookDetail!.coverUrl)
           .width(this.screenInfo?.isTablet ? 140 : 120)
           .height(this.screenInfo?.isTablet ? 185 : 160)
           .objectFit(ImageFit.Cover)
-          .borderRadius(BorderRadius.lg)
-          .shadow(getShadow('md', this.isDarkMode))
+          .borderRadius(HDSBorderRadius.lg)
       } else {
         Column() {
           SymbolGlyph($r('sys.symbol.book.fill'))
-            .fontSize(Size.iconXXXL)
-            .fontColor([this.currentColors.primary])
+            .fontSize(28)
+            .fontColor([HDSColours.primary.blue])
         }
         .width(this.screenInfo?.isTablet ? 140 : 120)
         .height(this.screenInfo?.isTablet ? 185 : 160)
-        .borderRadius(BorderRadius.lg)
-        .backgroundColor(this.currentColors.primary + '15')
+        .borderRadius(HDSBorderRadius.lg)
+        .backgroundColor(HDSColours.primary.blue + '15')
         .justifyContent(FlexAlign.Center)
       }
 
       // 书籍信息
-      Column({ space: Spacing.md }) {
+      Column({ space: HDSSpacing.md }) {
         Text(this.bookDetail!.title)
           .fontSize(fontScaleManager.getScaledFontSize(this.screenInfo?.isTablet ? 20 : 18))
           .fontWeight(FontWeight.Bold)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
           .maxLines(2)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
 
         Text(this.bookDetail!.author)
           .fontSize(fontScaleManager.getScaledFontSize(14))
-          .fontColor(this.tc('#8E8E93', '#8E8E93'))
+          .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
 
-        Column({ space: Spacing.sm }) {
+        Column({ space: HDSSpacing.sm }) {
           if (this.bookDetail!.wordCount > 0) {
-            Row({ space: Spacing.xs }) {
+            Row({ space: HDSSpacing.xs }) {
               SymbolGlyph($r('sys.symbol.doc.text'))
-                .fontSize(Size.iconXS)
-                .fontColor([this.tc('#8E8E93', '#8E8E93')])
+                .fontSize(12)
+                .fontColor([this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600])
               
               Text(this.formatWordCount(this.bookDetail!.wordCount))
                 .fontSize(fontScaleManager.getScaledFontSize(12))
-                .fontColor(this.tc('#8E8E93', '#8E8E93'))
+                .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
             }
           }
 
           if (this.bookDetail!.latestChapter) {
-            Row({ space: Spacing.xs }) {
+            Row({ space: HDSSpacing.xs }) {
               SymbolGlyph($r('sys.symbol.book.open'))
-                .fontSize(Size.iconXS)
-                .fontColor([COMMON_COLORS.PRIMARY_BLUE])
+                .fontSize(12)
+                .fontColor([HDSColours.primary.blue])
               
               Text('最新：' + this.bookDetail!.latestChapter)
                 .fontSize(fontScaleManager.getScaledFontSize(12))
-                .fontColor(COMMON_COLORS.PRIMARY_BLUE)
+                .fontColor(HDSColours.primary.blue)
                 .maxLines(1)
                 .textOverflow({ overflow: TextOverflow.Ellipsis })
             }
@@ -250,30 +249,29 @@ struct OnlineBookDetailPage {
       .alignItems(HorizontalAlign.Start)
     }
     .width('100%')
-    .padding(Spacing.xl)
-    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-    .borderRadius(BorderRadius.xl)
-    .shadow(getShadow('md', this.isDarkMode))
+    .padding(HDSPacing.xl)
+    .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : HDSColours.neutral.white)
+    .borderRadius(HDSBorderRadius.xl)
   }
 
   @Builder
   IntroCard() {
-    Column({ space: Spacing.md }) {
+    Column({ space: HDSSpacing.md }) {
       Row() {
         SymbolGlyph($r('sys.symbol.doc.text'))
-          .fontSize(Size.iconMD)
-          .fontColor([this.currentColors.primary])
+          .fontSize(20)
+          .fontColor([HDSColours.primary.blue])
         
         Text('简介')
           .fontSize(fontScaleManager.getScaledFontSize(16))
           .fontWeight(FontWeight.SemiBold)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
           .layoutWeight(1)
-          .margin({ left: Spacing.sm })
+          .margin({ left: HDSSpacing.sm })
 
         Text(this.showFullIntro ? '收起' : '展开')
           .fontSize(fontScaleManager.getScaledFontSize(13))
-          .fontColor(this.currentColors.primary)
+          .fontColor(HDSColours.primary.blue)
           .onClick(() => {
             this.showFullIntro = !this.showFullIntro;
           })
@@ -282,45 +280,39 @@ struct OnlineBookDetailPage {
 
       Text(this.bookDetail!.intro || '暂无简介')
         .fontSize(fontScaleManager.getScaledFontSize(14))
-        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
         .lineHeight(1.6)
         .maxLines(this.showFullIntro ? undefined : 4)
         .textOverflow({ overflow: this.showFullIntro ? TextOverflow.Clip : TextOverflow.Ellipsis })
     }
     .width('100%')
-    .padding(Spacing.xl)
-    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-    .borderRadius(BorderRadius.xl)
-    .shadow(getShadow('sm', this.isDarkMode))
+    .padding(HDSPacing.xl)
+    .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : HDSColours.neutral.white)
+    .borderRadius(HDSBorderRadius.xl)
   }
 
   @Builder
   ActionButtons() {
-    Row({ space: Spacing.md }) {
+    Row({ space: HDSSpacing.md }) {
       Button() {
-        Row({ space: Spacing.sm }) {
+        Row({ space: HDSSpacing.sm }) {
           SymbolGlyph($r('sys.symbol.book.open'))
-            .fontSize(Size.iconMD)
-            .fontColor(['#FFFFFF'])
+            .fontSize(20)
+            .fontColor([HDSColours.neutral.white])
           
           Text('开始阅读')
             .fontSize(fontScaleManager.getScaledFontSize(16))
             .fontWeight(FontWeight.SemiBold)
-            .fontColor('#FFFFFF')
+            .fontColor(HDSColours.neutral.white)
         }
       }
       .layoutWeight(1)
-      .height(Size.buttonLG + Spacing.sm)
+      .height(48 + HDSSpacing.sm)
       .linearGradient({
         direction: GradientDirection.Right,
-        colors: [COMMON_COLORS.PRIMARY_BLUE, COMMON_COLORS.PRIMARY_BLUE + 'CC']
+        colors: [HDSColours.primary.blue, HDSColours.primary.blue + 'CC']
       })
-      .borderRadius(BorderRadius.xl)
-      .shadow({
-        radius: 8,
-        color: COMMON_COLORS.PRIMARY_BLUE + '40',
-        offsetY: 4
-      })
+      .borderRadius(HDSBorderRadius.xl)
       .onClick(() => {
         if (this.toc.length > 0) {
           const params: Record<string, Object> = {};
@@ -330,26 +322,18 @@ struct OnlineBookDetailPage {
           navigateTo('pages/EnhancedReaderPage', params);
         }
       })
-      .stateStyles({
-        pressed: { .scale({ x: 0.98, y: 0.98 }) },
-        normal: { .scale({ x: 1, y: 1 }) }
-      })
 
       Button() {
         SymbolGlyph($r('sys.symbol.download.circle'))
-          .fontSize(Size.iconMD)
-          .fontColor(['#FFFFFF'])
+          .fontSize(20)
+          .fontColor([HDSColours.neutral.white])
       }
-      .width(Size.buttonLG)
-      .height(Size.buttonLG)
+      .width(48)
+      .height(48)
       .backgroundColor('#FF9800')
-      .borderRadius(BorderRadius.xl)
+      .borderRadius(HDSBorderRadius.xl)
       .onClick(() => {
         promptAction.showToast({ message: '下载功能开发中...' });
-      })
-      .stateStyles({
-        pressed: { .scale({ x: 0.98, y: 0.98 }) },
-        normal: { .scale({ x: 1, y: 1 }) }
       })
     }
     .width('100%')
@@ -357,43 +341,43 @@ struct OnlineBookDetailPage {
 
   @Builder
   TocPreview() {
-    Column({ space: Spacing.md }) {
+    Column({ space: HDSSpacing.md }) {
       Row() {
         SymbolGlyph($r('sys.symbol.list.bullet'))
-          .fontSize(Size.iconMD)
-          .fontColor([this.currentColors.primary])
+          .fontSize(20)
+          .fontColor([HDSColours.primary.blue])
         
         Text('章节目录')
           .fontSize(fontScaleManager.getScaledFontSize(16))
           .fontWeight(FontWeight.SemiBold)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
           .layoutWeight(1)
-          .margin({ left: Spacing.sm })
+          .margin({ left: HDSSpacing.sm })
 
         Text(`查看全部 ${this.toc.length} 章`)
           .fontSize(fontScaleManager.getScaledFontSize(13))
-          .fontColor(this.currentColors.primary)
+          .fontColor(HDSColours.primary.blue)
           .onClick(() => {
             this.currentTab = 1;
           })
       }
       .width('100%')
 
-      List({ space: Spacing.sm }) {
+      List({ space: HDSSpacing.sm }) {
         ForEach(this.toc.slice(0, 5), (chapter: OnlineChapterInfo, index: number) => {
           ListItem() {
             Row() {
               Text(`${index + 1}. ${chapter.title}`)
                 .fontSize(fontScaleManager.getScaledFontSize(14))
-                .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+                .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
                 .maxLines(1)
                 .textOverflow({ overflow: TextOverflow.Ellipsis })
                 .layoutWeight(1)
             }
             .width('100%')
-            .padding(Spacing.md)
-            .backgroundColor(this.tc('#F8F9FA', '#2C2C2E'))
-            .borderRadius(BorderRadius.md)
+            .padding(HDSPacing.md)
+            .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.surface : '#F8F9FA')
+            .borderRadius(HDSBorderRadius.md)
           }
         }, (chapter: OnlineChapterInfo, index: number) => chapter.url + index)
       }
@@ -401,10 +385,9 @@ struct OnlineBookDetailPage {
       .scrollBar(BarState.Off)
     }
     .width('100%')
-    .padding(Spacing.xl)
-    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-    .borderRadius(BorderRadius.xl)
-    .shadow(getShadow('sm', this.isDarkMode))
+    .padding(HDSPacing.xl)
+    .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : HDSColours.neutral.white)
+    .borderRadius(HDSBorderRadius.xl)
   }
 
   @Builder
@@ -414,50 +397,50 @@ struct OnlineBookDetailPage {
         LoadingProgress()
           .width(40)
           .height(40)
-          .color(COMMON_COLORS.PRIMARY_BLUE)
+          .color(HDSColours.primary.blue)
       }
       .width('100%')
       .layoutWeight(1)
       .justifyContent(FlexAlign.Center)
     } else if (this.toc.length === 0) {
-      Column({ space: Spacing.xl }) {
+      Column({ space: HDSSpacing.xl }) {
         SymbolGlyph($r('sys.symbol.doc.text'))
-          .fontSize(Size.iconXXXL)
-          .fontColor([this.tc('#D1D1D6', '#48484A')])
+          .fontSize(28)
+          .fontColor([this.isDarkMode ? HDSColours.neutralDark.textHint : HDSColours.neutral.gray400])
 
         Text('暂无章节')
           .fontSize(fontScaleManager.getScaledFontSize(16))
           .fontWeight(FontWeight.Medium)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
       }
       .width('100%')
       .layoutWeight(1)
       .justifyContent(FlexAlign.Center)
     } else {
-      List({ space: Spacing.sm }) {
+      List({ space: HDSSpacing.sm }) {
         ForEach(this.toc, (chapter: OnlineChapterInfo, index: number) => {
           ListItem() {
             Row() {
               Text(`${index + 1}.`)
                 .fontSize(fontScaleManager.getScaledFontSize(13))
-                .fontColor(this.tc('#8E8E93', '#8E8E93'))
+                .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
                 .width(40)
 
               Text(chapter.title)
                 .fontSize(fontScaleManager.getScaledFontSize(14))
-                .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+                .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
                 .maxLines(1)
                 .textOverflow({ overflow: TextOverflow.Ellipsis })
                 .layoutWeight(1)
 
               SymbolGlyph($r('sys.symbol.chevron.right'))
-                .fontSize(Size.iconSM)
-                .fontColor([this.tc('#C7C7CC', '#48484A')])
+                .fontSize(16)
+                .fontColor([this.isDarkMode ? HDSColours.neutralDark.textHint : HDSColours.neutral.gray400])
             }
             .width('100%')
-            .padding(Spacing.md)
-            .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-            .borderRadius(BorderRadius.md)
+            .padding(HDSPacing.md)
+            .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : HDSColours.neutral.white)
+            .borderRadius(HDSBorderRadius.md)
             .onClick(() => {
               const params: Record<string, Object> = {};
               params['bookUrl'] = this.bookUrl;
@@ -465,22 +448,12 @@ struct OnlineBookDetailPage {
               params['chapterIndex'] = index;
               navigateTo('pages/EnhancedReaderPage', params);
             })
-            .stateStyles({
-              pressed: { 
-                .scale({ x: 0.98, y: 0.98 }),
-                .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
-              },
-              normal: { 
-                .scale({ x: 1, y: 1 }),
-                .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-              }
-            })
           }
         }, (chapter: OnlineChapterInfo, index: number) => chapter.url + index)
       }
       .width('100%')
       .layoutWeight(1)
-      .padding(Spacing.lg)
+      .padding(HDSPacing.lg)
       .scrollBar(BarState.Auto)
       .edgeEffect(EdgeEffect.Spring)
     }
