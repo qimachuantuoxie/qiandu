@@ -1,17 +1,18 @@
-﻿/**
- * 搴旂敤鏍圭骇缁熶竴瀵煎嚭
- * V3 鏋舵瀯 - 鍗曚竴瀵煎叆鍏ュ彛
+/**
+ * 应用根级统一导出
+ * V3 架构 - 单一导入入口
  */
 
-// 鏍稿績妯″潡
+// 核心模块
 export * from './core';
 
-// 鍏叡妯″潡
+// 公共模块
 export * from './common';
 
-// 鍔熻兘妯″潡
+// 功能模块
 export * from './features';
 
-// 椤甸潰鍏ュ彛
-// export * from './pages'; // 椤甸潰涓嶄娇鐢ㄧ粺涓€瀵煎嚭锛屼繚鎸佺嫭绔?
-// ViewModels锛堝吋瀹瑰眰锛?export * from './core/viewmodels';
+// 页面入口
+// export * from './pages'; // 页面不使用统一导出，保持独立
+// ViewModels（兼容层）
+export * from './core/viewmodels';
