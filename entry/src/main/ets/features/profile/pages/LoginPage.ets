@@ -8,6 +8,9 @@ import { fontScaleManager } from '../../../core/utils/FontScaleManager';
 import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 import { loginViewModel } from '../viewmodels/LoginViewModel';
+import { DialogHelper } from '../../../common/utils/DialogHelper';
+import { HDSColours, HDSSpacing, HDSBorderRadius, HDSTypography } from '../../../core/design/tokens/HDSDTokens';
+import { LoginSuccessAnimation } from '../../../common/components/LoginSuccessAnimation';
 
 @Entry
 @ComponentV2
@@ -20,6 +23,7 @@ struct LoginPage {
   @Local password: string = '';
   @Local rememberPassword: boolean = false;
   @Local isLoading: boolean = false;
+  @Local showSuccessAnimation: boolean = false;
   private context: common.Context | null = null;
 
   async aboutToAppear(): Promise<void> {
@@ -105,7 +109,11 @@ struct LoginPage {
       const success = await loginViewModel.loginWithHuawei();
       
       if (success) {
-        promptAction.showToast({ message: '华为账号登录成功', duration: 1500 });
+        // 显示成功提示
+        DialogHelper.success({
+          message: '华为账号登录成功',
+          duration: 1500
+        });
         
         setTimeout(() => {
           try {
@@ -114,17 +122,25 @@ struct LoginPage {
             const msg = error instanceof Error ? error.message : String(error);
             logger.error('[LoginPage] back failed:', msg);
           }
-        }, 1000);
+        }, 1500);
       } else {
-        promptAction.showToast({ 
-          message: loginViewModel.errorMsg || '华为登录失败', 
-          duration: 2000 
-        });
+        // 显示具体错误信息
+        DialogHelper.error(loginViewModel.errorMsg || '华为登录失败');
       }
     } catch (error) {
       const err = error as Error;
       logger.error('[LoginPage] Huawei login failed:', err.message);
-      promptAction.showToast({ message: '华为登录失败，请重试', duration: 2000 });
+      
+      // 根据错误类型显示不同的提示
+      let errorMsg = '华为登录失败，请重试';
+      if (err.message.includes('网络')) {
+        errorMsg = '网络连接异常，请检查网络后重试';
+      } else if (err.message.includes('取消')) {
+        DialogHelper.info('已取消登录');
+        return;
+      }
+      
+      DialogHelper.error(errorMsg);
     } finally {
       this.isLoading = false;
     }
@@ -142,6 +158,14 @@ struct LoginPage {
             ? [['#1A1A2E', 0.0], ['#16213E', 0.5], ['#0F3460', 1.0]]
             : [[COMMON_COLORS.PRIMARY_BLUE, 0.0], ['#667EEA', 0.5], ['#764BA2', 1.0]]
         })
+
+      // 成功动画层
+      if (this.showSuccessAnimation) {
+        LoginSuccessAnimation({ isVisible: this.showSuccessAnimation })
+          .width('100%')
+          .height('100%')
+          .backgroundColor('rgba(0,0,0,0.5)')
+      }
 
       // 内容区域
       Column() {

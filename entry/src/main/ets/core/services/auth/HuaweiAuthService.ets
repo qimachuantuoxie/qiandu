@@ -38,6 +38,16 @@ export interface HuaweiUserProfile {
 }
 
 /**
+ * 华为用户资料
+ */
+export interface HuaweiUserProfile {
+  openId: string;        // 用户OpenID（应用内唯一）
+  unionId?: string;      // 用户UnionID（开发者账号下唯一）
+  displayName?: string;  // 用户昵称
+  avatarUrl?: string;    // 用户头像URL
+}
+
+/**
  * 华为账号认证服务类
  */
 export class HuaweiAuthService {

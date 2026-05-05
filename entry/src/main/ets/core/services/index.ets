@@ -37,7 +37,6 @@ export { uiDesignKitService } from './reader/UIDesignKitService';
 
 // ==================== AI服务 ====================
 export { aiService } from './ai/AIService';
-export { ttsService } from './ai/TTSService';
 export { coreSpeechService } from './ai/CoreSpeechService';
 export { ocrService } from './ai/OcrService';
 export { eyeTrackingService } from './ai/EyeTrackingService';
@@ -58,8 +57,7 @@ export { dynamicCoverService } from './image/DynamicCoverService';
 export { apiService } from './external/ApiService';
 
 // ==================== 认证服务 ====================
-export { huaweiAuthService } from './auth/HuaweiAuthService';
-export { loginStateManager } from './auth/LoginStateManager';
+export { authService } from './auth/AuthService';
 
 // ==================== 社区服务 ====================
 export { readingCommunityService } from './community/ReadingCommunityService';

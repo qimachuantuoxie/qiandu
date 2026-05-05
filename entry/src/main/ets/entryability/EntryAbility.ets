@@ -3,8 +3,8 @@
 import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window, display } from '@kit.ArkUI';
-import { displayHelper } utils/DisplayHelper';
-import { nativeModules } utils/NativeModules';
+import { displayHelper } from '../utils/DisplayHelper';
+import { nativeModules } from '../utils/NativeModules';
 import { preferenceManager } from '../core/utils/PreferenceManager';
 import { localizationUtil } from '../core/utils/LocalizationUtil';
 import { DeviceUtils } from '../core/utils/DeviceUtils';
@@ -12,7 +12,7 @@ import { kitManager } from '../core/services/huawei-kit/KitManager';
 import { imageCacheService } from '../core/services/image/ImageCacheService';
 import { secureStorage } from '../core/utils/SecureStorage';
 import { initAppStore } from '../core/stores/AppStore';
-import { huaweiAuthService } from '../core/services/auth/HuaweiAuthService';
+import { authService } from '../core/services/auth/AuthService';
 import { foldableAdapter } from '../core/utils/FoldableAdapterManager';
 import { AppNavigationBuilder } from '../AppNavigation';
 
@@ -60,8 +60,8 @@ export default class EntryAbility extends UIAbility {
       await imageCacheService.init(this.context);
       await nativeModules.initialize();
 
-      // 初始化 Huawei 认证服务（关键：必须在LoginPage加载前完成）
-      huaweiAuthService.init(this.context);
+      // 初始化统一认证服务（包含Token自动刷新）
+      authService.init(this.context);
 
       // 初始化 Kit 服务
       await kitManager.initAllKits(this.context);

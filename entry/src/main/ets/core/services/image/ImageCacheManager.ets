@@ -8,6 +8,7 @@ import { fileIo } from '@kit.CoreFileKit';
 import { common } from '@kit.AbilityKit';
 import { preferenceManager } from '../utils/PreferenceManager';
 import { image } from '@kit.ImageKit';
+import { MS_PER_DAY } from '../../constants/TimeConstants';
 
 /**
  * 缂傛挸鐡ㄩ柊宥囩枂
@@ -56,7 +57,7 @@ class ImageCacheManager {
   private cacheConfig: CacheConfig = {
     maxSize: 500 * 1024 * 1024, // 500MB
     cacheDir: '',
-    expiryTime: 7 * 24 * 60 * 60 * 1000 // 7婢?
+    expiryTime: 7 * MS_PER_DAY // 7天
   };
   private memoryCache: Map<string, image.PixelMap> = new Map();
   private cacheIndex: Map<string, CacheItem> = new Map();

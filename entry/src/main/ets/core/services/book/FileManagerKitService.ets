@@ -11,6 +11,7 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { util } from '@kit.ArkTS';
 // FileManager Service Kit - HarmonyOS 5.0+ (API Level 12+)
 import { fileManagerService } from '@kit.FileManagerServiceKit';
+import { MS_PER_DAY } from '../../constants/TimeConstants';
 
 export enum FileType {
   PDF = 'pdf',
@@ -89,9 +90,6 @@ class FileManagerKitService {
   private isInitialized: boolean = false;
   private trashFiles: Map<string, TrashFileInfo> = new Map();
   private appFilesDir: string = '';
-  
-  // FileManager Service Kit 可用性标志
-  private isFileManagerServiceKitAvailable: boolean = false;
 
   private constructor() {}
 
@@ -109,39 +107,15 @@ class FileManagerKitService {
       const filesDir = context.filesDir;
       this.appFilesDir = filesDir;
       
-      // 检测 FileManager Service Kit 是否可用
-      this.checkFileManagerServiceKitAvailability();
-      
       await this.loadTrashFiles();
       this.isInitialized = true;
       
-      const mode = this.isFileManagerServiceKitAvailable ? 'FileManagerServiceKit' : 'CoreFileKit Only';
-      logger.info('[FileManagerKit] Initialized in', mode);
+      logger.info('[FileManagerKit] Initialized successfully with FileManagerServiceKit');
       return true;
     } catch (error) {
       const err = error as BusinessError;
       logger.error('[FileManagerKit] Init failed:', err.message);
       return false;
-    }
-  }
-  
-  /**
-   * 检测 FileManager Service Kit 是否可用
-   */
-  private checkFileManagerServiceKitAvailability(): void {
-    try {
-      // 检查 fileManagerService 是否存在且有 getFileIcon 方法
-      if (fileManagerService && typeof fileManagerService.getFileIcon === 'function') {
-        this.isFileManagerServiceKitAvailable = true;
-        logger.info('[FileManagerKit] FileManagerServiceKit is available');
-      } else {
-        this.isFileManagerServiceKitAvailable = false;
-        logger.warn('[FileManagerKit] FileManagerServiceKit not available, using fallback');
-      }
-    } catch (error) {
-      const err = error as BusinessError;
-      logger.warn('[FileManagerKit] Check availability failed:', err.message);
-      this.isFileManagerServiceKitAvailable = false;
     }
   }
 
@@ -308,7 +282,7 @@ class FileManagerKitService {
         trashUri: `trash://${uri}`,
         name: this.extractFileName(filePath),
         deletedTime: Date.now(),
-        expireTime: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30天后过期
+        expireTime: Date.now() + 30 * MS_PER_DAY, // 30天后过期
         size: (await fileIo.stat(filePath)).size
       };
 
@@ -466,30 +440,21 @@ class FileManagerKitService {
         throw new Error('FileManagerKit not initialized');
       }
 
-      // 优先使用 FileManager Service Kit
-      if (this.isFileManagerServiceKitAvailable) {
-        try {
-          const fileType = this.detectFileType(filePath);
-          const iconResource = await fileManagerService.getFileIcon(fileType);
-          
-          // 将 Resource 转换为 URI 字符串
-          if (iconResource) {
-            logger.info('[FileManagerKit] Got icon from FileManagerServiceKit for', fileType);
-            return this.resourceToUri(iconResource);
-          }
-        } catch (error) {
-          const err = error as BusinessError;
-          logger.warn('[FileManagerKit] Get icon from FileManagerServiceKit failed:', err.message);
-          // Fallback to default icon
-        }
+      const fileType = this.detectFileType(filePath);
+      const iconResource = await fileManagerService.getFileIcon(fileType);
+      
+      // 将 Resource 转换为 URI 字符串
+      if (iconResource) {
+        logger.info('[FileManagerKit] Got icon from FileManagerServiceKit for', fileType);
+        return this.resourceToUri(iconResource);
       }
       
-      // Fallback: 返回默认图标
-      return this.getDefaultIconForFileType(this.detectFileType(filePath));
+      // 如果无法获取，返回默认图标
+      return this.getDefaultIconForFileType(fileType);
     } catch (error) {
       const err = error as BusinessError;
       logger.error('[FileManagerKit] Get file icon failed:', err.message);
-      return '';
+      return this.getDefaultIconForFileType(this.detectFileType(filePath));
     }
   }
   
@@ -497,13 +462,26 @@ class FileManagerKitService {
    * 将 Resource 对象转换为 URI 字符串
    */
   private resourceToUri(resource: Object): string {
-    // TODO: 实现 Resource 到 URI 的转换
-    // 目前返回占位符，实际需要根据 HarmonyOS API 实现
-    return 'resource://' + JSON.stringify(resource);
+    // HarmonyOS Resource 对象通常包含 resourceId 和 bundleName
+    // 这里需要根据实际的 Resource 结构进行转换
+    try {
+      const res = resource as Record<string, Object>;
+      if (res.resourceId && res.bundleName) {
+        // 格式: resource://bundleName/resourceId
+        return `resource://${res.bundleName}/${res.resourceId}`;
+      }
+      // 如果无法解析，返回默认图标
+      logger.warn('[FileManagerKit] Cannot parse resource, using default icon');
+      return this.getDefaultIconForFileType(FileType.OTHER);
+    } catch (error) {
+      logger.error('[FileManagerKit] Resource to URI conversion failed:', error);
+      return this.getDefaultIconForFileType(FileType.OTHER);
+    }
   }
 
   /**
    * 获取文件缩略图
+   * 使用 Image Kit 生成图片类文件的缩略图
    */
   async getFileThumbnail(
     filePath: string, 
@@ -515,10 +493,63 @@ class FileManagerKitService {
         throw new Error('FileManagerKit not initialized');
       }
 
-      // TODO: 调用 File Manager Kit 生成缩略图
+      const fileType = this.detectFileType(filePath);
+      
+      // 只对图片文件生成缩略图
+      if (fileType === FileType.IMAGE) {
+        return await this.generateImageThumbnail(filePath, width, height);
+      }
+      
+      // 对于PDF等文档，尝试获取第一页作为缩略图
+      if (fileType === FileType.PDF) {
+        // TODO: 集成 PDF Kit 生成第一页缩略图
+        logger.info('[FileManagerKit] PDF thumbnail generation not yet implemented');
+        return '';
+      }
+      
+      // 其他类型文件不生成缩略图
+      logger.info('[FileManagerKit] Thumbnail not supported for file type:', fileType);
       return '';
+      
     } catch (error) {
-      logger.error('[FileManagerKit] Get file thumbnail failed:', error);
+      const err = error as BusinessError;
+      logger.error('[FileManagerKit] Get file thumbnail failed:', err.message);
+      return '';
+    }
+  }
+  
+  /**
+   * 生成图片缩略图
+   */
+  private async generateImageThumbnail(
+    filePath: string,
+    width: number,
+    height: number
+  ): Promise<string> {
+    try {
+      // 使用 Core File Kit 读取图片文件
+      const file = await fileIo.open(filePath, fileIo.OpenMode.READ_ONLY);
+      
+      // 读取文件数据
+      const stat = await fileIo.stat(filePath);
+      const buffer = new ArrayBuffer(stat.size);
+      await fileIo.read(file.fd, buffer);
+      await fileIo.close(file);
+      
+      // TODO: 使用 Image Kit 进行图片缩放
+      // import { image } from '@kit.ImageKit';
+      // const imageSource = image.createImageSource(buffer);
+      // const packingOption = { format: 'image/jpeg', quality: 80 };
+      // const resizeOption = { width: width, height: height };
+      // const pixelMap = await imageSource.createPixelMap(resizeOption);
+      // 保存缩略图并返回路径
+      
+      logger.info('[FileManagerKit] Image thumbnail generation requires Image Kit integration');
+      return '';  // 暂时返回空，等待Image Kit集成
+      
+    } catch (error) {
+      const err = error as BusinessError;
+      logger.error('[FileManagerKit] Generate image thumbnail failed:', err.message);
       return '';
     }
   }
@@ -620,27 +651,18 @@ class FileManagerKitService {
 
       const uri = filePath.startsWith('file://') ? filePath : 'file://' + filePath;
 
-      // 如果启用回收站功能且 FileManager Service Kit 可用
-      if (moveToTrash && this.isFileManagerServiceKitAvailable) {
-        try {
-          // 使用官方 API 删除到回收站
-          await fileManagerService.deleteToTrash(uri);
-          
-          logger.info('[FileManagerKit] File moved to trash:', filePath);
-          return {
-            success: true,
-            message: '文件已移至回收站'
-          };
-        } catch (error) {
-          const err = error as BusinessError;
-          logger.warn('[FileManagerKit] Delete to trash failed:', err.message, '- falling back to direct delete');
-          // Fallback to direct delete
-        }
+      // 如果启用回收站功能，使用官方 API
+      if (moveToTrash) {
+        await fileManagerService.deleteToTrash(uri);
+        logger.info('[FileManagerKit] File moved to trash:', filePath);
+        return {
+          success: true,
+          message: '文件已移至回收站'
+        };
       }
 
       // 直接删除文件
       await fileIo.unlink(filePath);
-
       logger.info('[FileManagerKit] File deleted:', filePath);
       return {
         success: true,

@@ -6,13 +6,14 @@
  */
 
 import { COMMON_COLORS } from '../../common/constants/AppTheme';
+import { EMPTY_STATE_ICONS } from '../../../core/constants/UIIcons';
 
 /**
  * AppEmpty 组件属性
  */
 @ComponentV2
 export struct AppEmpty {
-  @Param icon: string = '📭';
+  @Param icon: string = EMPTY_STATE_ICONS.DEFAULT;
   @Param title: string = '暂无数据';
   @Param subtitle: string = '';
   @Param actionText: string = '';

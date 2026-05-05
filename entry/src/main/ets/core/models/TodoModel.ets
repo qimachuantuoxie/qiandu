@@ -1,4 +1,6 @@
 // Todo 数据模型
+import { MS_PER_DAY } from '../constants/TimeConstants';
+import { PRIORITY_ICONS } from '../constants/UIIcons';
 
 /**
  * Todo优先级枚举
@@ -133,15 +135,15 @@ export function getStatusLabel(status: TodoStatus): string {
 export function getPriorityIcon(priority: TodoPriority): string {
   switch (priority) {
     case TodoPriority.LOW:
-      return '🔽';
+      return PRIORITY_ICONS.LOW;
     case TodoPriority.MEDIUM:
-      return '▶️';
+      return PRIORITY_ICONS.MEDIUM;
     case TodoPriority.HIGH:
-      return '⬆️';
+      return PRIORITY_ICONS.HIGH;
     case TodoPriority.URGENT:
-      return '⚠️';
+      return PRIORITY_ICONS.HIGH;  // 紧急使用高优先级图标
     default:
-      return '❓';
+      return PRIORITY_ICONS.MEDIUM;
   }
 }
 
@@ -155,7 +157,7 @@ export function formatDueDate(dueDate: number): string {
   
   const now = Date.now();
   const diff = dueDate - now;
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const days = Math.floor(diff / MS_PER_DAY);
   
   if (days < 0) {
     return '已过期' + Math.abs(days) + '天';

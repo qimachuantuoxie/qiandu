@@ -4,6 +4,7 @@ import { accountAuth } from '@kit.AccountKit';
 import { UserInfo, LoginStatus, generateGuestId, LoginType } from '../models/AuthModels';
 import { preferenceManager } from './PreferenceManager';
 import { secureStorage } from './SecureStorage';
+import { MS_PER_MINUTE, MS_PER_YEAR } from '../constants/TimeConstants';
 
 export class AccountManager {
   private static instance: AccountManager;
@@ -89,7 +90,7 @@ export class AccountManager {
         avatarUri: '',
         accessToken: '',
         refreshToken: '',
-        expiresInMillis: Date.now() + 365 * 24 * 60 * 60 * 1000,
+        expiresInMillis: Date.now() + MS_PER_YEAR,
         loginType: 'guest',
         loginTime: Date.now()
       };
@@ -135,7 +136,7 @@ export class AccountManager {
       const timeUntilExpiry = this.currentUser.expiresInMillis - Date.now();
 
       if (timeUntilExpiry > 0) {
-        this.currentUser.expiresInMillis = Date.now() + 365 * 24 * 60 * 60 * 1000;
+        this.currentUser.expiresInMillis = Date.now() + MS_PER_YEAR;
         await preferenceManager.setValue('user_info', JSON.stringify(this.currentUser));
         this.status = LoginStatus.LOGGED_IN;
         this.notifyListeners();
@@ -156,8 +157,8 @@ export class AccountManager {
 
     this.stopAutoRefresh();
 
-    const checkInterval = 30 * 60 * 1000;
-    const refreshThreshold = 5 * 60 * 1000;
+    const checkInterval = 30 * MS_PER_MINUTE;
+    const refreshThreshold = 5 * MS_PER_MINUTE;
 
     this.autoRefreshTimer = setInterval(async () => {
       if (!this.currentUser) {

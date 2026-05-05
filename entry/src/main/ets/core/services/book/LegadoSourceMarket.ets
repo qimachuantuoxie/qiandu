@@ -25,6 +25,7 @@ import {
   generateSourceId,
   validateBookSource
 } from '../models/BookSourceModel';
+import { CACHE_TTL_SHORT } from '../../constants/TimeConstants';
 
 interface ImportResult {
   success: number;
@@ -252,7 +253,7 @@ class LegadoSourceMarketService {
   private cache: Map<string, CacheData<object>> = new Map();
 
   /** 缓存过期时间（毫秒） */
-  private cacheTTL: number = 5 * 60 * 1000;
+  private cacheTTL: number = CACHE_TTL_SHORT;
 
   private constructor() {}
 

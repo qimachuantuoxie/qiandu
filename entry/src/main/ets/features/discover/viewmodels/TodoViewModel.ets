@@ -5,6 +5,7 @@ import { logger } from '../../../common/utils/Logger';
  */
 import { TodoItem, TodoStatus, TodoPriority, TodoFilterType, TodoSortType, TodoStats, isTodoOverdue } from '../models/TodoModel';
 import { preferenceManager } from '../utils/PreferenceManager';
+import { MS_PER_DAY } from '../../../core/constants/TimeConstants';
 
 /**
  * Todo鏇存柊鍥炶皟鎺ュ彛
@@ -239,7 +240,7 @@ export class TodoViewModel {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayStart = today.getTime();
-    const todayEnd = todayStart + 24 * 60 * 60 * 1000;
+    const todayEnd = todayStart + MS_PER_DAY;
 
     for (let i = 0; i < this.todos.length; i++) {
       const todo = this.todos[i];
@@ -355,7 +356,7 @@ export class TodoViewModel {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const todayStart = today.getTime();
-      const todayEnd = todayStart + 24 * 60 * 60 * 1000;
+      const todayEnd = todayStart + MS_PER_DAY;
       for (let i = 0; i < result.length; i++) {
         const dueDate = result[i].dueDate;
         if (dueDate > 0 && dueDate >= todayStart && dueDate < todayEnd) {

@@ -5,6 +5,7 @@
 
 import { AppColors, COMMON_COLORS, LIGHT_COLORS } from '../../common/constants/AppTheme';
 import { tr } from '../../core/utils/LocalizationUtil';
+import { EMPTY_STATE_ICONS } from '../../../core/constants/UIIcons';
 
 /**
  * 按钮颜色映射
@@ -330,7 +331,7 @@ export struct EmptyState {
   @Prop type: EmptyStateType = EmptyStateType.DATA;
   @Prop title: string = '暂无数据';
   @Prop subtitle: string = '快去添加一些内容吧';
-  @Prop icon: string = '📭';
+  @Prop icon: string = EMPTY_STATE_ICONS.DEFAULT;
   @Prop isDarkMode: boolean = false;
   @Prop showButton: boolean = false;
   @Prop buttonText: string = '立即添加';

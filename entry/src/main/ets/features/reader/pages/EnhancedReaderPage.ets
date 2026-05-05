@@ -3,7 +3,7 @@ import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { window } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { bookViewModel } from '../../../core/viewmodels/BookViewModel';
-import { ttsService, TTSListener, TTSProgress } from '../../../core/services/ai/TTSService';
+import { coreSpeechService, SpeechProgress } from '../../../core/services/ai/CoreSpeechService';
 import { BookInfo, Bookmark, Note } from '../../../core/models/CoreBookModel';
 import { preferenceManager } from '../../../core/utils/PreferenceManager';
 import { themeManager, appTheme, AppColors } from '../../../core/utils/AppTheme';
@@ -49,7 +49,7 @@ struct EnhancedReaderPage {
   private win: window.Window | null = null;
   private bookInfo: BookInfo | null = null;
   private context: common.Context | null = null;
-  private ttsListener: TTSListener | null = null;
+  private coreSpeechListener: { onStart?: () => void; onComplete?: () => void; onError?: (error: string) => void; onPause?: () => void; onResume?: () => void; onProgress?: (progress: SpeechProgress) => void; } | null = null;
 
   aboutToAppear() {
     try {
@@ -78,18 +78,17 @@ struct EnhancedReaderPage {
       this.currentChapterIndex = params.chapterIndex ? parseInt(params.chapterIndex) : 0;
     }
 
-    await ttsService.init(this.context as common.Context);
+    await coreSpeechService.init(this.context as common.Context);
 
-    this.ttsListener = {
+    this.coreSpeechListener = {
       onStart: () => { this.isTTSPlaying = true; },
       onComplete: () => { this.isTTSPlaying = false; },
       onError: (error: string) => {
         this.isTTSPlaying = false;
         logger.error('TTS Error:', error);
-      },
-      onProgress: (progress: TTSProgress) => { }
+      }
     };
-    ttsService.setListener(this.ttsListener);
+    coreSpeechService.setListener(this.coreSpeechListener);
 
     await this.loadBookContent();
     this.loadUserSettings();
@@ -111,7 +110,7 @@ struct EnhancedReaderPage {
   aboutToDisappear() {
     this.saveReadingProgress();
     if (this.isTTSPlaying) {
-      ttsService.stop();
+      coreSpeechService.stop();
     }
   }
 
@@ -200,9 +199,9 @@ struct EnhancedReaderPage {
 
   private toggleTTS(): void {
     if (this.isTTSPlaying) {
-      ttsService.stop();
+      coreSpeechService.stop();
     } else {
-      ttsService.speak(this.content);
+      coreSpeechService.speak(this.content);
     }
   }
 

@@ -7,7 +7,7 @@
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { preferenceManager } from '../utils/PreferenceManager';
-import { ttsService } from './TTSService';
+import { coreSpeechService } from './CoreSpeechService';
 import { BookInfo, Bookmark, Note } from '../models/CoreBookModel';
 import { ReadStatus } from '../models/BookModel';
 
@@ -792,7 +792,7 @@ class XiaoyiAgentService {
 
     // 濡傛灉鏄枃鏈搷搴旓紝浣跨敤 TTS 鏈楄
     if (response.type === 'text') {
-      ttsService.speak(response.content);
+      coreSpeechService.speak(response.content);
     }
   }
 

@@ -1,4 +1,5 @@
 import { logger } from '../../../utils/Logger';
+import { REWARD_ICONS } from '../../constants/UIIcons';
 /**
  * HarmonyOS Payment Service - 鸿蒙支付服务
  * 接入华为应用内支付（IAP）
@@ -209,42 +210,42 @@ class HarmonyPaymentService {
         productId: 'reward_1_cny',
         displayName: '请作者喝杯水',
         description: '感谢您的支持！',
-        icon: '⭐'
+        icon: REWARD_ICONS.DEFAULT
       },
       {
         amount: 6,
         productId: 'reward_6_cny',
         displayName: '请作者吃个冰淇淋',
         description: '您的支持是我最大的动力！',
-        icon: '🍦'
+        icon: REWARD_ICONS.ICE_CREAM
       },
       {
         amount: 18,
         productId: 'reward_18_cny',
         displayName: '给作者加个鸡腿',
         description: '感谢您的慷慨打赏！',
-        icon: '🍗'
+        icon: REWARD_ICONS.CHICKEN
       },
       {
         amount: 30,
         productId: 'reward_30_cny',
         displayName: 'VIP超级打赏',
         description: '您是真爱粉！',
-        icon: '💎'
+        icon: REWARD_ICONS.VIP
       },
       {
         amount: 66,
         productId: 'reward_66_cny',
         displayName: '66大顺',
         description: '祝您事事顺心！',
-        icon: '🎁'
+        icon: REWARD_ICONS.GIFT
       },
       {
         amount: 88,
         productId: 'reward_88_cny',
         displayName: '88发财',
         description: '恭喜发财，财源广进！',
-        icon: '💰'
+        icon: REWARD_ICONS.MONEY
       }
     ];
   }
