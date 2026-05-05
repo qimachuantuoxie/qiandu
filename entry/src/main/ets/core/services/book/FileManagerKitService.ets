@@ -2,12 +2,15 @@ import { logger } from '../../../utils/Logger';
 /**
  * File Manager Kit Service
  * Provides file management capabilities
+ * Uses HarmonyOS FileManager Service Kit (API 12+) for advanced features
  */
 
 import { fileIo } from '@kit.CoreFileKit';
 import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { util } from '@kit.ArkTS';
+// FileManager Service Kit - HarmonyOS 5.0+ (API Level 12+)
+import { fileManagerService } from '@kit.FileManagerServiceKit';
 
 export enum FileType {
   PDF = 'pdf',
@@ -86,6 +89,9 @@ class FileManagerKitService {
   private isInitialized: boolean = false;
   private trashFiles: Map<string, TrashFileInfo> = new Map();
   private appFilesDir: string = '';
+  
+  // FileManager Service Kit 可用性标志
+  private isFileManagerServiceKitAvailable: boolean = false;
 
   private constructor() {}
 
@@ -102,13 +108,40 @@ class FileManagerKitService {
       this.context = context;
       const filesDir = context.filesDir;
       this.appFilesDir = filesDir;
+      
+      // 检测 FileManager Service Kit 是否可用
+      this.checkFileManagerServiceKitAvailability();
+      
       await this.loadTrashFiles();
       this.isInitialized = true;
-      logger.info('FileManagerKit initialized');
+      
+      const mode = this.isFileManagerServiceKitAvailable ? 'FileManagerServiceKit' : 'CoreFileKit Only';
+      logger.info('[FileManagerKit] Initialized in', mode);
       return true;
     } catch (error) {
-      logger.error('Init failed:', error);
+      const err = error as BusinessError;
+      logger.error('[FileManagerKit] Init failed:', err.message);
       return false;
+    }
+  }
+  
+  /**
+   * 检测 FileManager Service Kit 是否可用
+   */
+  private checkFileManagerServiceKitAvailability(): void {
+    try {
+      // 检查 fileManagerService 是否存在且有 getFileIcon 方法
+      if (fileManagerService && typeof fileManagerService.getFileIcon === 'function') {
+        this.isFileManagerServiceKitAvailable = true;
+        logger.info('[FileManagerKit] FileManagerServiceKit is available');
+      } else {
+        this.isFileManagerServiceKitAvailable = false;
+        logger.warn('[FileManagerKit] FileManagerServiceKit not available, using fallback');
+      }
+    } catch (error) {
+      const err = error as BusinessError;
+      logger.warn('[FileManagerKit] Check availability failed:', err.message);
+      this.isFileManagerServiceKitAvailable = false;
     }
   }
 
@@ -433,16 +466,40 @@ class FileManagerKitService {
         throw new Error('FileManagerKit not initialized');
       }
 
-      // TODO: 调用 File Manager Kit 获取文件图标
-      // const fileManager = fileManager.FileManagerService.getInstance();
-      // return await fileManager.getFileIcon(filePath);
+      // 优先使用 FileManager Service Kit
+      if (this.isFileManagerServiceKitAvailable) {
+        try {
+          const fileType = this.detectFileType(filePath);
+          const iconResource = await fileManagerService.getFileIcon(fileType);
+          
+          // 将 Resource 转换为 URI 字符串
+          if (iconResource) {
+            logger.info('[FileManagerKit] Got icon from FileManagerServiceKit for', fileType);
+            return this.resourceToUri(iconResource);
+          }
+        } catch (error) {
+          const err = error as BusinessError;
+          logger.warn('[FileManagerKit] Get icon from FileManagerServiceKit failed:', err.message);
+          // Fallback to default icon
+        }
+      }
       
-      // 暂时返回默认图标
+      // Fallback: 返回默认图标
       return this.getDefaultIconForFileType(this.detectFileType(filePath));
     } catch (error) {
-      logger.error('[FileManagerKit] Get file icon failed:', error);
+      const err = error as BusinessError;
+      logger.error('[FileManagerKit] Get file icon failed:', err.message);
       return '';
     }
+  }
+  
+  /**
+   * 将 Resource 对象转换为 URI 字符串
+   */
+  private resourceToUri(resource: Object): string {
+    // TODO: 实现 Resource 到 URI 的转换
+    // 目前返回占位符，实际需要根据 HarmonyOS API 实现
+    return 'resource://' + JSON.stringify(resource);
   }
 
   /**
@@ -553,14 +610,35 @@ class FileManagerKitService {
   }
 
   /**
-   * 删除文件
+   * 删除文件（支持回收到垃圾箱）
    */
-  async deleteFile(filePath: string): Promise<FileOperationResult> {
+  async deleteFile(filePath: string, moveToTrash: boolean = true): Promise<FileOperationResult> {
     try {
       if (!this.isReady()) {
         throw new Error('FileManagerKit not initialized');
       }
 
+      const uri = filePath.startsWith('file://') ? filePath : 'file://' + filePath;
+
+      // 如果启用回收站功能且 FileManager Service Kit 可用
+      if (moveToTrash && this.isFileManagerServiceKitAvailable) {
+        try {
+          // 使用官方 API 删除到回收站
+          await fileManagerService.deleteToTrash(uri);
+          
+          logger.info('[FileManagerKit] File moved to trash:', filePath);
+          return {
+            success: true,
+            message: '文件已移至回收站'
+          };
+        } catch (error) {
+          const err = error as BusinessError;
+          logger.warn('[FileManagerKit] Delete to trash failed:', err.message, '- falling back to direct delete');
+          // Fallback to direct delete
+        }
+      }
+
+      // 直接删除文件
       await fileIo.unlink(filePath);
 
       logger.info('[FileManagerKit] File deleted:', filePath);
@@ -569,8 +647,8 @@ class FileManagerKitService {
         message: '文件删除成功'
       };
     } catch (error) {
-      logger.error('[FileManagerKit] Delete file failed:', error);
-      const err = error as Error;
+      const err = error as BusinessError;
+      logger.error('[FileManagerKit] Delete file failed:', err.message);
       return {
         success: false,
         message: '文件删除失败',

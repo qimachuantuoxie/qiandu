@@ -1,61 +1,23 @@
 import { logger } from '../../../utils/Logger';
 // CoreSpeechService - 核心语音合成服务
-// 使用 HarmonyOS Speech Kit 实现真实 TTS 功能
-// TODO: SpeechKit not available - using stub implementations
-// import { speechSynthesis, SpeechSynthesisEngine, SpeechSynthesizer, SpeechSynthesisParams, SpeechSynthesisListener } from '@kit.SpeechKit';
+// 使用 HarmonyOS Core Speech Kit 实现真实 TTS 功能
+// 支持 HarmonyOS 5.0+ (API Level 12+)
+import { textToSpeech } from '@kit.CoreSpeechKit';
 import { common } from '@kit.AbilityKit';
-
-// ===== Stub types for SpeechKit (TODO: Replace when SpeechKit is available) =====
-interface StubSpeechSynthesisEvent {
-  offset: number;
-  length: number;
-}
-
-interface StubSpeechSynthesisProgressEvent {
-  offset: number;
-  length: number;
-}
-
-interface StubSpeechSynthesisErrorEvent {
-  errorCode: number;
-  errorMessage: string;
-}
-
-interface StubSpeechSynthesisParams {
-  text: string;
-  language: string;
-  voiceName: string;
-  speakingRate: number;
-  pitchRate: number;
-  volumeRate: number;
-}
-
-class StubSpeechSynthesizer {
-  on(event: string, callback: (data: Object) => void): void {}
-  off(event: string, callback: (data: Object) => void): void {}
-  start(params: StubSpeechSynthesisParams): void {}
-  stop(): void {}
-  pause(): void {}
-  resume(): void {}
-  synthesizeToFile(params: StubSpeechSynthesisParams, filePath: string): void {}
-  release(): void {}
-}
-
-class StubSpeechSynthesisEngine {
-  constructor(context: common.Context) {}
-  createSynthesizer(): StubSpeechSynthesizer {
-    return new StubSpeechSynthesizer();
-  }
-}
-// ===== End Stub types =====
+import { BusinessError } from '@kit.BasicServicesKit';
 
 export enum SpeechVoice {
-  XIAOYI = 'zh-CN-Xiaoyi',      // 中文女声
-  XIAOQI = 'zh-CN-Xiaoqi',      // 中文男声
-  NINGNING = 'zh-CN-Ningning',  // 中文女声
-  YUANZI = 'zh-CN-Yuanzi',      // 中文男声
-  YEYUN = 'zh-CN-Yeyun'         // 中文女声
+  XIAOYI = 'zh-CN-Xiaoyi',      // 中文女声 - 聆小珊
+  XIAOQI = 'zh-CN-Xiaoqi',      // 中文男声 - 凌飞哲
+  LAURA = 'en-US-Laura'         // 英文女声 - 劳拉
 }
+
+// Core Speech Kit person参数映射
+const VOICE_PERSON_MAP: Record<SpeechVoice, number> = {
+  [SpeechVoice.XIAOYI]: 0,  // 聆小珊女声
+  [SpeechVoice.XIAOQI]: 2,  // 凌飞哲男声
+  [SpeechVoice.LAURA]: 1    // 劳拉女声(英文)
+};
 
 export interface SpeechConfig {
   voice: SpeechVoice;
@@ -97,12 +59,16 @@ class CoreSpeechService {
   private isInitialized: boolean = false;
   private listener: SpeechListener | null = null;
   private currentText: string = '';
-  private synthesizer: StubSpeechSynthesizer | null = null;
-  // Using individual callback references instead of object with methods (ArkTS strict mode)
-  private onStartCallback: ((event: Object) => void) | null = null;
-  private onProgressCallback: ((event: Object) => void) | null = null;
-  private onCompleteCallback: ((event: Object) => void) | null = null;
-  private onErrorCallback: ((event: Object) => void) | null = null;
+  
+  // Core Speech Kit 引擎实例
+  private ttsEngine: textToSpeech.TextToSpeechEngine | null = null;
+  private isCoreSpeechKitAvailable: boolean = false;
+  
+  // 请求ID计数器
+  private requestIdCounter: number = 0;
+  
+  // 回调引用（用于清理）
+  private speakCallback: ((err: BusinessError, eventId: number) => void) | null = null;
 
   private constructor() {}
 
@@ -120,65 +86,65 @@ class CoreSpeechService {
     try {
       this.context = context;
 
-      // 初始化语音合成引擎(using stub)
-      const engine: StubSpeechSynthesisEngine = new StubSpeechSynthesisEngine(context);
-      this.synthesizer = engine.createSynthesizer();
-
-      // 设置语音合成监听器 - using arrow functions to preserve `this` context (ArkTS strict mode)
-      this.onStartCallback = (event: Object): void => {
-        logger.info('[CoreSpeech] Speech started');
-        this.isServiceSpeaking = true;
-        this.isServicePaused = false;
-        if (this.listener && this.listener.onStart) {
-          this.listener.onStart();
-        }
-      };
-
-      this.onProgressCallback = (event: Object): void => {
-        const progEvent = event as StubSpeechSynthesisProgressEvent;
-        const progress: SpeechProgress = {
-          beginIndex: progEvent.offset,
-          endIndex: progEvent.offset + (progEvent.length || 1),
-          audioFragment: ''
-        };
-        if (this.listener && this.listener.onProgress) {
-          this.listener.onProgress(progress);
-        }
-      };
-
-      this.onCompleteCallback = (event: Object): void => {
-        logger.info('[CoreSpeech] Speech completed');
-        this.isServiceSpeaking = false;
-        this.isServicePaused = false;
-        if (this.listener && this.listener.onComplete) {
-          this.listener.onComplete();
-        }
-      };
-
-      this.onErrorCallback = (event: Object): void => {
-        const errEvent = event as StubSpeechSynthesisErrorEvent;
-        logger.error('[CoreSpeech] Speech error:', errEvent.errorCode, errEvent.errorMessage);
-        this.isServiceSpeaking = false;
-        this.isServicePaused = false;
-        const errorMsg: string = errEvent.errorMessage || '未知错误';
-        if (this.listener && this.listener.onError) {
-          this.listener.onError('语音合成失败: ' + errorMsg);
-        }
-      };
-
-      if (this.synthesizer) {
-        this.synthesizer.on('start', this.onStartCallback);
-        this.synthesizer.on('progress', this.onProgressCallback);
-        this.synthesizer.on('complete', this.onCompleteCallback);
-        this.synthesizer.on('error', this.onErrorCallback);
-      }
-
+      // 尝试初始化 Core Speech Kit
+      await this.initCoreSpeechKit();
+      
       this.isInitialized = true;
-      logger.info('[CoreSpeech] Initialized successfully with Speech Kit (stub)');
+      const mode = this.isCoreSpeechKitAvailable ? 'CoreSpeechKit' : 'Fallback Mode';
+      logger.info('[CoreSpeech] Initialized successfully in', mode);
       return true;
     } catch (error) {
       logger.error('[CoreSpeech] Init failed:', error);
       return false;
+    }
+  }
+  
+  /**
+   * 初始化 Core Speech Kit
+   */
+  private async initCoreSpeechKit(): Promise<void> {
+    try {
+      // 检测 Core Speech Kit 是否可用
+      if (!textToSpeech || !textToSpeech.createEngine) {
+        logger.warn('[CoreSpeech] CoreSpeechKit not available, using fallback');
+        this.isCoreSpeechKitAvailable = false;
+        return;
+      }
+      
+      // 创建TTS引擎
+      const person = VOICE_PERSON_MAP[this.config.voice] ?? 0;
+      const extraParams: Record<string, string> = {
+        'style': 'interaction-broadcast',
+        'locate': 'CN'
+      };
+      
+      const initParamsInfo: textToSpeech.CreateEngineParams = {
+        language: this.config.language,
+        person: person,
+        online: 1,  // 在线模式
+        extraParams: extraParams
+      };
+      
+      // 异步创建引擎
+      this.ttsEngine = await new Promise<textToSpeech.TextToSpeechEngine>((resolve, reject) => {
+        textToSpeech.createEngine(initParamsInfo, (err: BusinessError, engine: textToSpeech.TextToSpeechEngine) => {
+          if (err) {
+            logger.error('[CoreSpeech] Create engine failed:', err.message);
+            reject(err);
+          } else {
+            resolve(engine);
+          }
+        });
+      });
+      
+      this.isCoreSpeechKitAvailable = true;
+      logger.info('[CoreSpeech] CoreSpeechKit engine created successfully');
+      
+    } catch (error) {
+      const err = error as BusinessError;
+      logger.error('[CoreSpeech] Init CoreSpeechKit failed:', err.message);
+      this.isCoreSpeechKitAvailable = false;
+      this.ttsEngine = null;
     }
   }
 
@@ -187,7 +153,7 @@ class CoreSpeechService {
   }
 
   async speak(text: string): Promise<boolean> {
-    if (!this.isInitialized || !this.synthesizer) {
+    if (!this.isInitialized) {
       logger.warn('[CoreSpeech] Not initialized');
       return false;
     }
@@ -198,23 +164,85 @@ class CoreSpeechService {
 
     try {
       this.currentText = text;
-
-      // 配置TTS参数
-      const params: StubSpeechSynthesisParams = {
-        text: text,
-        language: this.config.language,
-        voiceName: this.config.voice,
-        speakingRate: this.config.speed,
-        pitchRate: this.config.pitch,
-        volumeRate: this.config.volume
-      };
-
-      // 开始语音合成
-      this.synthesizer.start(params);
-      logger.info('[CoreSpeech] Speaking:', text.substring(0, 50) + '...');
-      return true;
+      
+      // 使用 Core Speech Kit
+      if (this.isCoreSpeechKitAvailable && this.ttsEngine) {
+        return await this.speakWithCoreSpeechKit(text);
+      } else {
+        logger.warn('[CoreSpeech] CoreSpeechKit not available, TTS disabled');
+        return false;
+      }
     } catch (error) {
-      logger.error('[CoreSpeech] Speak failed:', error);
+      const err = error as BusinessError;
+      logger.error('[CoreSpeech] Speak failed:', err.message);
+      return false;
+    }
+  }
+  
+  /**
+   * 使用 Core Speech Kit 进行语音合成
+   */
+  private async speakWithCoreSpeechKit(text: string): Promise<boolean> {
+    if (!this.ttsEngine) {
+      logger.error('[CoreSpeech] TTS engine is null');
+      return false;
+    }
+    
+    try {
+      // 生成请求ID
+      this.requestIdCounter++;
+      const requestId = `req_${this.requestIdCounter}_${Date.now()}`;
+      
+      // 配置播报参数
+      const speed = Math.round(this.config.speed * 10);  // CoreSpeechKit速度范围0-10
+      const volume = Math.round(this.config.volume * 10); // CoreSpeechKit音量范围0-10
+      const pitch = Math.round(this.config.pitch * 10);   // CoreSpeechKit音调范围0-10
+      
+      const speakParams: textToSpeech.SpeakParams = {
+        requestId: requestId,
+        extraParams: {
+          'queueMode': 0,  // 队列模式：0-立即播放
+          'speed': speed,
+          'volume': volume,
+          'pitch': pitch
+        }
+      };
+      
+      // 创建回调函数
+      this.speakCallback = (err: BusinessError, eventId: number): void => {
+        if (err) {
+          logger.error('[CoreSpeech] Speak error:', err.message);
+          this.isServiceSpeaking = false;
+          if (this.listener && this.listener.onError) {
+            this.listener.onError('语音合成失败: ' + err.message);
+          }
+        } else {
+          logger.info('[CoreSpeech] Speak event:', eventId);
+          // 根据eventId判断状态
+          if (eventId === 1) {  // 开始
+            this.isServiceSpeaking = true;
+            this.isServicePaused = false;
+            if (this.listener && this.listener.onStart) {
+              this.listener.onStart();
+            }
+          } else if (eventId === 2) {  // 完成
+            this.isServiceSpeaking = false;
+            this.isServicePaused = false;
+            if (this.listener && this.listener.onComplete) {
+              this.listener.onComplete();
+            }
+          }
+        }
+      };
+      
+      // 执行播报
+      this.ttsEngine.speak(text, speakParams, this.speakCallback);
+      logger.info('[CoreSpeech] Speaking with CoreSpeechKit:', text.substring(0, 50) + '...');
+      return true;
+      
+    } catch (error) {
+      const err = error as BusinessError;
+      logger.error('[CoreSpeech] SpeakWithCoreSpeechKit failed:', err.message);
       return false;
     }
   }
@@ -223,20 +251,22 @@ class CoreSpeechService {
    * 暂停语音合成
    */
   pause(): void {
-    if (!this.synthesizer || !this.isServiceSpeaking) {
+    if (!this.isServiceSpeaking) {
       return;
     }
 
     try {
-      this.synthesizer.pause();
+      // Core Speech Kit 暂不支持pause，需要停止后重新开始
+      // TODO: 实现暂停逻辑（保存当前进度）
+      logger.warn('[CoreSpeech] Pause not fully supported in CoreSpeechKit');
       this.isServicePaused = true;
-      logger.info('[CoreSpeech] Paused');
       
       if (this.listener && this.listener.onPause) {
         this.listener.onPause();
       }
     } catch (error) {
-      logger.error('[CoreSpeech] Pause failed:', error);
+      const err = error as BusinessError;
+      logger.error('[CoreSpeech] Pause failed:', err.message);
     }
   }
 
@@ -244,20 +274,22 @@ class CoreSpeechService {
    * 恢复语音合成
    */
   resume(): void {
-    if (!this.synthesizer || !this.isServicePaused) {
+    if (!this.isServicePaused) {
       return;
     }
 
     try {
-      this.synthesizer.resume();
+      // Core Speech Kit 暂不支持resume，需要重新调用speak
+      // TODO: 实现恢复逻辑（从暂停位置继续）
+      logger.warn('[CoreSpeech] Resume not fully supported in CoreSpeechKit');
       this.isServicePaused = false;
-      logger.info('[CoreSpeech] Resumed');
       
       if (this.listener && this.listener.onResume) {
         this.listener.onResume();
       }
     } catch (error) {
-      logger.error('[CoreSpeech] Resume failed:', error);
+      const err = error as BusinessError;
+      logger.error('[CoreSpeech] Resume failed:', err.message);
     }
   }
 
@@ -265,12 +297,17 @@ class CoreSpeechService {
    * 停止语音合成
    */
   stop(): void {
-    if (!this.synthesizer) {
+    if (!this.ttsEngine) {
       return;
     }
 
     try {
-      this.synthesizer.stop();
+      // 停止当前播报
+      if (this.requestIdCounter > 0) {
+        const requestId = `req_${this.requestIdCounter}_${Date.now()}`;
+        this.ttsEngine.stop(requestId);
+      }
+      
       this.isServiceSpeaking = false;
       this.isServicePaused = false;
       logger.info('[CoreSpeech] Stopped');
@@ -279,7 +316,8 @@ class CoreSpeechService {
         this.listener.onComplete();
       }
     } catch (error) {
-      logger.error('[CoreSpeech] Stop failed:', error);
+      const err = error as BusinessError;
+      logger.error('[CoreSpeech] Stop failed:', err.message);
     }
   }
 
@@ -288,6 +326,13 @@ class CoreSpeechService {
    */
   updateConfig(config: Partial<SpeechConfig>): void {
     this.config = { ...this.config, ...config };
+    
+    // 如果引擎已创建，需要重新初始化以应用新的音色设置
+    if (config.voice && this.isInitialized) {
+      logger.info('[CoreSpeech] Voice changed, need to reinitialize engine');
+      // TODO: 重新初始化引擎以应用新音色
+    }
+    
     logger.info('[CoreSpeech] Config updated:', this.config);
   }
 
@@ -316,33 +361,29 @@ class CoreSpeechService {
    * 释放资源
    */
   release(): void {
-    if (this.synthesizer) {
+    if (this.ttsEngine) {
       try {
-        this.synthesizer.release();
-        this.synthesizer = null;
-        
-        // 清理回调
-        if (this.onStartCallback) {
-          this.synthesizer?.off('start', this.onStartCallback);
-        }
-        if (this.onProgressCallback) {
-          this.synthesizer?.off('progress', this.onProgressCallback);
-        }
-        if (this.onCompleteCallback) {
-          this.synthesizer?.off('complete', this.onCompleteCallback);
-        }
-        if (this.onErrorCallback) {
-          this.synthesizer?.off('error', this.onErrorCallback);
+        // 停止所有播报
+        if (this.requestIdCounter > 0) {
+          const requestId = `req_${this.requestIdCounter}_${Date.now()}`;
+          this.ttsEngine.stop(requestId);
         }
         
-        logger.info('[CoreSpeech] Released');
+        // 销毁引擎
+        this.ttsEngine.destroy();
+        this.ttsEngine = null;
+        
+        logger.info('[CoreSpeech] Engine destroyed');
       } catch (error) {
-        logger.error('[CoreSpeech] Release failed:', error);
+        const err = error as BusinessError;
+        logger.error('[CoreSpeech] Release failed:', err.message);
       }
     }
     
     this.isInitialized = false;
+    this.isCoreSpeechKitAvailable = false;
     this.listener = null;
+    this.speakCallback = null;
   }
 }
 
