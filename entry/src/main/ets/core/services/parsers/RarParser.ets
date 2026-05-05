@@ -1,17 +1,17 @@
 import { logger } from '../../../utils/Logger';
 /**
- * RAR 鏍煎紡瑙ｆ瀽鍣?- 鐢ㄤ簬 CBR 婕�敾鏂囦欢
+ * RAR 格式解析器 - 用于 CBR 漫画文件
  * RAR Format Parser - For CBR Comic Files
  *
- * 鏀�寔 RAR4 鍜?RAR5 鏍煎紡鐨勫熀鏈�В鏋?
- * 澧炲己鐗堬細鏀�寔鍥剧墖瑙ｇ爜鍜屽厓鏁版嵁鎻愬彇
+ * 支持 RAR4 和RAR5 格式的基本解析
+ * 增强版：支持图片解码和元数据提取
  */
 
 import { fileIo } from '@kit.CoreFileKit';
 import { image } from '@kit.ImageKit';
 
 /**
- * RAR 鏉＄洰
+ * RAR 条目
  */
 export interface RarEntry {
   fileName: string;
@@ -19,11 +19,11 @@ export interface RarEntry {
   fileTime: number;
   data: Uint8Array;
   isDirectory: boolean;
-  imageInfo?: ImageInfo;  // 鍥剧墖鍏冩暟鎹?
+  imageInfo?: ImageInfo;  // 图片元数据
 }
 
 /**
- * 鍥剧墖淇℃伅
+ * 图片信息
  */
 export interface ImageInfo {
   width: number;
@@ -32,7 +32,7 @@ export interface ImageInfo {
 }
 
 /**
- * RAR 瑙ｆ瀽缁撴灉
+ * RAR 解析结果
  */
 export interface RarParseResult {
   entries: RarEntry[];
@@ -43,17 +43,17 @@ export interface RarParseResult {
 }
 
 /**
- * 鏀�寔鐨勫浘鐗囨牸寮忔墿灞曞悕
+ * 支持的图片格式扩展名
  */
 const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'tif'];
 
 /**
- * RAR 瑙ｆ瀽鍣?
+ * RAR 解析器
  */
 export class RarParser {
 
   /**
-   * 瑙ｆ瀽 RAR 鏂囦欢锛堝�寮虹増锛?
+   * 解析 RAR 文件（增强版）
    */
   async parseRarFile(filePath: string): Promise<RarParseResult> {
     logger.info('[RarParser] Parsing RAR file:', filePath);
@@ -67,7 +67,7 @@ export class RarParser {
 
       const uint8Array = new Uint8Array(buffer);
 
-      // 楠岃瘉 RAR 鏂囦欢澶?
+      // 验证 RAR 文件头
       if (!this.isValidRarHeader(uint8Array)) {
         return {
           entries: [],
@@ -78,10 +78,10 @@ export class RarParser {
         };
       }
 
-      // 鎻愬彇鏂囦欢鏉＄洰
+      // 提取文件条目
       const entries = this.extractRarEntries(uint8Array);
 
-      // 瑙ｇ爜鍥剧墖鍏冩暟鎹?
+      // 解码图片元数据
       const imageEntries: RarEntry[] = [];
       for (let i = 0; i < entries.length; i++) {
         if (this.isImageFile(entries[i].fileName)) {
@@ -114,7 +114,7 @@ export class RarParser {
   }
 
   /**
-   * 楠岃瘉 RAR 鏂囦欢澶?
+   * 验证 RAR 文件头
    */
   private isValidRarHeader(uint8Array: Uint8Array): boolean {
     if (uint8Array.length < 7) return false;
@@ -139,7 +139,7 @@ export class RarParser {
   }
 
   /**
-   * 妫€鏌ユ槸鍚︿负鍥剧墖鏂囦欢
+   * 检查是否为图片文件
    */
   private isImageFile(fileName: string): boolean {
     const parts = fileName.split('.');
@@ -156,22 +156,22 @@ export class RarParser {
   }
 
   /**
-   * 瑙ｇ爜鍥剧墖鍏冩暟鎹?
+   * 解码图片元数据
    */
   private async decodeImageMetadata(entries: RarEntry[], rarFilePath: string): Promise<void> {
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i];
       try {
-        // 濡傛灉鏈夋暟鎹�紝灏濊瘯鑾峰彇鍥剧墖淇℃伅
+        // 如果有数据，尝试获取图片信息
         if (entry.data && entry.data.length > 0) {
-          // 绠€鍖栧疄鐜帮細鏍规嵁鎵╁睍鍚嶅垽鏂?
+          // 简化实现：根据扩展名判断
           const parts = entry.fileName.split('.');
           let ext = '';
           if (parts.length > 0) {
             ext = parts[parts.length - 1].toLowerCase();
           }
           entry.imageInfo = {
-            width: 0,  // 闇€瑕佸疄闄呰В鐮?
+            width: 0,  // 需要实际解码
             height: 0,
             format: ext.toUpperCase()
           };
@@ -189,13 +189,13 @@ export class RarParser {
   }
 
   /**
-   * 鎻愬彇 RAR 鏂囦欢鏉＄洰
+   * 提取 RAR 文件条目
    */
   private extractRarEntries(uint8Array: Uint8Array): RarEntry[] {
     const entries: RarEntry[] = [];
     let offset = 0;
 
-    // 璺宠繃鏂囦欢澶寸�鍚?
+    // 跳过文件头签名
     if (uint8Array.length >= 8 && uint8Array[6] === 0x01 && uint8Array[7] === 0x00) {
       // RAR5
       offset = this.skipRar5Header(uint8Array, 0);
@@ -204,12 +204,12 @@ export class RarParser {
       offset = this.skipRar4Header(uint8Array, 0);
     }
 
-    // 瑙ｆ瀽鏂囦欢鍧?
+    // 解析文件块
     while (offset < uint8Array.length - 4) {
       const entry = this.parseRarFileBlock(uint8Array, offset);
       if (!entry) break;
 
-      // 鍙�繚鐣欏彲鑳界殑鍥剧墖鏂囦欢
+      // 只保留可能的图片文件
       if (this.isImageFile(entry.fileName)) {
         entries.push(entry);
       }
@@ -217,37 +217,37 @@ export class RarParser {
       offset += Math.max(entry.fileSize, 100) + this.getBlockHeaderSize(entry);
     }
 
-    // 鎸夋枃浠跺悕鎺掑簭
+    // 按文件名排序
     const sortedEntries = entries.slice().sort((a, b) => a.fileName.localeCompare(b.fileName));
 
     return sortedEntries;
   }
 
   /**
-   * 璺宠繃 RAR4 鏂囦欢澶?
+   * 跳过 RAR4 文件头
    */
   private skipRar4Header(uint8Array: Uint8Array, offset: number): number {
-    // RAR4 鏂囦欢澶村ぇ绾?7 瀛楄妭 (绛惧悕) + 43 瀛楄妭 (褰掓。澶?
+    // RAR4 文件头大约7 字节 (签名) + 43 字节 (归档头
     return offset + 50;
   }
 
   /**
-   * 璺宠繃 RAR5 鏂囦欢澶?
+   * 跳过 RAR5 文件头
    */
   private skipRar5Header(uint8Array: Uint8Array, offset: number): number {
-    // RAR5 鏂囦欢澶村ぇ绾?8 瀛楄妭 (绛惧悕) + 鍙�彉 (褰掓。澶?
+    // RAR5 文件头大约8 字节 (签名) + 可变 (归档头
     return offset + 16;
   }
 
   /**
-   * 瑙ｆ瀽 RAR 鏂囦欢鍧?
+   * 解析 RAR 文件块
    */
   private parseRarFileBlock(uint8Array: Uint8Array, offset: number): RarEntry | null {
     if (offset + 4 > uint8Array.length) return null;
 
     try {
-      // 绠€鍖栧疄鐜帮細鎻愬彇鏂囦欢鍚嶅拰鏁版嵁
-      // 鏌ユ壘鏂囦欢鍚嶏紙閫氬父鏄?ASCII 鏂囨湰锛?
+      // 简化实现：提取文件名和数据
+      // 查找文件名（通常是ASCII 文本）
       let fileName = '';
 
       for (let i = offset; i < Math.min(offset + 256, uint8Array.length); i++) {
@@ -262,7 +262,7 @@ export class RarParser {
         fileName = 'file_' + offset + '.bin';
       }
 
-      // 浼扮畻澶у皬
+      // 估算大小
       const remainingLength = uint8Array.length - offset;
       const fileSize = Math.min(remainingLength, 1024 * 1024);
 
@@ -279,14 +279,14 @@ export class RarParser {
   }
 
   /**
-   * 鑾峰彇鍧楀ご澶у皬
+   * 获取块头大小
    */
   private getBlockHeaderSize(entry: RarEntry): number {
     return 32;
   }
 
   /**
-   * 鎻愬彇鍥剧墖鏂囦欢锛堝�寮虹増锛?
+   * 提取图片文件（增强版）
    */
   async extractImages(filePath: string): Promise<RarEntry[]> {
     const result = await this.parseRarFile(filePath);
@@ -296,7 +296,7 @@ export class RarParser {
       return [];
     }
 
-    // 杩囨护鍥剧墖鏂囦欢
+    // 过滤图片文件
     const imageEntries: RarEntry[] = [];
     for (let i = 0; i < result.entries.length; i++) {
       if (this.isImageFile(result.entries[i].fileName)) {
@@ -309,7 +309,7 @@ export class RarParser {
   }
 
   /**
-   * 鑾峰彇婕�敾淇℃伅
+   * 获取漫画信息
    */
   async getComicInfo(filePath: string): Promise<{
     title: string;
@@ -348,7 +348,7 @@ export class RarParser {
   }
 
   /**
-   * 浠庤矾寰勬彁鍙栨爣棰?
+   * 从路径提取标题
    */
   private extractTitleFromPath(filePath: string): string {
     const parts = filePath.split('/');
@@ -360,7 +360,7 @@ export class RarParser {
   }
 
   /**
-   * 妫€鏌ユ槸鍚︿负鏈夋晥鐨?RAR 鏂囦欢
+   * 检查是否为有效的RAR 文件
    */
   static isValidRarFile(filePath: string): boolean {
     let file: fileIo.File | undefined;
@@ -384,7 +384,6 @@ export class RarParser {
   }
 }
 
-// 瀵煎嚭瀹炰緥
+// 导出实例
 export const rarParser = new RarParser();
 export default rarParser;
-

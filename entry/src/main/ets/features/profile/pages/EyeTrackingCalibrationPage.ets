@@ -57,7 +57,7 @@ struct EyeTrackingCalibrationPage {
     this.isCalibrating = true;
     this.calibrationStep = 1;
     
-    // 模拟校准过程
+    // Calibration process - requires actual eye tracking hardware integration
     let step = 1;
     const interval = setInterval(() => {
       step++;
@@ -79,7 +79,6 @@ struct EyeTrackingCalibrationPage {
         }, 1000);
       }
     }, 2000);
-  }
 
   build() {
     Stack() {

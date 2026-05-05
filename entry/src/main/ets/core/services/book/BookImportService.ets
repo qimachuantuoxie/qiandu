@@ -1,7 +1,8 @@
-﻿/**
- * 涔︾睄瀵煎叆鏈嶅姟 - 浣跨敤 Reader Kit 瑙ｆ瀽鐪熷疄鍏冩暟鎹? * 
- * 鏇夸唬鏃х殑 EbookParser锛屼娇鐢?HarmonyOS 瀹樻柟 Reader Kit
- * 鏀寔鏍煎紡锛歵xt, epub, mobi, azw, azw3, pdf
+/**
+ * 书籍导入服务 - 使用 Reader Kit 解析真实元数据
+ * 
+ * 替代旧的 EbookParser，使用 HarmonyOS 官方 Reader Kit
+ * 支持格式：txt, epub, mobi, azw, azw3, pdf
  */
 
 import { readerKitService } from '../services/reader/ReaderKitService';
@@ -17,7 +18,7 @@ const LOG_TAG = 'BookImportService';
 const LOG_DOMAIN = 0x0010;
 
 /**
- * 瀵煎叆缁撴灉
+ * 导入结果
  */
 export interface ImportResult {
   success: boolean;
@@ -27,13 +28,14 @@ export interface ImportResult {
 }
 
 /**
- * 涔︾睄瀵煎叆鏈嶅姟
+ * 书籍导入服务
  */
 export class BookImportService {
   private context: common.UIAbilityContext | null = null;
 
   /**
-   * 鍒濆鍖栨湇鍔?   */
+   * 初始化服务
+   */
   async init(context: common.UIAbilityContext): Promise<void> {
     this.context = context;
     await readerKitService.init(context);
@@ -41,46 +43,50 @@ export class BookImportService {
   }
 
   /**
-   * 瀵煎叆鍗曚釜涔︾睄鏂囦欢
-   * @param filePath 鏂囦欢璺緞锛堝閮ㄥ瓨鍌級
-   * @param existingPaths 宸插瓨鍦ㄧ殑鏂囦欢璺緞闆嗗悎
+   * 导入单个书籍文件
+   * @param filePath 文件路径（外部存储）
+   * @param existingPaths 已存在的文件路径集合
    */
   async importBook(filePath: string, existingPaths: Set<string>): Promise<ImportResult> {
     try {
-      // 妫€鏌ユ槸鍚﹀凡瀵煎叆
+      // 检查是否已导入
       if (existingPaths.has(filePath)) {
         hilog.info(LOG_DOMAIN, LOG_TAG, 'File already exists, skip: %{public}s', filePath);
         return { success: true, skipped: true };
       }
 
-      // 妫€鏌ユ牸寮忔敮鎸?      const format = this.detectFormat(filePath);
+      // 检查格式支持
+      const format = this.detectFormat(filePath);
       const routeResult = ReaderRouterService.getReaderType(format);
       
       if (!routeResult.supported) {
         return {
           success: false,
-          error: routeResult.message || `涓嶆敮鎸佺殑鏍煎紡: ${format}`
+          error: routeResult.message || `不支持的格式: ${format}`
         };
       }
 
-      // 澶嶅埗鏂囦欢鍒版矙绠?      const sandboxPath = await this.copyToSandbox(filePath);
+      // 复制文件到沙箱
+      const sandboxPath = await this.copyToSandbox(filePath);
       
-      // 瑙ｆ瀽涔︾睄鍏冩暟鎹?      let bookInfo: BookInfo;
+      // 解析书籍元数据
+      let bookInfo: BookInfo;
       
       if (routeResult.type === ReaderType.READER_KIT) {
-        // 浣跨敤 Reader Kit 瑙ｆ瀽
+        // 使用 Reader Kit 解析
         bookInfo = await this.parseWithReaderKit(sandboxPath, format);
       } else if (routeResult.type === ReaderType.PDF_KIT) {
-        // 浣跨敤 PDF Kit 瑙ｆ瀽
+        // 使用 PDF Kit 解析
         bookInfo = await this.parseWithPdfKit(sandboxPath, format);
       } else {
         return {
           success: false,
-          error: '鏈煡鐨勯槄璇诲櫒绫诲瀷'
+          error: '未知的阅读器类型'
         };
       }
 
-      // 娣诲姞鍒颁功鏋?      bookInfo.filePath = sandboxPath; // 浣跨敤娌欑璺緞
+      // 添加到书架
+      bookInfo.filePath = sandboxPath; // 使用沙箱路径
       bookInfo.addTime = Date.now();
       bookInfo.status = ReadStatus.UNREAD;
       bookInfo.isFavorite = false;
@@ -109,12 +115,12 @@ export class BookImportService {
   }
 
   /**
-   * 浣跨敤 Reader Kit 瑙ｆ瀽涔︾睄
+   * 使用 Reader Kit 解析书籍
    */
   private async parseWithReaderKit(filePath: string, format: string): Promise<BookInfo> {
     const bookMeta = await readerKitService.parseBook(filePath);
     
-    // 淇濆瓨灏侀潰鍥剧墖
+    // 保存封面图片
     let coverPath = '';
     if (bookMeta.coverImage) {
       coverPath = await this.saveCoverImage(bookMeta.coverImage, bookMeta.title);
@@ -123,12 +129,13 @@ export class BookImportService {
     return {
       id: generateBookId(),
       title: bookMeta.title || this.extractFileName(filePath),
-      author: bookMeta.author || '鏈煡浣滆€?,
+      author: bookMeta.author || '未知作者',
       coverPath: coverPath,
-      filePath: '', // 绋嶅悗璁剧疆
+      filePath: '', // 稍后设置
       format: this.stringToBookFormat(format),
       fileSize: await this.getFileSize(filePath),
-      totalPages: 0, // Reader Kit 涓嶇洿鎺ユ彁渚涙€婚〉鏁?      currentPage: 0,
+      totalPages: 0, // Reader Kit 不直接提供总页数
+      currentPage: 0,
       readProgress: 0,
       lastReadTime: 0,
       addTime: 0,
@@ -142,12 +149,12 @@ export class BookImportService {
   }
 
   /**
-   * 浣跨敤 PDF Kit 瑙ｆ瀽 PDF
+   * 使用 PDF Kit 解析 PDF
    */
   private async parseWithPdfKit(filePath: string, format: string): Promise<BookInfo> {
     const pdfInfo = await pdfKitService.openPdf(filePath);
     
-    // 鑾峰彇绗竴椤典綔涓哄皝闈紙绠€鍖栧鐞嗭級
+    // 获取第一页作为封面（简化处理）
     let coverPath = '';
     try {
       const pixelMap = await pdfKitService.renderPage(0, 400, 600, 72);
@@ -161,7 +168,7 @@ export class BookImportService {
     return {
       id: generateBookId(),
       title: this.extractFileName(filePath),
-      author: '鏈煡浣滆€?,
+      author: '未知作者',
       coverPath: coverPath,
       filePath: '',
       format: BookFormat.PDF,
@@ -181,7 +188,8 @@ export class BookImportService {
   }
 
   /**
-   * 澶嶅埗鏂囦欢鍒版矙绠?   */
+   * 复制文件到沙箱
+   */
   private async copyToSandbox(externalPath: string): Promise<string> {
     if (!this.context) {
       throw new Error('Context not initialized');
@@ -190,14 +198,15 @@ export class BookImportService {
     const fileName = this.extractFileName(externalPath);
     const sandboxPath = `${this.context.filesDir}/books/${fileName}`;
     
-    // 纭繚鐩綍瀛樺湪
+    // 确保目录存在
     const dirPath = `${this.context.filesDir}/books`;
     try {
       await fileIo.mkdir(dirPath);
     } catch (error) {
-      // 鐩綍鍙兘宸插瓨鍦?    }
+      // 目录可能已存在
+    }
 
-    // 澶嶅埗鏂囦欢
+    // 复制文件
     await fileIo.copy(externalPath, sandboxPath);
     
     hilog.info(LOG_DOMAIN, LOG_TAG, 'File copied to sandbox: %{public}s', sandboxPath);
@@ -205,7 +214,7 @@ export class BookImportService {
   }
 
   /**
-   * 淇濆瓨灏侀潰鍥剧墖
+   * 保存封面图片
    */
   private async saveCoverImage(pixelMap: image.PixelMap, bookTitle: string): Promise<string> {
     if (!this.context) {
@@ -217,13 +226,15 @@ export class BookImportService {
       try {
         await fileIo.mkdir(coverDir);
       } catch (error) {
-        // 鐩綍鍙兘宸插瓨鍦?      }
+        // 目录可能已存在
+      }
 
       const fileName = `cover_${bookTitle.replace(/[^\w]/g, '_')}.png`;
       const coverPath = `${coverDir}/${fileName}`;
 
-      // 杩欓噷闇€瑕佷娇鐢?image.PackingOption 淇濆瓨 PixelMap
-      // 绠€鍖栧鐞嗭紝杩斿洖绌哄瓧绗︿覆锛屼娇鐢ㄥ姩鎬佸皝闈?      return '';
+      // 这里需要使用 image.PackingOption 保存 PixelMap
+      // 简化处理，返回空字符串，使用动态封面
+      return '';
     } catch (error) {
       hilog.error(LOG_DOMAIN, LOG_TAG, 'Failed to save cover: %{public}s', (error as Error).message);
       return '';
@@ -231,14 +242,16 @@ export class BookImportService {
   }
 
   /**
-   * 淇濆瓨 PixelMap 涓哄浘鐗?   */
+   * 保存 PixelMap 为图片
+   */
   private async savePixelMapAsImage(pixelMap: image.PixelMap, fileName: string): Promise<string> {
-    // 绠€鍖栧疄鐜帮紝瀹為檯闇€瑕佷娇鐢?image.Packer
+    // 简化实现，实际需要使用 image.Packer
     return '';
   }
 
   /**
-   * 妫€娴嬫枃浠舵牸寮?   */
+   * 检测文件格式
+   */
   private detectFormat(filePath: string): string {
     const lastDot = filePath.lastIndexOf('.');
     if (lastDot === -1) return '';
@@ -246,7 +259,7 @@ export class BookImportService {
   }
 
   /**
-   * 瀛楃涓叉牸寮忚浆 BookFormat 鏋氫妇
+   * 字符串格式转 BookFormat 枚举
    */
   private stringToBookFormat(format: string): BookFormat {
     const upperFormat = format.toUpperCase();
@@ -262,11 +275,11 @@ export class BookImportService {
   }
 
   /**
-   * 浠庤矾寰勬彁鍙栨枃浠跺悕
+   * 从路径提取文件名
    */
   private extractFileName(filePath: string): string {
     const parts = filePath.split('/');
-    if (parts.length === 0) return '鏈煡涔︾睄';
+    if (parts.length === 0) return '未知书籍';
     
     let fileName = parts[parts.length - 1];
     const lastDot = fileName.lastIndexOf('.');
@@ -274,11 +287,11 @@ export class BookImportService {
       fileName = fileName.substring(0, lastDot);
     }
     
-    return fileName || '鏈煡涔︾睄';
+    return fileName || '未知书籍';
   }
 
   /**
-   * 鑾峰彇鏂囦欢澶у皬
+   * 获取文件大小
    */
   private async getFileSize(filePath: string): Promise<number> {
     try {
@@ -290,7 +303,7 @@ export class BookImportService {
   }
 
   /**
-   * 娓呯悊璧勬簮
+   * 清理资源
    */
   cleanup(): void {
     readerKitService.cleanup();
@@ -298,5 +311,5 @@ export class BookImportService {
   }
 }
 
-// 瀵煎嚭鍗曚緥
+// 导出单例
 export const bookImportService = new BookImportService();

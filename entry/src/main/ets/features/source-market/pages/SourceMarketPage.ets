@@ -1,12 +1,14 @@
 import { logger } from '../../../common/utils/Logger';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
-import { router, promptAction } from '@kit.ArkUI';
+import { promptAction } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { preferenceManager } from '../../../core/utils/PreferenceManager';
 import { themeManager, AppColors, COMMON_COLORS } from '../../../core/utils/AppTheme';
 import { fontScaleManager } from '../../../core/utils/FontScaleManager';
 import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
+import { bookSourceViewModel } from './viewmodels/BookSourceViewModel';
+import { BookSource, BookSourceType } from '../../../core/models/BookSourceModel';
 
 interface SourceItem {
   id: string;
@@ -17,6 +19,7 @@ interface SourceItem {
   installCount: number;
   author: string;
   tags: string[];
+  type: BookSourceType;
 }
 
 @Entry
@@ -28,6 +31,7 @@ struct SourceMarketPage {
   @Local screenInfo: ScreenInfo | null = null;
   @Local searchText: string = '';
   @Local sources: SourceItem[] = [];
+  @Local isLoading: boolean = false;
   private context: common.Context | null = null;
 
   async aboutToAppear(): Promise<void> {
@@ -36,7 +40,7 @@ struct SourceMarketPage {
     this.currentColors = themeManager.getColors();
     this.fontScale = await fontScaleManager.getFontScale();
     await this.initData();
-    this.loadSources();
+    await this.loadSources();
   }
 
   private async initData(): Promise<void> {
@@ -47,40 +51,50 @@ struct SourceMarketPage {
     }
   }
 
-  private loadSources(): void {
-    // 模拟数据
-    this.sources = [
-      {
-        id: '1',
-        name: '精选书源',
-        description: '高质量网络文学书源，包含热门小说',
-        bookCount: 50000,
-        rating: 4.8,
-        installCount: 12500,
-        author: '官方推荐',
-        tags: ['热门', '官方']
-      },
-      {
-        id: '2',
-        name: '经典文学',
-        description: '中外经典文学作品合集',
-        bookCount: 8000,
-        rating: 4.9,
-        installCount: 8600,
-        author: '文学爱好者',
-        tags: ['经典', '文学']
-      },
-      {
-        id: '3',
-        name: '漫画书源',
-        description: '优质漫画资源，高清无水印',
-        bookCount: 3000,
-        rating: 4.7,
-        installCount: 15200,
-        author: '漫画达人',
-        tags: ['漫画', '高清']
+  private async loadSources(): Promise<void> {
+    this.isLoading = true;
+    try {
+      const bookSources = bookSourceViewModel.getAllSources();
+      const mappedSources: SourceItem[] = [];
+      for (let i = 0; i < bookSources.length; i++) {
+        const src = bookSources[i];
+        mappedSources.push({
+          id: src.id,
+          name: src.name,
+          description: src.url,
+          bookCount: src.sourceCount || 0,
+          rating: src.weight / 10,
+          installCount: 0,
+          author: src.bookSourceType === BookSourceType.TEXT ? '文本书源' : (src.bookSourceType === BookSourceType.AUDIO ? '音频书源' : '漫画书源'),
+          tags: this.getSourceTags(src),
+          type: src.bookSourceType
+        });
       }
-    ];
+      this.sources = mappedSources;
+    } catch (error) {
+      const err = error as Error;
+      logger.error('[SourceMarketPage] Load sources failed:', err.message);
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private getSourceTags(source: BookSource): string[] {
+    const tags: string[] = [];
+    if (source.enabled) {
+      tags.push('已启用');
+    }
+    if (source.bookSourceType === BookSourceType.TEXT) {
+      tags.push('小说');
+    } else if (source.bookSourceType === BookSourceType.AUDIO) {
+      tags.push('音频');
+    } else if (source.bookSourceType === BookSourceType.IMAGE) {
+      tags.push('漫画');
+    }
+    if (source.loginRequired) {
+      tags.push('需登录');
+    }
+    return tags;
   }
 
   private tc(light: string, dark: string): string {
@@ -96,6 +110,23 @@ struct SourceMarketPage {
       return (num / 10000).toFixed(1) + '万';
     }
     return num.toString();
+  }
+
+  private getFilteredSources(): SourceItem[] {
+    if (!this.searchText) {
+      return this.sources;
+    }
+    const keyword = this.searchText.toLowerCase();
+    const filtered: SourceItem[] = [];
+    for (let i = 0; i < this.sources.length; i++) {
+      const src = this.sources[i];
+      if (src.name.toLowerCase().indexOf(keyword) > -1 ||
+          src.description.toLowerCase().indexOf(keyword) > -1 ||
+          src.author.toLowerCase().indexOf(keyword) > -1) {
+        filtered.push(src);
+      }
+    }
+    return filtered;
   }
 
   build() {
@@ -192,27 +223,70 @@ struct SourceMarketPage {
       .margin({ left: Spacing.lg, right: Spacing.lg, top: Spacing.md })
 
       // 书源列表
-      List({ space: Spacing.md }) {
-        ForEach(this.sources, (source: SourceItem) => {
-          ListItem() {
-            this.SourceItem(source)
-          }
-        }, (source: SourceItem) => source.id)
+      if (this.getFilteredSources().length === 0) {
+        this.EmptyState()
+      } else {
+        List({ space: Spacing.md }) {
+          ForEach(this.getFilteredSources(), (source: SourceItem) => {
+            ListItem() {
+              this.SourceItem(source)
+            }
+          }, (source: SourceItem) => source.id)
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .padding({ 
+          left: Spacing.lg, 
+          right: Spacing.lg,
+          top: Spacing.md,
+          bottom: Spacing.xxxl
+        })
+        .scrollBar(BarState.Auto)
+        .edgeEffect(EdgeEffect.Spring)
       }
-      .width('100%')
-      .layoutWeight(1)
-      .padding({ 
-        left: Spacing.lg, 
-        right: Spacing.lg,
-        top: Spacing.md,
-        bottom: Spacing.xxxl
-      })
-      .scrollBar(BarState.Auto)
-      .edgeEffect(EdgeEffect.Spring)
     }
     .width('100%')
     .height('100%')
     .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
+  }
+
+  @Builder
+  EmptyState() {
+    Column({ space: Spacing.xl }) {
+      Column() {
+        SymbolGlyph($r('sys.symbol.book.closed'))
+          .fontSize(Size.iconXXXL * 1.5)
+          .fontColor([this.tc('#D1D1D6', '#48484A')])
+      }
+      .width(100)
+      .height(100)
+      .borderRadius(BorderRadius.full)
+      .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+      .justifyContent(FlexAlign.Center)
+
+      Text('暂无书源')
+        .fontSize(fontScaleManager.getScaledFontSize(16))
+        .fontWeight(FontWeight.Medium)
+        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+
+      Text('前往书源管理页面添加书源')
+        .fontSize(fontScaleManager.getScaledFontSize(13))
+        .fontColor(this.tc('#8E8E93', '#8E8E93'))
+
+      Button('管理书源')
+        .height(Size.buttonMD)
+        .fontSize(fontScaleManager.getScaledFontSize(14))
+        .fontColor('#FFFFFF')
+        .backgroundColor(COMMON_COLORS.PRIMARY_BLUE)
+        .borderRadius(BorderRadius.xl)
+        .padding({ left: Spacing.xxl, right: Spacing.xxl })
+        .onClick(() => {
+          navigateTo('pages/BookSourceManagePage');
+        })
+    }
+    .width('100%')
+    .layoutWeight(1)
+    .justifyContent(FlexAlign.Center)
   }
 
   @Builder

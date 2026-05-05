@@ -176,26 +176,11 @@ export class HuaweiAuthService {
    */
   async getUserProfile(authCode: string): Promise<HuaweiUserProfile> {
     hilog.info(DOMAIN, 'HuaweiAuthService', 'Getting user profile with auth code');
-
-    // 实际项目中的标准流程：
-    // 1. 前端将authCode发送到后端服务器
-    // 2. 后端使用OAuth2.0协议调用华为服务器换取access_token和id_token
-    //    POST https://oauth-login.cloud.huawei.com/oauth2/v3/token
-    //    参数：grant_type=authorization_code, code={authCode}, client_id={clientId}, client_secret={clientSecret}
-    // 3. 后端使用access_token调用userinfo接口获取用户详细信息
-    //    GET https://account.cloud.huawei.com/rest.php?nsp_svc=GOpen.User.getInfo
-    // 4. 后端返回用户信息给前端
-    //
-    // 由于这是前端演示，暂时返回基础信息
-    // TODO: 实现后端API对接
     
-    const profile: HuaweiUserProfile = {
-      openId: authCode.substring(0, 32),  // 临时使用authCode生成openId
-      displayName: '华为用户'              // 临时昵称
-    };
-
-    hilog.info(DOMAIN, 'HuaweiAuthService', 'User profile retrieved (mock data)');
-    return profile;
+    // This method requires backend integration to properly fetch user profile
+    // Frontend should send authCode to backend, backend exchanges it for access_token,
+    // then fetches user info from Huawei servers
+    throw new Error('getUserProfile requires backend integration. Please implement backend API endpoint.');
   }
 
   /**

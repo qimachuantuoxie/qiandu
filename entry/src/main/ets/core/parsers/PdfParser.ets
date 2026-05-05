@@ -1,12 +1,12 @@
 import { logger } from '../../utils/Logger';
 /**
- * PDF Parser - PDF 鐢靛瓙涔﹁В鏋愬櫒
+ * PDF Parser - PDF 电子书解析器
  *
- * 鎻愪緵 PDF 鏍煎紡鐢靛瓙涔︾殑瑙ｆ瀽鍔熻兘锛屽寘鎷�細
- * - 鍏冩暟鎹�彁鍙栵紙鏍囬�銆佷綔鑰呫€佸嚭鐗堝晢绛夛級
- * - 鏂囨湰鍐呭�鎻愬彇
- * - 涔︾�/澶х翰瑙ｆ瀽
- * - 鍘熺敓 C++ 鍔犻€熻В鏋愶紙濡傛灉鍙�敤锛?
+ * 提供 PDF 格式电子书的解析功能，包括：
+ * - 元数据提取（标题、作者、出版商等）
+ * - 文本内容提取
+ * - 书签/大纲解析
+ * - 原生 C++ 加速解析（如果可用）
  *
  * @since 6.0.0
  */
@@ -23,18 +23,18 @@ import {
 } from '../models/EbookTypes';
 
 /**
- * PDF 瑙ｆ瀽鍣ㄧ被
+ * PDF 解析器类
  */
 export class PdfParser {
-  /** 鍘熺敓妯″潡鏄�惁鍙�敤 */
+  /** 原生模块是否可用 */
   private static nativeAvailable: boolean = false;
-  /** 褰撳墠 PDF 鏂囦欢璺�緞 */
+  /** 当前 PDF 文件路径 */
   private static currentPdfPath: string = '';
 
   /**
-   * 瑙ｆ瀽 PDF 鏂囦欢
-   * @param filePath PDF 鏂囦欢璺�緞
-   * @returns 瑙ｆ瀽缁撴灉
+   * 解析 PDF 文件
+   * @param filePath PDF 文件路径
+   * @returns 解析结果
    */
   static async parse(filePath: string): Promise<ParseResult> {
     logger.info('[PdfParser] Parsing PDF file:', filePath);
@@ -83,7 +83,7 @@ export class PdfParser {
         };
       }
 
-      // 鍥為€€鍒板熀纭€瑙ｆ瀽
+      // 回退到基础解析
       logger.info('[PdfParser] Native open failed, using basic method');
       return await PdfParser.parseBasic(filePath);
     } catch (error) {
@@ -93,9 +93,9 @@ export class PdfParser {
   }
 
   /**
-   * 鍩虹� PDF 瑙ｆ瀽鏂规硶锛堜笉浣跨敤鍘熺敓妯″潡锛?
-   * @param filePath PDF 鏂囦欢璺�緞
-   * @returns 瑙ｆ瀽缁撴灉
+   * 基础 PDF 解析方法（不使用原生模块）
+   * @param filePath PDF 文件路径
+   * @returns 解析结果
    */
   private static async parseBasic(filePath: string): Promise<ParseResult> {
     logger.info('[PdfParser] Parsing PDF (basic method):', filePath);
@@ -155,8 +155,8 @@ export class PdfParser {
   }
 
   /**
-   * 璇诲彇鏂囦欢缂撳啿鍖?
-   * @param filePath 鏂囦欢璺�緞
+   * 读取文件缓冲区
+   * @param filePath 文件路径
    * @returns ArrayBuffer
    */
   private static async readFileBuffer(filePath: string): Promise<ArrayBuffer> {
@@ -172,9 +172,9 @@ export class PdfParser {
   }
 
   /**
-   * 鎻愬彇 PDF 鏂囨。淇℃伅
-   * @param uint8 PDF 鏂囦欢瀛楄妭
-   * @returns PDF 淇℃伅
+   * 提取 PDF 文档信息
+   * @param uint8 PDF 文件字节
+   * @returns PDF 信息
    */
   private static extractPdfInfo(uint8: Uint8Array): PdfInfoResult {
     const result: PdfInfoResult = {
@@ -241,9 +241,9 @@ export class PdfParser {
   }
 
   /**
-   * 瑙ｇ爜 PDF 瀛楃�涓诧紙澶勭悊杞�箟瀛楃�锛?
-   * @param str PDF 涓�殑瀛楃�涓?
-   * @returns 瑙ｇ爜鍚庣殑瀛楃�涓?
+   * 解码 PDF 字符串（处理转义字符）
+   * @param str PDF 中的字符串
+   * @returns 解码后的字符串
    */
   private static decodePdfString(str: string): string {
     let decoded = str;
@@ -257,9 +257,9 @@ export class PdfParser {
   }
 
   /**
-   * 浠?PDF 涓�彁鍙栨枃鏈�唴瀹?
-   * @param uint8 PDF 鏂囦欢瀛楄妭
-   * @returns 鎻愬彇鐨勬枃鏈?
+   * 从 PDF 中提取文本内容
+   * @param uint8 PDF 文件字节
+   * @returns 提取的文本
    */
   private static extractPdfText(uint8: Uint8Array): string {
     let text = '';
@@ -312,9 +312,9 @@ export class PdfParser {
   }
 
   /**
-   * 鎻愬彇 PDF 涔︾�/鐩�綍
-   * @param uint8 PDF 鏂囦欢瀛楄妭
-   * @returns 涔︾�鍒楄〃
+   * 提取 PDF 书签/目录
+   * @param uint8 PDF 文件字节
+   * @returns 书签列表
    */
   private static extractPdfBookmarks(uint8: Uint8Array): PdfBookmarkItem[] {
     const bookmarks: PdfBookmarkItem[] = [];
@@ -354,9 +354,9 @@ export class PdfParser {
   }
 
   /**
-   * 鑾峰彇 PDF 鎸囧畾椤电殑鏂囨湰
-   * @param pageIndex 椤电爜绱㈠紩
-   * @returns 椤甸潰鏂囨湰鍐呭�
+   * 获取 PDF 指定页的文本
+   * @param pageIndex 页码索引
+   * @returns 页面文本内容
    */
   static async getPageText(pageIndex: number): Promise<string> {
     if (PdfParser.nativeAvailable && PdfParser.currentPdfPath) {
@@ -376,11 +376,11 @@ export class PdfParser {
   }
 
   /**
-   * 鑾峰彇 PDF 鎸囧畾椤电殑鍥惧儚娓叉煋
-   * @param pageIndex 椤电爜绱㈠紩
-   * @param width 娓叉煋瀹藉害
-   * @param height 娓叉煋楂樺害
-   * @returns Base64 缂栫爜鐨勫浘鍍?
+   * 获取 PDF 指定页的图像渲染
+   * @param pageIndex 页码索引
+   * @param width 渲染宽度
+   * @param height 渲染高度
+   * @returns Base64 编码的图像
    */
   static async getPageImage(pageIndex: number, width: number, height: number): Promise<string> {
     if (PdfParser.nativeAvailable && PdfParser.currentPdfPath) {
@@ -400,9 +400,9 @@ export class PdfParser {
   }
 
   /**
-   * 瀛楄妭鏁扮粍杞�瓧绗︿覆
-   * @param bytes 瀛楄妭鏁扮粍
-   * @returns 瀛楃�涓?
+   * 字节数组转字符串
+   * @param bytes 字节数组
+   * @returns 字符串
    */
   private static bytesToString(bytes: Uint8Array): string {
     let result = '';
@@ -427,9 +427,9 @@ export class PdfParser {
   }
 
   /**
-   * 浠庢枃浠惰矾寰勬彁鍙栨枃浠跺悕
-   * @param filePath 鏂囦欢璺�緞
-   * @returns 鏂囦欢鍚?
+   * 从文件路径提取文件名
+   * @param filePath 文件路径
+   * @returns 文件名
    */
   private static extractFileName(filePath: string): string {
     const parts = filePath.split('/');
@@ -442,5 +442,5 @@ export class PdfParser {
   }
 }
 
-/** PDF 瑙ｆ瀽鍣ㄥ崟渚嬪疄渚?*/
+/** PDF 解析器单例实例 */
 export const pdfParser = PdfParser;

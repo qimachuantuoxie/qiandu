@@ -1,7 +1,7 @@
 import { logger } from '../../../utils/Logger';
 /**
- * 缁熶竴缃戠粶璇锋眰鏈嶅姟
- * 鎷︽埅鍣ㄣ€乀oken 娉ㄥ叆銆侀噸璇曟満鍒躲€佸皝瑁?
+ * 统一网络请求服务
+ * 拦截器、Token 注入、重试机制、封装
  */
 import { http } from '@kit.NetworkKit';
 import { preferenceManager } from '../utils/PreferenceManager';

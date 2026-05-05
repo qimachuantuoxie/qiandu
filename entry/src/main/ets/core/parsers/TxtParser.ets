@@ -1,11 +1,11 @@
 import { logger } from '../../utils/Logger';
 /**
- * TXT Parser - 绾�枃鏈�數瀛愪功瑙ｆ瀽鍣?
+ * TXT Parser - 纯文本电子书解析器
  *
- * 鎻愪緵 TXT 鏍煎紡鐢靛瓙涔︾殑瑙ｆ瀽鍔熻兘锛屽寘鎷�細
- * - 鏂囦欢璇诲彇涓庣紪鐮佹�娴?
- * - 鍏冩暟鎹�彁鍙栵紙浠庢枃浠跺ご閮ㄦ彁鍙栦綔鑰呫€佺畝浠嬬瓑锛?
- * - 绔犺妭鏅鸿兘璇嗗埆锛堟敮鎸佸�绉嶄腑鏂囩珷鑺傛牸寮忥級
+ * 提供 TXT 格式电子书的解析功能，包括：
+ * - 文件读取与编码检测
+ * - 元数据提取（从文件头部提取作者、简介等）
+ * - 章节智能识别（支持多种中文章节格式）
  *
  * @since 6.0.0
  */
@@ -15,14 +15,14 @@ import { util } from '@kit.ArkTS';
 import { BookMetadata, LocalChapterInfo, ParseResult } from '../models/EbookTypes';
 
 /**
- * TXT 瑙ｆ瀽鍣ㄧ被
+ * TXT 解析器类
  */
 export class TxtParser {
 
   /**
-   * 瑙ｆ瀽 TXT 鏂囦欢
-   * @param filePath TXT 鏂囦欢璺�緞
-   * @returns 瑙ｆ瀽缁撴灉
+   * 解析 TXT 文件
+   * @param filePath TXT 文件路径
+   * @returns 解析结果
    */
   static async parse(filePath: string): Promise<ParseResult> {
     logger.info('[TxtParser] Parsing TXT file:', filePath);
@@ -51,9 +51,9 @@ export class TxtParser {
   }
 
   /**
-   * 璇诲彇 TXT 鏂囦欢鍐呭�
-   * @param filePath 鏂囦欢璺�緞
-   * @returns 鏂囦欢鍐呭�
+   * 读取 TXT 文件内容
+   * @param filePath 文件路径
+   * @returns 文件内容
    */
   private static async readTxtFile(filePath: string): Promise<string> {
     try {
@@ -70,7 +70,7 @@ export class TxtParser {
       const decoder = new util.TextDecoder(encoding);
       let content = decoder.decodeToString(buffer);
 
-      // 绉婚櫎 BOM 鏍囪�
+      // 移除 BOM 标记
       if (encoding === 'UTF-8' && content.charCodeAt(0) === 0xFEFF) {
         content = content.substring(1);
       }
@@ -83,10 +83,10 @@ export class TxtParser {
   }
 
   /**
-   * 浠?TXT 鏂囦欢澶撮儴鎻愬彇鍏冩暟鎹?
-   * @param content 鏂囦欢鍐呭�
-   * @param filePath 鏂囦欢璺�緞
-   * @returns 涔︾睄鍏冩暟鎹?
+   * 从 TXT 文件头部提取元数据
+   * @param content 文件内容
+   * @param filePath 文件路径
+   * @returns 书籍元数据
    */
   private static extractTxtMetadata(content: string, filePath: string): BookMetadata {
     const fileName = TxtParser.extractFileName(filePath);
@@ -98,7 +98,7 @@ export class TxtParser {
     let publisher: string | undefined = undefined;
     let language = 'zh-CN';
 
-    // 浠庢枃浠跺ご閮�紙鍓?0琛岋級鎻愬彇鍏冩暟鎹?
+    // 从文件头部（前50行）提取元数据
     const headerLines = lines.slice(0, Math.min(50, lines.length));
     let headerText = '';
     for (let i = 0; i < headerLines.length; i++) {
@@ -108,12 +108,12 @@ export class TxtParser {
       headerText += headerLines[i];
     }
 
-    // 灏濊瘯澶氱�浣滆€呭尮閰嶆ā寮?
+    // 尝试多种作者匹配模式
     const authorPatterns: RegExp[] = [
-      new RegExp('浣滆€匸:\uff1a]\s*(.+?)(?:\n|$)', ''),
-      new RegExp('钁楄€匸:\uff1a]\s*(.+?)(?:\n|$)', ''),
-      new RegExp('鏂囨�[:\uff1a]\s*(.+?)(?:\n|$)', ''),
-      new RegExp('(.+?)\s*钁梊s*(?:\n|$)', '')
+      new RegExp('作者[:\uff1a]\s*(.+?)(?:\n|$)', ''),
+      new RegExp('著者[:\uff1a]\s*(.+?)(?:\n|$)', ''),
+      new RegExp('文\s*[:\uff1a]\s*(.+?)(?:\n|$)', ''),
+      new RegExp('(.+?)\s*著\s*(?:\n|$)', '')
     ];
 
     for (let i = 0; i < authorPatterns.length; i++) {
@@ -125,18 +125,18 @@ export class TxtParser {
       }
     }
 
-    // 鎻愬彇鍑虹増绀句俊鎭?
-    const publisherPattern = new RegExp('鍑虹増绀綶:\uff1a]\s*(.+?)(?:\n|$)', '');
+    // 提取出版社信息
+    const publisherPattern = new RegExp('出版社[:\uff1a]\s*(.+?)(?:\n|$)', '');
     const pubMatch = headerText.match(publisherPattern);
     if (pubMatch) {
       publisher = pubMatch[1].trim();
     }
 
-    // 鎻愬彇绠€浠?鎻忚堪
+    // 提取简介/描述
     const descPatterns: RegExp[] = [
-      new RegExp('绠€浠媅:\uff1a]\s*([\s\S]{0,200}?)(?=\n\n|Author|ISBN|$)', ''),
-      new RegExp('鍐呭�浠嬬粛[:\uff1a]\s*([\s\S]{0,200}?)(?=\n\n|$)', ''),
-      new RegExp('涔︾睄绠€浠媅:\uff1a]\s*([\s\S]{0,200}?)(?=\n\n|$)', '')
+      new RegExp('简介[:\uff1a]\s*([\s\S]{0,200}?)(?=\n\n|Author|ISBN|$)', ''),
+      new RegExp('内容介绍[:\uff1a]\s*([\s\S]{0,200}?)(?=\n\n|$)', ''),
+      new RegExp('书籍简介[:\uff1a]\s*([\s\S]{0,200}?)(?=\n\n|$)', '')
     ];
 
     for (let i = 0; i < descPatterns.length; i++) {
@@ -165,24 +165,24 @@ export class TxtParser {
   }
 
   /**
-   * 瑙ｆ瀽 TXT 绔犺妭缁撴瀯
-   * @param content 鏂囦欢鍐呭�
-   * @returns 绔犺妭鍒楄〃
+   * 解析 TXT 章节结构
+   * @param content 文件内容
+   * @returns 章节列表
    */
   private static parseTxtChapters(content: string): LocalChapterInfo[] {
     const chapters: LocalChapterInfo[] = [];
     const lines = content.split('\n');
 
-    // 澶氱�绔犺妭鏍囬�鍖归厤妯″紡
+    // 多章节标题匹配模式
     const patterns = [
-      new RegExp('^(绗?[涓€浜屼笁鍥涗簲鍏�竷鍏�節鍗佺櫨鍗冮浂\\d]+绔?[\\s\\.路]*(.+)?$', ''),
-      new RegExp('^(绗?[\\d]+绔?[\\s\\.路]*(.+)?$', ''),
-      new RegExp('^(鍗?[涓€浜屼笁鍥涗簲鍏�竷鍏�節鍗佺櫨鍗僜\d]+)[\\s\\.路]*(.+)?$', ''),
+      new RegExp('^(第?[一二三四五六七八九十百千零\\d]+章?)[\\s\\.·]*(.+)?$', ''),
+      new RegExp('^(第?[\\d]+章?)[\\s\\.·]*(.+)?$', ''),
+      new RegExp('^(卷?[一二三四五六七八九十百千\\d]+)[\\s\\.·]*(.+)?$', ''),
       new RegExp('^(Chapter\\s+\\d+)[\\s\\.]*(.+)?$', 'i'),
       new RegExp('^(Part\\s+\\d+)[\\s\\.]*(.+)?$', 'i'),
-      new RegExp('^(\\d+)[\\s\\.路]+(.+)$', ''),
+      new RegExp('^(\\d+)[\\s\\.·]+(.+)$', ''),
       new RegExp('^\\d+\\.\\s+(.+)$', ''),
-      new RegExp('^([涓€浜屼笁鍥涗簲鍏�竷鍏�節鍗乚+)[\\s\\.路]+(.+)$', ''),
+      new RegExp('^([一二三四五六七八九十]+)[\\s\\.·]+(.+)$', ''),
     ];
 
     const isChapterTitle = (line: string): boolean => {
@@ -202,7 +202,7 @@ export class TxtParser {
       const line = lines[i];
 
       if (isChapterTitle(line)) {
-        // 淇濆瓨涓婁竴涓�珷鑺?
+        // 保存上一个章节
         if (currentChapterStart >= 0 && currentChapterStart < i) {
           const chapterTitle = lines[currentChapterStart].trim();
           chapters.push({
@@ -218,7 +218,7 @@ export class TxtParser {
       }
     }
 
-    // 淇濆瓨鏈€鍚庝竴涓�珷鑺?
+    // 保存最后一个章节
     if (currentChapterStart >= 0 && currentChapterStart < lines.length) {
       const chapterTitle = lines[currentChapterStart].trim();
       chapters.push({
@@ -235,21 +235,21 @@ export class TxtParser {
   }
 
   /**
-   * 鑾峰彇绔犺妭灞傜骇
-   * @param title 绔犺妭鏍囬�
-   * @returns 灞傜骇锛?=鍗?2=绔?3=鑺傦級
+   * 获取章节层级
+   * @param title 章节标题
+   * @returns 层级（1=卷，2=章，3=节）
    */
   private static getChapterLevel(title: string): number {
-    if (new RegExp('^鍗?').test(title)) return 1;
-    if (new RegExp('^绗?绔?').test(title)) return 2;
+    if (new RegExp('^卷').test(title)) return 1;
+    if (new RegExp('^第.*章').test(title)) return 2;
     if (new RegExp('^\\d+\\.').test(title)) return 3;
     return 2;
   }
 
   /**
-   * 妫€娴嬫枃浠剁紪鐮?
-   * @param buffer 鏂囦欢缂撳啿鍖?
-   * @returns 缂栫爜鍚嶇О
+   * 检测文件编码
+   * @param buffer 文件缓冲区
+   * @returns 编码名称
    */
   static detectEncoding(buffer: ArrayBuffer): string {
     const bytes = new Uint8Array(buffer);
@@ -273,16 +273,16 @@ export class TxtParser {
   }
 
   /**
-   * 浠庢枃浠跺唴瀹规�娴嬬紪鐮侊紙鍚�彂寮忥級
-   * @param content 鏂囦欢鍐呭�
-   * @returns 缂栫爜鍚嶇О
+   * 从文件内容检测编码（启发式）
+   * @param content 文件内容
+   * @returns 编码名称
    */
   static detectEncodingFromContent(content: string): string {
     if (!content || content.length === 0) {
       return 'UTF-8';
     }
 
-    // 妫€娴嬩腑鏂囧瓧绗?
+    // 检测中文字符
     const matchResult = content.match(new RegExp('[\u4e00-\u9fa5]', 'g'));
     const chineseChars = matchResult ? matchResult.length : 0;
     if (chineseChars > 0) {
@@ -293,9 +293,9 @@ export class TxtParser {
   }
 
   /**
-   * 浠庢枃浠惰矾寰勬彁鍙栨枃浠跺悕
-   * @param filePath 鏂囦欢璺�緞
-   * @returns 鏂囦欢鍚?
+   * 从文件路径提取文件名
+   * @param filePath 文件路径
+   * @returns 文件名
    */
   private static extractFileName(filePath: string): string {
     const parts = filePath.split('/');
@@ -310,5 +310,5 @@ export class TxtParser {
   }
 }
 
-/** TXT 瑙ｆ瀽鍣ㄥ崟渚嬪疄渚?*/
+/** TXT 解析器单例实例 */
 export const txtParser = TxtParser;

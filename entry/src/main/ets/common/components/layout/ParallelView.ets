@@ -86,7 +86,7 @@ export struct ParallelView {
           this.updateLayout();
         });
       }).catch((err: Error) => {
-        console.error('[ParallelView] Failed to get window:', err.message);
+        logger.error('[ParallelView] Failed to get window:', err.message);
       });
     }
   }

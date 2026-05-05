@@ -1,28 +1,34 @@
 import { logger } from '../../../utils/Logger';
 /**
- * Rule Engine - 瑙勫垯寮曟搸
- * 鐢ㄤ簬浠嶩TML涓�彁鍙栨暟鎹? *
+ * Rule Engine - 规则引擎
+ * 用于从HTML中提取数据
+ *
  * @since 2.8.0
  */
 
 /**
- * 瑙勫垯寮曟搸绫? * 鎻愪緵浠嶩TML鏂囨。涓�彁鍙栫粨鏋勫寲鏁版嵁鐨勬柟娉? */
+ * 规则引擎类
+ * 提供从HTML文档中提取结构化数据的方法
+ */
 export class RuleEngine {
   /**
-   * 浠嶩TML涓�彁鍙栧崟涓�尮閰嶇粨鏋?   * @param html HTML鏂囨湰
-   * @param rule CSS閫夋嫨鍣ㄦ垨姝ｅ垯琛ㄨ揪寮忚�鍒?   * @returns 鎻愬彇鐨勬枃鏈�唴瀹?   */
+   * 从HTML中提取单个匹配结果
+   * @param html HTML文本
+   * @param rule CSS选择器或正则表达式规则
+   * @returns 提取的文本内容
+   */
   static extractFromHtml(html: string, rule: string): string {
     try {
       if (!html || !rule) {
         return '';
       }
 
-      // 鏀�寔CSS閫夋嫨鍣ㄦ牸寮? tag.class#id
+      // 支持CSS选择器格式: tag.class#id
       if (rule.startsWith('.') || rule.startsWith('#') || rule.startsWith('[') || !rule.includes('{')) {
         return RuleEngine.extractBySelector(html, rule);
       }
 
-      // 鏀�寔姝ｅ垯琛ㄨ揪寮忔牸寮? /pattern/replacement
+      // 支持正则表达式格式: /pattern/replacement
       if (rule.startsWith('/')) {
         return RuleEngine.extractByRegex(html, rule);
       }
@@ -36,8 +42,11 @@ export class RuleEngine {
   }
 
   /**
-   * 浠嶩TML涓�彁鍙栨墍鏈夊尮閰嶇粨鏋?   * @param html HTML鏂囨湰
-   * @param rule CSS閫夋嫨鍣ㄦ垨姝ｅ垯琛ㄨ揪寮忚�鍒?   * @returns 鎻愬彇鐨勬枃鏈�唴瀹规暟缁?   */
+   * 从HTML中提取所有匹配结果
+   * @param html HTML文本
+   * @param rule CSS选择器或正则表达式规则
+   * @returns 提取的文本内容数组
+   */
   static extractAllFromHtml(html: string, rule: string): string[] {
     try {
       if (!html || !rule) {
@@ -64,9 +73,11 @@ export class RuleEngine {
   }
 
   /**
-   * 閫氳繃CSS閫夋嫨鍣ㄦ彁鍙栧唴瀹?   */
+   * 通过CSS选择器提取内容
+   */
   private static extractBySelector(html: string, selector: string): string {
-    // 绠€鍗曠殑閫夋嫨鍣ㄨВ鏋愬疄鐜?    // 鍦ㄥ疄闄呭満鏅�腑锛岃繖閲屽簲璇ヤ娇鐢ㄦ洿瀹屾暣鐨凥TML瑙ｆ瀽
+    // 简单的选择器解析实现
+    // 在实际场景中，这里应该使用更完整的HTML解析
     try {
       const tagPattern = selector.replace(/\./g, '');
       const regex = new RegExp(`<[^>]*${tagPattern}[^>]*>([^<]*)</[^>]*>`, 'i');
@@ -81,10 +92,12 @@ export class RuleEngine {
   }
 
   /**
-   * 閫氳繃姝ｅ垯琛ㄨ揪寮忔彁鍙栧唴瀹?   */
+   * 通过正则表达式提取内容
+   */
   private static extractByRegex(html: string, pattern: string): string {
     try {
-      // 鍘绘帀棣栧熬鐨勬枩鏉?      let regexStr = pattern;
+      // 去掉首尾的斜杠
+      let regexStr = pattern;
       if (regexStr.startsWith('/')) {
         regexStr = regexStr.substring(1);
       }
@@ -107,7 +120,8 @@ export class RuleEngine {
   }
 
   /**
-   * 瀵规�鍒欒〃杈惧紡瀛楃�涓茶繘琛岃浆涔?   */
+   * 对规则表达式字符串进行转义
+   */
   private static escapeRegex(str: string): string {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }

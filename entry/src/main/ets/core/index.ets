@@ -1,33 +1,33 @@
-﻿/**
- * 鏍稿績妯″潡缁熶竴瀵煎嚭
+/**
+ * 核心模块统一导出
  * Core Module Export
  */
 
-// 鍋忓ソ绠＄悊
+// 偏好管理
 export { preferenceManager } from './stores/PreferenceManager';
 
-// 鏁版嵁妯″瀷
+// 数据模型
 export * from './models';
 
-// 瑙ｆ瀽鍣?
+// 解析器
 export * from './parsers';
 
-// 闃呰鍣?
+// 阅读器
 export * from './reader';
 
-// 鏈嶅姟
+// 服务
 export * from './services';
 
-// 鐘舵€佺鐞?
+// 状态管理
 export * from './stores';
 
-// 绠＄悊鍣?
+// 管理器
 export * from './managers';
 
-// 宸ュ叿鍑芥暟
+// 工具函数
 export * from './utils';
 
-// 璁捐绯荤粺
+// 设计系统
 export { DesignSystem, designSystem } from './utils/DesignSystem';
 export { LIGHT_THEME, DARK_THEME, ThemeColors } from './services/reader/UIDesignKitService';
 export {

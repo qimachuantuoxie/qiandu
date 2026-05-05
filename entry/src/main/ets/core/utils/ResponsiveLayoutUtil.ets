@@ -1,7 +1,7 @@
 import { logger } from '../../utils/Logger';
 /**
- * 鍝嶅簲寮忓竷灞€宸ュ叿
- * 鎻愪緵閽堝�涓嶅悓灞忓箷灏哄�鐨勫竷灞€杈呭姪鍑芥暟
+ * 响应式布局工具
+ * 提供针对不同屏幕尺寸的布局辅助函数
  */
 
 import { display } from '@kit.ArkUI';
@@ -35,7 +35,7 @@ class ResponsiveLayoutUtil {
   }
 
   /**
-   * 鑾峰彇璁惧�绫诲瀷
+   * 获取设备类型
    */
   public getDeviceType(screenWidth: number): DeviceType {
     if (screenWidth < 600) {
@@ -50,7 +50,7 @@ class ResponsiveLayoutUtil {
   }
 
   /**
-   * 鑾峰彇甯冨眬閰嶇疆
+   * 获取布局配置
    */
   public getLayoutConfig(screenWidth: number, screenHeight: number, isPortrait: boolean): LayoutConfig {
     const deviceType = this.getDeviceType(screenWidth);
@@ -65,7 +65,7 @@ class ResponsiveLayoutUtil {
         gridColumns = 2;
         spacing = 12;
         headerHeight = 56;
-        sidebarWidth = 0; // 鎵嬫満涓嶆樉绀轰晶杈规爮
+        sidebarWidth = 0; // 手机不显示侧边栏
         break;
       case DeviceType.FOLDABLE:
         gridColumns = isPortrait ? 2 : 3;
@@ -100,7 +100,7 @@ class ResponsiveLayoutUtil {
   }
 
   /**
-   * 鑾峰彇褰撳墠灞忓箷瀹藉害
+   * 获取当前屏幕宽度
    */
   public async getScreenWidth(): Promise<number> {
     try {
@@ -108,11 +108,12 @@ class ResponsiveLayoutUtil {
       return defaultDisplay.width;
     } catch (error) {
       logger.error('Failed to get screen width:', error);
-      return 360; // 榛樿�鍊?    }
+      return 360; // 默认值
+    }
   }
 
   /**
-   * 鑾峰彇褰撳墠灞忓箷楂樺害
+   * 获取当前屏幕高度
    */
   public async getScreenHeight(): Promise<number> {
     try {
@@ -120,11 +121,13 @@ class ResponsiveLayoutUtil {
       return defaultDisplay.height;
     } catch (error) {
       logger.error('Failed to get screen height:', error);
-      return 640; // 榛樿�鍊?    }
+      return 640; // 默认值
+    }
   }
 
   /**
-   * 鍒ゆ柇鏄�惁涓烘í灞?   */
+   * 判断是否为横屏
+   */
   public async isLandscape(): Promise<boolean> {
     try {
       const defaultDisplay = display.getDefaultDisplaySync();
@@ -136,7 +139,7 @@ class ResponsiveLayoutUtil {
   }
 
   /**
-   * 鏍规嵁璁惧�绫诲瀷鑾峰彇鍚堥€傜殑缃戞牸鍒楁暟
+   * 根据设备类型获取合适的网格列数
    */
   public getGridColumns(screenWidth: number, isPortrait: boolean = true): number {
     const config = this.getLayoutConfig(screenWidth, 0, isPortrait);
@@ -144,7 +147,7 @@ class ResponsiveLayoutUtil {
   }
 
   /**
-   * 鏍规嵁璁惧�绫诲瀷鑾峰彇鍚堥€傜殑闂磋窛
+   * 根据设备类型获取合适的间距
    */
   public getSpacing(screenWidth: number): number {
     const config = this.getLayoutConfig(screenWidth, 0, true);
@@ -152,7 +155,7 @@ class ResponsiveLayoutUtil {
   }
 
   /**
-   * 鏍规嵁璁惧�绫诲瀷鑾峰彇鍚堥€傜殑澶撮儴楂樺害
+   * 根据设备类型获取合适的头部高度
    */
   public getHeaderHeight(screenWidth: number): number {
     const config = this.getLayoutConfig(screenWidth, 0, true);

@@ -1,30 +1,33 @@
 import { logger } from '../../../utils/Logger';
 /**
- * Collaboration Kit 鏈嶅姟 - 鍗忎綔鏈嶅姟 (Stub)
+ * Collaboration Kit 服务 - 协作服务 (Stub)
  * Collaboration Kit Service - Collaboration Service (Stub)
  *
- * 鎻愪緵澶氳�澶囧崗浣滈槄璇诲姛鑳? * 褰撳墠涓烘々瀹炵幇锛屽緟瀹為檯 SDK 灏辩华鍚庢浛鎹? *
+ * 提供多设备协作阅读功能
+ * 当前为桩实现，待实际 SDK 就绪后替换
+ *
  * @since 2.0.0
  */
 
 import { common } from '@kit.AbilityKit';
 
 /**
- * 鍗忎綔闃呰�鏈嶅姟绫? */
+ * 协作阅读服务类
+ */
 class CollaborationKitService {
-  /** 鍗曚緥瀹炰緥 */
+  /** 单例实例 */
   private static instance: CollaborationKitService;
 
-  /** 涓婁笅鏂?*/
+  /** 上下文*/
   private context: common.Context | null = null;
 
-  /** 鏄�惁宸插垵濮嬪寲 */
+  /** 是否已初始化 */
   private isInitialized: boolean = false;
 
   private constructor() {}
 
   /**
-   * 鑾峰彇鍗曚緥瀹炰緥
+   * 获取单例实例
    */
   static getInstance(): CollaborationKitService {
     if (!CollaborationKitService.instance) {
@@ -34,7 +37,7 @@ class CollaborationKitService {
   }
 
   /**
-   * 鍒濆�鍖栨湇鍔?   */
+   * 初始化服务   */
   async init(context: common.Context): Promise<boolean> {
     logger.info('[CollaborationKit] Initializing (stub)...');
     this.context = context;
@@ -44,27 +47,27 @@ class CollaborationKitService {
   }
 
   /**
-   * 妫€鏌ユ湇鍔℃槸鍚﹀氨缁?   */
+   * 检查服务是否就绪   */
   isReady(): boolean {
     return this.isInitialized && this.context !== null;
   }
 
   /**
-   * 搴旂敤杩涘叆鍓嶅彴鏃剁殑澶勭悊
+   * 应用进入前台时的处理
    */
   onForeground(): void {
     logger.info('[CollaborationKit] Foreground (stub)');
   }
 
   /**
-   * 搴旂敤杩涘叆鍚庡彴鏃剁殑澶勭悊
+   * 应用进入后台时的处理
    */
   onBackground(): void {
     logger.info('[CollaborationKit] Background (stub)');
   }
 
   /**
-   * 閲婃斁璧勬簮
+   * 释放资源
    */
   async release(): Promise<void> {
     logger.info('[CollaborationKit] Releasing (stub)...');
@@ -74,6 +77,6 @@ class CollaborationKitService {
   }
 }
 
-// 瀵煎嚭鍗曚緥
+// 导出单例
 const collaborationKitService: CollaborationKitService = CollaborationKitService.getInstance();
 export { collaborationKitService, collaborationKitService as default };

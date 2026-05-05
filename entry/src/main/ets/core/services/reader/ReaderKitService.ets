@@ -1,7 +1,8 @@
-﻿/**
- * Reader Kit 鏈嶅姟 - 鍩轰簬 HarmonyOS 瀹樻柟闃呰鏈嶅姟
+/**
+ * Reader Kit 服务 - 基于 HarmonyOS 官方阅读服务
  * 
- * 鎻愪緵鐢靛瓙涔﹁В鏋愩€佹帓鐗堛€侀槄璇讳氦浜掕兘鍔? * 鏀寔鏍煎紡: txt, epub, mobi, azw, azw3
+ * 提供电子书解析、排版、阅读交互能力
+ * 支持格式: txt, epub, mobi, azw, azw3
  * 
  * @since API 16 (HarmonyOS 5.0.4+)
  */
@@ -16,7 +17,7 @@ const LOG_TAG = 'ReaderKitService';
 const LOG_DOMAIN = 0x0001;
 
 /**
- * 涔︾睄淇℃伅鎺ュ彛
+ * 书籍信息接口
  */
 export interface BookInfo {
   title: string;
@@ -31,7 +32,8 @@ export interface BookInfo {
 }
 
 /**
- * 鐩綍椤规帴鍙? */
+ * 目录项接口
+ */
 export interface CatalogItem {
   title: string;
   href?: string;
@@ -43,7 +45,8 @@ export interface CatalogItem {
 }
 
 /**
- * 涔﹁剨椤癸紙鍐呭鑺傜偣锛? */
+ * 书脊项（内容节点）
+ */
 export interface SpineItem {
   idRef: string;
   href: string;
@@ -52,7 +55,7 @@ export interface SpineItem {
 }
 
 /**
- * 闃呰璁剧疆
+ * 阅读设置
  */
 export interface ReaderSetting {
   fontSize?: number;
@@ -67,7 +70,7 @@ export interface ReaderSetting {
 }
 
 /**
- * 闃呰杩涘害
+ * 阅读进度
  */
 export interface ReadProgress {
   spineIndex: number;
@@ -76,7 +79,8 @@ export interface ReadProgress {
 }
 
 /**
- * Reader Kit 鏈嶅姟绫? */
+ * Reader Kit 服务类
+ */
 export class ReaderKitService {
   private context: common.UIAbilityContext | null = null;
   private bookParserHandler: bookParser.BookParserHandler | null = null;
@@ -84,25 +88,29 @@ export class ReaderKitService {
   private currentBookPath: string = '';
 
   /**
-   * 鍒濆鍖栨湇鍔?   */
+   * 初始化服务
+   */
   async init(context: common.UIAbilityContext): Promise<void> {
     this.context = context;
     hilog.info(LOG_DOMAIN, LOG_TAG, 'ReaderKitService initialized');
   }
 
   /**
-   * 瑙ｆ瀽涔︾睄鏂囦欢锛岃幏鍙栦功绫嶄俊鎭?   * @param filePath 涔︾睄鏂囦欢璺緞锛堝簲鐢ㄦ矙绠卞唴锛?   */
+   * 解析书籍文件，获取书籍信息
+   * @param filePath 书籍文件路径（应用沙箱内）
+   */
   async parseBook(filePath: string): Promise<BookInfo> {
     try {
       hilog.info(LOG_DOMAIN, LOG_TAG, 'Parsing book: %{public}s', filePath);
       
-      // 鑾峰彇涔︾睄瑙ｆ瀽鍣?      this.bookParserHandler = await bookParser.getDefaultHandler(filePath);
+      // 获取书籍解析器
+      this.bookParserHandler = await bookParser.getDefaultHandler(filePath);
       this.currentBookPath = filePath;
       
-      // 鑾峰彇涔︾睄鍩烘湰淇℃伅
+      // 获取书籍基本信息
       const info = this.bookParserHandler.getBookInfo();
       
-      // 鎻愬彇灏侀潰鍥剧墖
+      // 提取封面图片
       let coverImage: image.PixelMap | undefined;
       if (info.bookCoverImage) {
         try {
@@ -137,7 +145,7 @@ export class ReaderKitService {
   }
 
   /**
-   * 鑾峰彇涔︾睄鐩綍鍒楄〃
+   * 获取书籍目录列表
    */
   getCatalogList(): CatalogItem[] {
     if (!this.bookParserHandler) {
@@ -149,7 +157,7 @@ export class ReaderKitService {
   }
 
   /**
-   * 鑾峰彇涔﹁剨鍒楄〃锛堥槄璇婚『搴忥級
+   * 获取书脊列表（阅读顺序）
    */
   getSpineList(): SpineItem[] {
     if (!this.bookParserHandler) {
@@ -160,7 +168,8 @@ export class ReaderKitService {
   }
 
   /**
-   * 鑾峰彇鎸囧畾绔犺妭鐨勫唴瀹?   * @param spineIndex 绔犺妭绱㈠紩
+   * 获取指定章节的内容
+   * @param spineIndex 章节索引
    */
   async getChapterContent(spineIndex: number): Promise<string> {
     if (!this.bookParserHandler) {
@@ -171,8 +180,9 @@ export class ReaderKitService {
   }
 
   /**
-   * 鑾峰彇璧勬簮鏂囦欢鍐呭锛堝鍥剧墖銆佹牱寮忕瓑锛?   * @param spineIndex 绔犺妭绱㈠紩
-   * @param filePath 璧勬簮鏂囦欢璺緞
+   * 获取资源文件内容（如图片、样式等）
+   * @param spineIndex 章节索引
+   * @param filePath 资源文件路径
    */
   getResourceContent(spineIndex: number, filePath: string): ArrayBuffer {
     if (!this.bookParserHandler) {
@@ -183,7 +193,8 @@ export class ReaderKitService {
   }
 
   /**
-   * 鍒濆鍖栭槄璇诲櫒鎺у埗鍣?   * @param controller 闃呰鍣ㄦ帶鍒跺櫒瀹炰緥
+   * 初始化阅读器控制器
+   * @param controller 阅读器控制器实例
    */
   async initReaderController(controller: readerCore.ReaderComponentController): Promise<void> {
     this.readerController = controller;
@@ -192,9 +203,10 @@ export class ReaderKitService {
       throw new Error('Book parser not initialized');
     }
     
-    // 娉ㄥ唽涔︾睄瑙ｆ瀽鍣?    this.readerController.registerBookParser(this.bookParserHandler);
+    // 注册书籍解析器
+    this.readerController.registerBookParser(this.bookParserHandler);
     
-    // 鍒濆鍖栨帶鍒跺櫒
+    // 初始化控制器
     if (this.context) {
       await this.readerController.init(this.context);
     }
@@ -203,9 +215,9 @@ export class ReaderKitService {
   }
 
   /**
-   * 寮€濮嬮槄璇伙紙浠庢寚瀹氫綅缃級
-   * @param spineIndex 绔犺妭绱㈠紩
-   * @param domPos DOM浣嶇疆锛堝彲閫夛級
+   * 开始阅读（从指定位置）
+   * @param spineIndex 章节索引
+   * @param domPos DOM位置（可选）
    */
   async startReading(spineIndex: number, domPos?: string): Promise<void> {
     if (!this.readerController) {
@@ -217,8 +229,9 @@ export class ReaderKitService {
   }
 
   /**
-   * 缈婚〉
-   * @param isNext true=涓嬩竴椤碉紝false=涓婁竴椤?   */
+   * 翻页
+   * @param isNext true=下一页，false=上一页
+   */
   flipPage(isNext: boolean): void {
     if (!this.readerController) {
       throw new Error('Reader controller not initialized');
@@ -228,8 +241,8 @@ export class ReaderKitService {
   }
 
   /**
-   * 璁剧疆闃呰閰嶇疆
-   * @param setting 闃呰璁剧疆
+   * 设置阅读配置
+   * @param setting 阅读设置
    */
   setPageConfig(setting: ReaderSetting): void {
     if (!this.readerController) {
@@ -252,7 +265,8 @@ export class ReaderKitService {
   }
 
   /**
-   * 璺宠浆鍒版寚瀹氳繘搴?   * @param progress 闃呰杩涘害
+   * 跳转到指定进度
+   * @param progress 阅读进度
    */
   async jumpToProgress(progress: ReadProgress): Promise<void> {
     if (!this.readerController) {
@@ -263,7 +277,7 @@ export class ReaderKitService {
   }
 
   /**
-   * 閲婃斁涔︾睄璧勬簮
+   * 释放书籍资源
    */
   releaseBook(): void {
     if (this.readerController) {
@@ -278,7 +292,8 @@ export class ReaderKitService {
   }
 
   /**
-   * 妫€鏌ユ枃浠舵牸寮忔槸鍚︽敮鎸?   * @param format 鏂囦欢鏍煎紡
+   * 检查文件格式是否支持
+   * @param format 文件格式
    */
   static isSupportedFormat(format: string): boolean {
     const supportedFormats = ['txt', 'epub', 'mobi', 'azw', 'azw3'];
@@ -286,7 +301,8 @@ export class ReaderKitService {
   }
 
   /**
-   * 杞崲鐩綍椤规牸寮?   */
+   * 转换目录项格式
+   */
   private convertCatalogItems(items: bookParser.CatalogItem[]): CatalogItem[] {
     return items.map(item => ({
       title: item.title || '',
@@ -300,7 +316,7 @@ export class ReaderKitService {
   }
 
   /**
-   * 娓呯悊璧勬簮
+   * 清理资源
    */
   cleanup(): void {
     this.releaseBook();
@@ -308,5 +324,5 @@ export class ReaderKitService {
   }
 }
 
-// 瀵煎嚭鍗曚緥
+// 导出单例
 export const readerKitService = new ReaderKitService();

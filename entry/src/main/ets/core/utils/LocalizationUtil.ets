@@ -1,11 +1,14 @@
 import { logger } from '../../utils/Logger';
-// Localization Kit 宸ュ叿绫?- 浣跨敤HarmonyOS瀹樻柟鍥介檯鍖栨湇鍔?// Localization Kit Utility - Using HarmonyOS Official i18n Service
+// Localization Kit 工具类 - 使用HarmonyOS官方国际化服务
+// Localization Kit Utility - Using HarmonyOS Official i18n Service
 
 import { common } from '@kit.AbilityKit';
 import { resourceManager } from '@kit.LocalizationKit';
 
 /**
- * Localization Kit 宸ュ叿绫? * 浣跨敤HarmonyOS瀹樻柟鐨凩ocalization Kit杩涜�鍥介檯鍖? */
+ * Localization Kit 工具类
+ * 使用HarmonyOS官方的Localization Kit进行国际化
+ */
 class LocalizationUtil {
   private static instance: LocalizationUtil;
   private context: common.Context | null = null;
@@ -21,7 +24,9 @@ class LocalizationUtil {
   }
 
   /**
-   * 鍒濆�鍖?   * @param context 搴旂敤涓婁笅鏂?   */
+   * 初始化
+   * @param context 应用上下文
+   */
   async init(context: common.Context): Promise<void> {
     this.context = context;
     try {
@@ -34,12 +39,14 @@ class LocalizationUtil {
   }
 
   /**
-   * 鑾峰彇缈昏瘧鏂囨湰
-   * @param key 璧勬簮閿�悕锛堝�搴攕tring.json涓�殑name锛?   * @param params 鍙傛暟瀵硅薄锛岀敤浜庢浛鎹㈠崰浣嶇�锛堝� %{count}锛?   * @returns 缈昏瘧鍚庣殑鏂囨湰
+   * 获取翻译文本
+   * @param key 资源键名（对应string.json中的name）
+   * @param params 参数对象，用于替换占位符（如 %{count}）
+   * @returns 翻译后的文本
    * 
    * @example
-   * // string.json: { "name": "import_success", "value": "鎴愬姛瀵煎叆 %{count} 鏈�功" }
-   * tr('import_success', { count: 5 }) // 杩斿洖: "鎴愬姛瀵煎叆 5 鏈�功"
+   * // string.json: { "name": "import_success", "value": "成功导入 %{count} 本书" }
+   * tr('import_success', { count: 5 }) // 返回: "成功导入 5 本书"
    */
   tr(key: string, params?: Record<string, string | number>): string {
     if (!this.resMgr) {
@@ -48,21 +55,22 @@ class LocalizationUtil {
     }
 
     try {
-      // 浣跨敤resourceManager鑾峰彇瀛楃�涓茶祫婧?      let text = this.resMgr.getStringByNameSync(key);
+      // 使用resourceManager获取字符串资源
+      let text = this.resMgr.getStringByNameSync(key);
       
-      // 濡傛灉鑾峰彇澶辫触锛岃繑鍥瀔ey浣滀负fallback
+      // 如果获取失败，返回key作为fallback
       if (!text || text.length === 0) {
         logger.warn('[LocalizationUtil] Resource not found:', key);
         return key;
       }
 
-      // 鏇挎崲鍙傛暟
+      // 替换参数
       if (params) {
         const keys = Object.keys(params);
         for (let i = 0; i < keys.length; i++) {
           const paramKey = keys[i];
           const paramValue = params[paramKey];
-          // 鏇挎崲 %{key} 鏍煎紡鐨勫崰浣嶇�
+          // 替换 %{key} 格式的占位符
           text = text.replace(new RegExp(`%\\{${paramKey}\\}`, 'g'), String(paramValue));
         }
       }
@@ -76,8 +84,8 @@ class LocalizationUtil {
   }
 
   /**
-   * 鑾峰彇褰撳墠绯荤粺璇�█
-   * @returns 璇�█浠ｇ爜锛屽� zh_CN, en_US
+   * 获取当前系统语言
+   * @returns 语言代码，如 zh_CN, en_US
    */
   getSystemLanguage(): string {
     if (!this.context) {
@@ -98,8 +106,9 @@ class LocalizationUtil {
   }
 
   /**
-   * 妫€鏌ヨ祫婧愭槸鍚﹀瓨鍦?   * @param key 璧勬簮閿�悕
-   * @returns 鏄�惁瀛樺湪
+   * 检查资源是否存在
+   * @param key 资源键名
+   * @returns 是否存在
    */
   hasResource(key: string): boolean {
     if (!this.resMgr) {
@@ -115,14 +124,14 @@ class LocalizationUtil {
   }
 }
 
-// 瀵煎嚭鍗曚緥
+// 导出单例
 export const localizationUtil = LocalizationUtil.getInstance();
 
 /**
- * 蹇�嵎缈昏瘧鍑芥暟
- * @param key 璧勬簮閿�悕
- * @param params 鍙傛暟瀵硅薄
- * @returns 缈昏瘧鏂囨湰
+ * 快捷翻译函数
+ * @param key 资源键名
+ * @param params 参数对象
+ * @returns 翻译文本
  * 
  * @example
  * Text(tr('bookshelf'))

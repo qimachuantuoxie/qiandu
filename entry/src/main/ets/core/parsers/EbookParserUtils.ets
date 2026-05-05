@@ -1,10 +1,15 @@
 import { logger } from '../../utils/Logger';
 /**
- * Ebook Parser Utils - 鐢靛瓙涔﹁В鏋愰€氱敤宸ュ叿
+ * Ebook Parser Utils - 电子书解析通用工具
  *
- * 鎻愪緵鐢靛瓙涔﹁В鏋愯繃绋嬩腑甯哥敤鐨勫伐鍏锋柟娉曪紝鍖呮嫭锛? * - 鏂囦欢鍚嶆彁鍙? * - 鏂囦欢澶у皬鏍煎紡鍖? * - 闃呰�鏃堕棿璁＄畻
- * - 鍐呭�鎽樿�鐢熸垚
- * - 鍏抽敭璇嶆彁鍙? * - 璇�█妫€娴? * - 鏂囦欢楠岃瘉
+ * 提供电子书解析过程中常用的工具方法，包括：
+ * - 文件名提取
+ * - 文件大小格式化
+ * - 阅读时间计算
+ * - 内容摘要生成
+ * - 关键词提取
+ * - 语言检测
+ * - 文件验证
  *
  * @since 6.0.0
  */
@@ -14,13 +19,15 @@ import { BookFormat } from '../models/CoreBookModel';
 import { BookMetadata } from '../models/EbookTypes';
 
 /**
- * 鐢靛瓙涔﹁В鏋愰€氱敤宸ュ叿绫? */
+ * 电子书解析通用工具类
+ */
 export class EbookParserUtils {
 
   /**
-   * 浠庢枃浠惰矾寰勬彁鍙栨枃浠跺悕
-   * @param filePath 鏂囦欢璺�緞
-   * @returns 鏂囦欢鍚嶏紙鍚?URL 瑙ｇ爜锛?   */
+   * 从文件路径提取文件名
+   * @param filePath 文件路径
+   * @returns 文件名（含 URL 解码）
+   */
   static extractFileName(filePath: string): string {
     const parts = filePath.split('/');
     const lastPart = parts[parts.length - 1];
@@ -32,7 +39,9 @@ export class EbookParserUtils {
   }
 
   /**
-   * 閼惧嘲褰囬弬鍥︽�閹碘晛鐫嶉崥?   * @param fileName 閺傚洣娆㈤崥?   * @returns 閹碘晛鐫嶉崥宥忕礄閸氼偆鍋ｉ崣鍑ょ礆
+   * 获取文件扩展名
+   * @param fileName 文件名
+   * @returns 文件扩展名（如 .pdf）
    */
   static getFileExtension(fileName: string): string {
     const lastDot = fileName.lastIndexOf('.');
@@ -43,8 +52,10 @@ export class EbookParserUtils {
   }
 
   /**
-   * 閸掓稑缂撴�妯款吇閸忓啯鏆熼幑顕嗙礄閻€劋绨�憴锝嗙€芥径杈�Е閺冭�绱?   * @param filePath 閺傚洣娆㈢捄顖氱窞
-   * @returns 姒涙ǹ顓婚崗鍐╂殶閹?   */
+   * 创建默认元数据对象
+   * @param filePath 文件路径
+   * @returns 默认元数据
+   */
   static createDefaultMetadata(filePath: string): BookMetadata {
     const fileName = EbookParserUtils.extractFileName(filePath);
     const nameWithoutExt = fileName.replace(new RegExp('\.[^/.]+$', ''), '');
@@ -57,7 +68,10 @@ export class EbookParserUtils {
   }
 
   /**
-   * 閺嶇厧绱￠崠鏍ㄦ瀮娴犺泛銇囩亸?   * @param bytes 鐎涙�濡�弫?   * @returns 閺嶇厧绱￠崠鏍х摟缁楋缚瑕嗛敍鍫濐洤 "1.5 MB"閿?   */
+   * 格式化文件大小
+   * @param bytes 字节数
+   * @returns 格式化后的字符串，如 "1.5 MB"
+   */
   static formatFileSize(bytes: number): string {
     if (bytes === 0) return '0 B';
     const k = 1024;
@@ -67,18 +81,20 @@ export class EbookParserUtils {
   }
 
   /**
-   * 鐠侊紕鐣绘０鍕�吀闂冨懓顕伴弮鍫曟？
-   * @param wordCount 鐎涙�鏆?   * @param speed 闂冨懓顕伴柅鐔峰�閿涘牆鐡?閸掑棝鎸撻敍澶涚礉姒涙ǹ顓?300
-   * @returns 闂冨懓顕伴弮鍫曟？閿涘牆鍨庨柦鐕傜礆
+   * 计算预计阅读时间
+   * @param wordCount 字数
+   * @param speed 阅读速度（字/分钟），默认300
+   * @returns 预计阅读时间（分钟）
    */
   static calculateReadingTime(wordCount: number, speed: number = 300): number {
     return Math.ceil(wordCount / speed);
   }
 
   /**
-   * 閻㈢喐鍨氶崘鍛�啇閹芥ǹ顩?   * @param content 閸樼喎顫愰崘鍛�啇
-   * @param maxLength 閺堚偓婢堆囨毐鎼达讣绱濇�妯款吇 500
-   * @returns 閹芥ǹ顩﹂弬鍥ㄦ拱
+   * 生成内容摘要
+   * @param content 原始内容
+   * @param maxLength 最大长度，默认 500
+   * @returns 摘要文本
    */
   static generateSummary(content: string, maxLength: number = 500): string {
     if (!content || content.length === 0) return '';
@@ -97,9 +113,11 @@ export class EbookParserUtils {
   }
 
   /**
-   * 閹绘劕褰囬崗鎶芥暛鐠囧稄绱欓崺杞扮艾閸楁洖鐡ф０鎴犲芳閿?   * @param content 閺傚洦婀伴崘鍛�啇
-   * @param limit 閸忔娊鏁�拠宥嗘殶闁插繘妾洪崚璁圭礉姒涙ǹ顓?10
-   * @returns 閸忔娊鏁�拠宥呭灙鐞?   */
+   * 从内容中提取高频中文字符作为关键词
+   * @param content 文本内容
+   * @param limit 返回的关键词数量，默认 10
+   * @returns 关键词列表
+   */
   static extractKeywords(content: string, limit: number = 10): string[] {
     if (!content) return [];
 
@@ -129,7 +147,7 @@ export class EbookParserUtils {
       }
     }
 
-    // 鎵嬪姩鎺掑簭 (鍐掓场鎺掑簭)
+    // 手动排序 (冒泡排序)
     for (let i = 0; i < filtered.length - 1; i++) {
       for (let j = 0; j < filtered.length - 1 - i; j++) {
         if (filtered[j + 1][1] > filtered[j][1]) {
@@ -150,9 +168,10 @@ export class EbookParserUtils {
   }
 
   /**
-   * 濡�偓濞村�鏋冮張顒冾嚔鐟封偓
-   * @param content 閺傚洦婀伴崘鍛�啇
-   * @returns 鐠囶叀鈻堟禒锝囩垳閿涘牆顩?'zh-CN', 'en', 'unknown'閿?   */
+   * 检测文本语言
+   * @param content 文本内容
+   * @returns 语言代码，'zh-CN', 'en', 'unknown'
+   */
   static detectLanguage(content: string): string {
     if (!content) return 'unknown';
 
@@ -168,8 +187,10 @@ export class EbookParserUtils {
   }
 
   /**
-   * 妤犲矁鐦夐弬鍥︽�閺嶇厧绱￠弰顖氭儊閸栧綊鍘?   * @param filePath 閺傚洣娆㈢捄顖氱窞
-   * @param format 閺堢喐婀滈惃鍕�姛缁�秵鐗稿�?   * @returns 閺勵垰鎯侀張澶嬫櫏
+   * 验证文件格式是否正确
+   * @param filePath 文件路径
+   * @param format 期望的文件格式
+   * @returns 是否有效
    */
   static async validateFile(filePath: string, format: BookFormat): Promise<boolean> {
     try {
@@ -216,5 +237,5 @@ export class EbookParserUtils {
   }
 }
 
-/** 閻㈤潧鐡欐稊锕佇掗弸鎰�紣閸忓嘲宕熸笟瀣�杽娓?*/
+/** 电子书解析工具单例实例 */
 export const ebookParserUtils = EbookParserUtils;

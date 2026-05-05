@@ -209,7 +209,7 @@ class ShareKitService {
   }
 
   /**
-   * 鍒嗕韩鏂囦欢
+   * 分享文件
    */
   async shareFile(fileUri: string, text?: string, options?: ShareOptions): Promise<ShareResultData> {
     try {

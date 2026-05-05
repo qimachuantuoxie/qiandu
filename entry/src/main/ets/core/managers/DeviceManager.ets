@@ -1,65 +1,65 @@
 import { logger } from '../../utils/Logger';
 /**
- * 璁惧�宸ュ叿绫?- 骞虫澘/鎵嬫満閫傞厤
+ * 设备工具类 - 平板/手机适配
  *
- * 鐢ㄤ簬妫€娴嬭�澶囩被鍨嬶紙鎵嬫満/骞虫澘锛夈€佸睆骞曞昂瀵搞€佹柟鍚戠瓑
- * 鎻愪緵鍝嶅簲寮忚�璁＄殑閫傞厤鍊?
+ * 用于检测设备类型（手机/平板）、屏幕尺寸、方向等
+ * 提供响应式设计的适配值
  *
  * @example
- * // 鍒ゆ柇鏄�惁涓哄钩鏉?
+ * // 判断是否为平板
  * if (DeviceUtils.isTablet()) {
- *   // 骞虫澘甯冨眬
+ *   // 平板布局
  * }
  *
- * // 鑾峰彇鑷�€傚簲鍒楁暟
- * const columns = DeviceUtils.getGridColumns(); // 鎵嬫満3鍒楋紝骞虫澘5鍒?
+ * // 获取自适应列数
+ * const columns = DeviceUtils.getGridColumns(); // 手机3列，平板5列
  *
- * // 鑾峰彇瀛椾綋澶у皬
- * const fontSize = DeviceUtils.getFontSize(14); // 鑷�姩閫傞厤
+ * // 获取字体大小
+ * const fontSize = DeviceUtils.getFontSize(14); // 自动适配
  */
 
 import { displayHelper } from './DisplayHelper';
 
 /**
- * 璁惧�宸ュ叿绫?
- * 鎻愪緵灞忓箷灏哄�妫€娴嬨€佹柟鍚戝垽鏂�€佽嚜閫傚簲鍊艰�绠楃瓑鍔熻兘
+ * 设备工具类
+ * 提供屏幕尺寸检测、方向判断、自适应值计算等功能
  */
 export class DeviceUtils {
-  /** 鏄�惁涓哄钩鏉胯�澶?*/
+  /** 是否为平板设备 */
   private static isPad: boolean = false;
 
-  /** 灞忓箷瀹藉害锛堝儚绱狅級 */
+  /** 屏幕宽度（像素） */
   private static screenWidth: number = 0;
 
-  /** 灞忓箷楂樺害锛堝儚绱狅級 */
+  /** 屏幕高度（像素） */
   private static screenHeight: number = 0;
 
-  /** 鏄�惁宸插垵濮嬪寲 */
+  /** 是否已初始化 */
   private static isInitialized: boolean = false;
 
   /**
-   * 鍒濆�鍖栬�澶囦俊鎭?
-   * 鑾峰彇灞忓箷灏哄�骞跺垽鏂��澶囩被鍨?
-   * 浠呭湪棣栨�璋冪敤鏃舵墽琛岋紝鍚庣画鐩存帴杩斿洖
+   * 初始化设备信息
+   * 获取屏幕尺寸并判断设备类型
+   * 仅在首次调用时执行，后续直接返回
    *
    * @remark
-   * 骞虫澘鍒ゆ柇鏍囧噯锛?
-   * - 灞忓箷灏哄� >= 7鑻卞�
-   * - 鎴栬€?瀹藉害 >= 600dp 涓?DPI < 280
+   * 平板判断标准：
+   * - 屏幕尺寸 >= 7英寸
+   * - 或者 宽度 >= 600dp 且 DPI < 280
    */
   public static async init(): Promise<void> {
     if (DeviceUtils.isInitialized) {
       return;
     }
     try {
-      // 鍒濆�鍖?DisplayHelper
+      // 初始化 DisplayHelper
       await displayHelper.init();
       
       DeviceUtils.screenWidth = displayHelper.getWidth();
       DeviceUtils.screenHeight = displayHelper.getHeight();
 
       const dpi = displayHelper.getDPI();
-      const density = dpi > 0 ? dpi : 320; // 榛樿�瀵嗗害
+      const density = dpi > 0 ? dpi : 320; // 默认密度
 
       const screenInches = Math.sqrt(
         Math.pow(DeviceUtils.screenWidth / density * 160, 2) +

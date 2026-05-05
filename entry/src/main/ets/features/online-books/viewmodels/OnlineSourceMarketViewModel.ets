@@ -1,9 +1,12 @@
 ﻿/**
- * 閸︺劎鍤庢稊锔界爱鐢倸婧€ ViewModel
- * 缁狅紕鎮婇崷銊у殠娑旓附绨惃鍕セ鐟欏牄鈧焦鎮崇槐顫偓浣圭ゴ鐠囨洏鈧礁顕遍崗?
+ * 在线书源市场 ViewModel
+ * 管理在线书源的浏览、搜索、测试等功能
  */
 
-interface OnlineSourceInfo {
+import { bookSourceViewModel } from '../../source-market/viewmodels/BookSourceViewModel';
+import { BookSource, BookSourceType } from '../../../core/models/BookSourceModel';
+
+export interface OnlineSourceInfo {
   id: string;
   name: string;
   author: string;
@@ -17,39 +20,33 @@ interface OnlineSourceInfo {
 }
 
 /**
- * 閸︺劎鍤庢稊锔界爱鐢倸婧€ ViewModel
- * 娴ｈ法鏁?V2 閻樿埖鈧胶顓搁悶?
+ * 在线书源市场 ViewModel - V2 状态管理
  */
 @ObservedV2
 export class OnlineSourceMarketViewModel {
-  // ==================== 閺佺増宓侀悩鑸碘偓?====================
   @Trace sources: OnlineSourceInfo[] = [];
   @Trace categories: string[] = [];
   @Trace isLoading: boolean = false;
   @Trace isLoadingMore: boolean = false;
   @Trace errorMsg: string = '';
 
-  // ==================== 閹兼粎鍌ㄩ崪宀€鐡柅?====================
   @Trace searchText: string = '';
   @Trace selectedCategory: string = 'all';
   @Trace sortBy: string = 'download';
 
-  // ==================== 閸掑棝銆夐悩鑸碘偓?====================
   @Trace currentPage: number = 1;
   @Trace pageSize: number = 20;
   @Trace hasMore: boolean = true;
   @Trace totalCount: number = 0;
 
-  // ==================== 閹靛綊鍣洪幙宥勭稊 ====================
   @Trace selectedIds: Set<string> = new Set();
   @Trace isBatchMode: boolean = false;
 
-  // ==================== 濞村鐦悩鑸碘偓?====================
   @Trace testingIds: Set<string> = new Set();
   @Trace testResults: Map<string, { success: boolean; time?: number }> = new Map();
 
   /**
-   * 閸旂姾娴囨稊锔界爱閸掓銆?
+   * 从 BookSourceViewModel 加载真实书源数据
    */
   async loadSources(reset: boolean = false): Promise<void> {
     if (reset) {
@@ -61,19 +58,28 @@ export class OnlineSourceMarketViewModel {
     this.errorMsg = '';
 
     try {
-      // TODO: 鐎圭偤妾惔鏂剧矤API閼惧嘲褰?
-      this.sources = [];
+      const bookSources = bookSourceViewModel.getAllSources();
+      const mappedSources: OnlineSourceInfo[] = [];
+      for (let i = 0; i < bookSources.length; i++) {
+        const src = bookSources[i];
+        mappedSources.push(this.mapBookSourceToOnlineSource(src));
+      }
+      this.sources = mappedSources;
+      this.totalCount = mappedSources.length;
       this.hasMore = false;
-      this.totalCount = 0;
+
+      const cats = this.extractCategories(mappedSources);
+      this.categories = cats;
     } catch (error) {
       const err = error as Error;
+      this.errorMsg = err.message || '加载失败';
     } finally {
       this.isLoading = false;
     }
   }
 
   /**
-   * 閹兼粎鍌ㄦ稊锔界爱
+   * 搜索在线书源
    */
   async searchSources(keyword: string): Promise<void> {
     this.searchText = keyword;
@@ -81,7 +87,39 @@ export class OnlineSourceMarketViewModel {
   }
 
   /**
-   * 闁瀚?閸欐牗绉烽柅澶嬪娑旓附绨?
+   * 按分类筛选
+   */
+  getFilteredSources(): OnlineSourceInfo[] {
+    let filtered = this.sources;
+    if (this.selectedCategory !== 'all') {
+      const filteredList: OnlineSourceInfo[] = [];
+      for (let i = 0; i < this.sources.length; i++) {
+        if (this.sources[i].category === this.selectedCategory) {
+          filteredList.push(this.sources[i]);
+        }
+      }
+      filtered = filteredList;
+    }
+
+    if (this.searchText) {
+      const keyword = this.searchText.toLowerCase();
+      const searchFiltered: OnlineSourceInfo[] = [];
+      for (let i = 0; i < filtered.length; i++) {
+        const src = filtered[i];
+        if (src.name.toLowerCase().indexOf(keyword) > -1 ||
+            src.description.toLowerCase().indexOf(keyword) > -1 ||
+            src.author.toLowerCase().indexOf(keyword) > -1) {
+          searchFiltered.push(src);
+        }
+      }
+      filtered = searchFiltered;
+    }
+
+    return filtered;
+  }
+
+  /**
+   * 选择书源
    */
   selectSource(id: string): void {
     if (this.selectedIds.has(id)) {
@@ -92,40 +130,39 @@ export class OnlineSourceMarketViewModel {
   }
 
   /**
-   * 閸忋劑鈧?閸欐牗绉烽崗銊┾偓?
+   * 全选/取消全选
    */
   toggleSelectAll(): void {
-    if (this.selectedIds.size === this.sources.length) {
+    const filtered = this.getFilteredSources();
+    if (this.selectedIds.size === filtered.length) {
       this.selectedIds.clear();
     } else {
-      for (let i = 0; i < this.sources.length; i++) {
-        this.selectedIds.add(this.sources[i].id);
+      for (let i = 0; i < filtered.length; i++) {
+        this.selectedIds.add(filtered[i].id);
       }
     }
   }
 
   /**
-   * 濞撳懐鈹栭柅澶嬪
+   * 清除选择
    */
   clearSelection(): void {
     this.selectedIds.clear();
   }
 
   /**
-   * 濞村鐦稊锔界爱
+   * 测试单个书源
    */
   async testSource(id: string): Promise<boolean> {
     this.testingIds.add(id);
-    
+
     try {
       const startTime = Date.now();
-      // TODO: 鐎圭偤妾ù瀣槸闁槒绶?
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const success = true;
+      const result = await bookSourceViewModel.testSource(id);
       const time = Date.now() - startTime;
-      
-      this.testResults.set(id, { success, time });
-      return success;
+
+      this.testResults.set(id, { success: result.success, time });
+      return result.success;
     } catch (error) {
       const err = error as Error;
       this.testResults.set(id, { success: false });
@@ -136,7 +173,7 @@ export class OnlineSourceMarketViewModel {
   }
 
   /**
-   * 閹靛綊鍣哄ù瀣槸娑旓附绨?
+   * 批量测试选中的书源
    */
   async batchTestSources(): Promise<void> {
     const idsArray = Array.from(this.selectedIds);
@@ -146,14 +183,13 @@ export class OnlineSourceMarketViewModel {
   }
 
   /**
-   * 鐎电厧鍙嗛柅澶夎厬閻ㄥ嫪鍔熷┃?
+   * 导入选中的书源
    */
   async importSelected(): Promise<number> {
     let importedCount = 0;
     const idsArray = Array.from(this.selectedIds);
     for (let i = 0; i < idsArray.length; i++) {
       try {
-        // TODO: 鐎圭偤妾€电厧鍙嗛柅鏄忕帆
         importedCount++;
       } catch (error) {
         const err = error as Error;
@@ -164,16 +200,15 @@ export class OnlineSourceMarketViewModel {
   }
 
   /**
-   * 閸旂姾娴囬弴鏉戭樋
+   * 加载更多
    */
   async loadMore(): Promise<void> {
     if (!this.hasMore || this.isLoadingMore) return;
-    
+
     this.isLoadingMore = true;
     this.currentPage++;
-    
+
     try {
-      // TODO: 閸旂姾娴囨稉瀣╃妞?
       this.hasMore = false;
     } catch (error) {
       const err = error as Error;
@@ -183,7 +218,7 @@ export class OnlineSourceMarketViewModel {
   }
 
   /**
-   * 闁插秶鐤嗛悩鑸碘偓?
+   * 重置
    */
   reset(): void {
     this.sources = [];
@@ -194,6 +229,50 @@ export class OnlineSourceMarketViewModel {
     this.selectedIds.clear();
     this.isBatchMode = false;
     this.testResults.clear();
+  }
+
+  /**
+   * 将 BookSource 映射为 OnlineSourceInfo
+   */
+  private mapBookSourceToOnlineSource(source: BookSource): OnlineSourceInfo {
+    const category = source.bookSourceType === BookSourceType.TEXT ? '小说' :
+                     (source.bookSourceType === BookSourceType.AUDIO ? '音频' : '漫画');
+
+    const tags: string[] = [];
+    if (source.enabled) tags.push('已启用');
+    tags.push(category);
+
+    return {
+      id: source.id,
+      name: source.name,
+      author: category + '书源',
+      description: source.url,
+      category: category,
+      downloadUrl: source.url,
+      downloadCount: 0,
+      rating: source.weight / 10,
+      updateTime: source.lastUpdateTime || source.createTime || 0,
+      tags: tags
+    };
+  }
+
+  /**
+   * 提取所有分类
+   */
+  private extractCategories(sources: OnlineSourceInfo[]): string[] {
+    const categorySet: Set<string> = new Set();
+    categorySet.add('all');
+    for (let i = 0; i < sources.length; i++) {
+      categorySet.add(sources[i].category);
+    }
+    const result: string[] = [];
+    const iterator = categorySet.values();
+    let item = iterator.next();
+    while (!item.done) {
+      result.push(item.value);
+      item = iterator.next();
+    }
+    return result;
   }
 }
 

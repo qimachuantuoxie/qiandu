@@ -99,7 +99,7 @@ export interface AgentResponse {
 }
 
 /**
- * 鏅鸿兘浣撴搷浣滅粨鏋?
+ * 智能体操作结果
  * Agent Action Structure
  */
 export interface AgentActionParams {
@@ -113,8 +113,8 @@ export interface AgentActionParams {
 }
 
 export interface AgentAction {
-  type: string;                        // 鎿嶄綔绫诲瀷
-  params: AgentActionParams;           // 鍙傛暟
+  type: string;                        // 操作类型
+  params: AgentActionParams;           // 参数
 }
 
 /**
@@ -129,7 +129,7 @@ export interface BookQuery {
 }
 
 /**
- * 鑱婂ぉ涓婁笅鏂?
+ * 聊天上下文
  * Chat Context
  */
 export interface ChatContext {
@@ -150,7 +150,7 @@ export interface ReadingCompanionState {
 }
 
 /**
- * 璇煶鍛戒护澶勭悊鍣?
+ * 语音命令处理器
  */
 interface CommandHandler {
   keywords: string[];
@@ -158,35 +158,35 @@ interface CommandHandler {
 }
 
 /**
- * 灏忚壓鏅鸿兘浣撴湇鍔＄被
+ * 小艺智能体服务类
  * Xiaoyi Agent Service Class
  */
 class XiaoyiAgentService {
-  /** 鍗曚緥瀹炰緥 */
+  /** 单例实例 */
   private static instance: XiaoyiAgentService;
 
-  /** 涓婁笅鏂?*/
+  /** 上下文 */
   private context: common.Context | null = null;
 
   /** 鏄惁宸插垵濮嬪寲 */
   private isInitialized: boolean = false;
 
-  /** 璇煶璇嗗埆鍣?*/
+  /** 语音识别器 */
   private speechRecognizer: StubSpeechRecognizerController | null = null;
 
   /** 褰撳墠闃呰鐘舵€?*/
   private companionState: ReadingCompanionState | null = null;
 
-  /** 鑱婂ぉ涓婁笅鏂?*/
+  /** 聊天上下文 */
   private chatContext: ChatContext = {};
 
   /** 鏄惁姝ｅ湪鐩戝惉璇煶 */
   private isListening: boolean = false;
 
-  /** 鍛戒护澶勭悊鍣ㄦ槧灏?*/
+  /** 命令处理器映射 */
   private commandHandlers: Map<string, CommandHandler> = new Map();
 
-  /** 鍝嶅簲鍥炶皟 */
+  /** 响应回调 */
   private responseCallback: ((response: AgentResponse) => void) | null = null;
 
   // ArkTS strict mode: use explicit callback reference instead of inline object method
@@ -195,14 +195,14 @@ class XiaoyiAgentService {
   private constructor() {}
 
   /**
-   * 鑾峰彇鎵€鏈変功绫?浠巔referenceManager鐩存帴璇诲彇)
+   * 获取所有书籍(从preferenceManager直接读取)
    */
   private getAllBooks(): BookInfo[] {
     return preferenceManager.getBooks();
   }
 
   /**
-   * 鏍规嵁ID鑾峰彇涔︾睄
+   * 根据ID获取书籍
    */
   private getBookById(bookId: string): BookInfo | null {
     const books = this.getAllBooks();
@@ -215,7 +215,7 @@ class XiaoyiAgentService {
   }
 
   /**
-   * 鎼滅储涔︾睄
+   * 搜索书籍
    */
   private searchBooks(keyword: string): BookInfo[] {
     const books = this.getAllBooks();
@@ -235,7 +235,7 @@ class XiaoyiAgentService {
   }
 
   /**
-   * 鑾峰彇鎬婚槄璇绘椂闀?鍒嗛挓)
+   * 获取总阅读时长(分钟)
    */
   private getTotalReadDuration(): number {
     const records = preferenceManager.getReadRecords();
@@ -265,7 +265,7 @@ class XiaoyiAgentService {
   }
 
   /**
-   * 鑾峰彇鎵€鏈変功绛?
+   * 获取所有书签
    */
   private getAllBookmarks(): Bookmark[] {
     const bookmarksData = preferenceManager.getAllBookmarks();
@@ -284,7 +284,7 @@ class XiaoyiAgentService {
   }
 
   /**
-   * 鑾峰彇鎵€鏈夌瑪璁?
+   * 获取所有笔记
    */
   private getAllNotes(): Note[] {
     const notesData = preferenceManager.getNotes();
@@ -303,7 +303,7 @@ class XiaoyiAgentService {
   }
 
   /**
-   * 鑾峰彇鍗曚緥瀹炰緥
+   * 获取单例实例
    */
   static getInstance(): XiaoyiAgentService {
     if (!XiaoyiAgentService.instance) {

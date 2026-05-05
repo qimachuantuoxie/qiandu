@@ -17,7 +17,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 
 const DOMAIN = 0xFF05;
 
-/** AVPlayer鎺ュ彛瀹氫箟 */
+/** AVPlayer接口定义 */
 interface AVPlayer {
   on(type: 'start', callback: () => void): void;
   on(type: 'pause', callback: () => void): void;

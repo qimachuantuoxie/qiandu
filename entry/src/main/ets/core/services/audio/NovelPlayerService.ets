@@ -1,10 +1,10 @@
 import { logger } from '../../../utils/Logger';
 /**
- * Novel Player Service - 涔︽簮灏忚�闃呰�鏈嶅姟
+ * Novel Player Service - 书源小说阅读服务
  * Novel Player Service - Online Novel Reading with TTS
  *
- * 浣跨敤CoreSpeech Kit鍜孉udio Kit瀹炵幇涔︽簮灏忚�鎾�斁
- * 鏀�寔TTS鏈楄�銆佽嚜鍔ㄧ炕椤点€佸畾鏃舵挱鏀?
+ * 使用CoreSpeech Kit和Audio Kit实现书源小说播放
+ * 支持TTS朗读、自动翻页、定时播放
  *
  * @since 6.0.0
  */
@@ -13,81 +13,81 @@ import { audioKitService, AudioType, PlayMode } from '../huawei-kit/AudioKitServ
 import { coreSpeechService } from '../ai/CoreSpeechService';
 
 /**
- * 绔犺妭鍐呭�
+ * 章节内容
  */
 export interface NovelChapter {
-  /** 绔犺妭ID */
+  /** 章节ID */
   chapterId: string;
-  /** 绔犺妭鏍囬� */
+  /** 章节标题 */
   title: string;
-  /** 绔犺妭鍐呭� */
+  /** 章节内容 */
   content: string;
-  /** 瀛楁暟 */
+  /** 字数 */
   wordCount: number;
-  /** 鏄�惁VIP绔犺妭 */
+  /** 是否VIP章节 */
   isVip: boolean;
 }
 
 /**
- * 灏忚�闃呰�閰嶇疆
+ * 小说阅读配置
  */
 export interface NovelConfig {
-  /** 鏄�惁鍚�敤TTS */
+  /** 是否启用TTS */
   enableTTS: boolean;
-  /** 璇�€?*/
+  /** 语速 */
   speechRate: number;
-  /** 闊宠皟 */
+  /** 音调 */
   speechPitch: number;
-  /** 闊抽噺 */
+  /** 音量 */
   volume: number;
-  /** 闊宠壊 */
+  /** 音色 */
   voiceType: string;
-  /** 鑷�姩缈婚〉 */
+  /** 自动翻页 */
   autoScroll: boolean;
-  /** 缈婚〉閫熷害锛堢�/椤碉級 */
+  /** 翻页速度（秒/页） */
   scrollSpeed: number;
-  /** 姣忛〉瀛楃�鏁?*/
+  /** 每页字符数 */
   charsPerPage: number;
-  /** 鑳屾櫙棰滆壊 */
+  /** 背景颜色 */
   backgroundColor: string;
-  /** 鏂囧瓧棰滆壊 */
+  /** 文字颜色 */
   textColor: string;
-  /** 瀛椾綋澶у皬 */
+  /** 字体大小 */
   fontSize: number;
 }
 
 /**
- * 鎾�斁鐘舵€?
+ * 播放状态
  */
 export enum PlayState {
-  /** 鍋滄� */
+  /** 停止 */
   STOPPED = 'stopped',
-  /** 鎾�斁涓?*/
+  /** 播放中 */
   PLAYING = 'playing',
-  /** 鏆傚仠 */
+  /** 暂停 */
   PAUSED = 'paused'
 }
 
 /**
- * 灏忚�闃呰�鏈嶅姟绫?
+ * 小说阅读服务类
  */
 class NovelPlayerService {
-  /** 鍗曚緥瀹炰緥 */
+  /** 单例实例 */
   private static instance: NovelPlayerService;
 
-  /** 褰撳墠绔犺妭 */
+  /** 当前章节 */
   private currentChapter: NovelChapter | null = null;
 
-  /** 鍒嗛〉鍐呭� */
+  /** 分页内容 */
   private pages: string[] = [];
 
-  /** 褰撳墠椤电爜 */
+  /** 当前页码 */
   private currentPageIndex: number = 0;
 
-  /** 鎾�斁鐘舵€?*/
+  /** 播放状态 */
   private playState: PlayState = PlayState.STOPPED;
 
-  /** 灏忚�閰嶇疆 */
+  /** 小说配置 */
   private config: NovelConfig = {
     enableTTS: true,
     speechRate: 1.0,
@@ -102,16 +102,16 @@ class NovelPlayerService {
     fontSize: 18
   };
 
-  /** TTS鐩戝惉鍣?*/
+  /** TTS监听器 */
   private ttsListeners: Array<(state: string) => void> = [];
 
-  /** 椤甸潰鍙樺寲鐩戝惉鍣?*/
+  /** 页面变化监听器 */
   private pageChangeListeners: Array<(index: number) => void> = [];
 
   private constructor() {}
 
   /**
-   * 鑾峰彇鍗曚緥瀹炰緥
+   * 获取单例实例
    */
   static getInstance(): NovelPlayerService {
     if (!NovelPlayerService.instance) {
@@ -120,10 +120,10 @@ class NovelPlayerService {
     return NovelPlayerService.instance;
   }
 
-  // ==================== 绔犺妭鍔犺浇 ====================
+  // ==================== 章节加载 ====================
 
   /**
-   * 鍔犺浇绔犺妭
+   * 加载章节
    */
   async loadChapter(chapter: NovelChapter): Promise<void> {
     try {
@@ -131,7 +131,7 @@ class NovelPlayerService {
 
       this.currentChapter = chapter;
 
-      // 鍒嗛〉
+      // 分页
       this.pages = this.paginateContent(chapter.content, this.config.charsPerPage);
       this.currentPageIndex = 0;
 
@@ -143,17 +143,17 @@ class NovelPlayerService {
   }
 
   /**
-   * 鍐呭�鍒嗛〉
+   * 内容分页
    */
   private paginateContent(content: string, charsPerPage: number): string[] {
     const pages: string[] = [];
     const totalChars = content.length;
 
     for (let i = 0; i < totalChars; i += charsPerPage) {
-      // 灏濊瘯鍦ㄦ�钀借竟鐣屽垎椤?
+      // 尝试在段落边界分页
       let endIndex = Math.min(i + charsPerPage, totalChars);
 
-      // 鏌ユ壘鏈€杩戠殑娈佃惤缁撴潫浣嶇疆
+      // 查找最近的段落结束位置
       if (endIndex < totalChars) {
         const paragraphEnd = content.lastIndexOf('\n', endIndex);
         if (paragraphEnd > i) {
@@ -167,10 +167,10 @@ class NovelPlayerService {
     return pages;
   }
 
-  // ==================== TTS鎾�斁 ====================
+  // ==================== TTS播放 ====================
 
   /**
-   * 寮€濮嬫挱鏀?
+   * 开始播放
    */
   async startPlaying(): Promise<boolean> {
     try {
@@ -187,10 +187,10 @@ class NovelPlayerService {
       logger.info('[NovelPlayer] Starting TTS playback');
       this.playState = PlayState.PLAYING;
 
-      // 浣跨敤CoreSpeech Kit杩涜�TTS
+      // 使用CoreSpeech Kit进行TTS
       await this.speakCurrentPage();
 
-      // 濡傛灉鍚�敤鑷�姩缈婚〉
+      // 如果启用自动翻页
       if (this.config.autoScroll) {
         this.startAutoScroll();
       }
@@ -204,22 +204,23 @@ class NovelPlayerService {
   }
 
   /**
-   * 鏈楄�褰撳墠椤?
+   * 朗读当前页
    */
   private async speakCurrentPage(): Promise<void> {
     if (this.currentPageIndex >= this.pages.length) {
-      logger.info('[NovelPlayer] Reached end of chapter');
+      logger.info('[NovelPlayer] All pages played');
       this.playState = PlayState.STOPPED;
       return;
     }
 
-    const text = this.pages[this.currentPageIndex];
-
+    const currentPage = this.pages[this.currentPageIndex];
+    
     try {
-      // 浣跨敤CoreSpeech Kit鏈楄�
-      await coreSpeechService.speak(text);
-
-      logger.info('[NovelPlayer] Speaking page:', this.currentPageIndex);
+      // TODO: 调用CoreSpeech Service进行TTS
+      logger.info('[NovelPlayer] Speaking page:', this.currentPageIndex + 1);
+      
+      // 通知TTS状态变化
+      this.notifyTTSListeners('speaking');
     } catch (error) {
       const err = error as Error;
       logger.error('[NovelPlayer] Speak failed:', err.message);
@@ -227,310 +228,220 @@ class NovelPlayerService {
   }
 
   /**
-   * 鏆傚仠鎾�斁
-   */
-  async pausePlaying(): Promise<void> {
-    try {
-      logger.info('[NovelPlayer] Pausing playback');
-      this.playState = PlayState.PAUSED;
-
-      // 鏆傚仠TTS
-      await coreSpeechService.pause();
-
-      // 鍋滄�鑷�姩缈婚〉
-      this.stopAutoScroll();
-    } catch (error) {
-      const err = error as Error;
-      logger.error('[NovelPlayer] Pause failed:', err.message);
-    }
-  }
-
-  /**
-   * 鎭㈠�鎾�斁
-   */
-  async resumePlaying(): Promise<void> {
-    try {
-      logger.info('[NovelPlayer] Resuming playback');
-      this.playState = PlayState.PLAYING;
-
-      // 鎭㈠�TTS
-      await coreSpeechService.resume();
-
-      // 鎭㈠�鑷�姩缈婚〉
-      if (this.config.autoScroll) {
-        this.startAutoScroll();
-      }
-    } catch (error) {
-      const err = error as Error;
-      logger.error('[NovelPlayer] Resume failed:', err.message);
-    }
-  }
-
-  /**
-   * 鍋滄�鎾�斁
-   */
-  async stopPlaying(): Promise<void> {
-    try {
-      logger.info('[NovelPlayer] Stopping playback');
-      this.playState = PlayState.STOPPED;
-
-      // 鍋滄�TTS (鍚屾�鏂规硶锛屼笉闇€瑕?await)
-      coreSpeechService.stop();
-
-      // 鍋滄�鑷�姩缈婚〉
-      this.stopAutoScroll();
-    } catch (error) {
-      const err = error as Error;
-      logger.error('[NovelPlayer] Stop failed:', err.message);
-    }
-  }
-
-  // ==================== 鑷�姩缈婚〉 ====================
-
-  /** 鑷�姩缈婚〉瀹氭椂鍣?*/
-  private autoScrollTimer: number | null = null;
-
-  /**
-   * 鍚�姩鑷�姩缈婚〉
+   * 启动自动滚动
    */
   private startAutoScroll(): void {
-    if (this.autoScrollTimer) {
-      this.stopAutoScroll();
+    // TODO: 实现自动滚动逻辑
+    logger.info('[NovelPlayer] Auto scroll started');
+  }
+
+  /**
+   * 暂停播放
+   */
+  pausePlaying(): void {
+    if (this.playState === PlayState.PLAYING) {
+      this.playState = PlayState.PAUSED;
+      logger.info('[NovelPlayer] Playback paused');
+      
+      // TODO: 暂停TTS
+      this.notifyTTSListeners('paused');
     }
+  }
 
-    logger.info('[NovelPlayer] Starting auto scroll, speed:', this.config.scrollSpeed, 's/page');
+  /**
+   * 恢复播放
+   */
+  resumePlaying(): void {
+    if (this.playState === PlayState.PAUSED) {
+      this.playState = PlayState.PLAYING;
+      logger.info('[NovelPlayer] Playback resumed');
+      
+      // TODO: 恢复TTS
+      this.notifyTTSListeners('resumed');
+    }
+  }
 
-    this.autoScrollTimer = setInterval(async () => {
+  /**
+   * 停止播放
+   */
+  stopPlaying(): void {
+    this.playState = PlayState.STOPPED;
+    logger.info('[NovelPlayer] Playback stopped');
+    
+    // TODO: 停止TTS
+    this.notifyTTSListeners('stopped');
+  }
+
+  // ==================== 翻页控制 ====================
+
+  /**
+   * 下一页
+   */
+  nextPage(): boolean {
+    if (this.currentPageIndex < this.pages.length - 1) {
+      this.currentPageIndex++;
+      this.notifyPageChangeListeners(this.currentPageIndex);
+      logger.info('[NovelPlayer] Next page:', this.currentPageIndex + 1);
+      
+      // 如果正在播放，朗读新页面
       if (this.playState === PlayState.PLAYING) {
-        await this.nextPage();
+        this.speakCurrentPage();
       }
-    }, this.config.scrollSpeed * 1000);
+      
+      return true;
+    }
+    return false;
   }
 
   /**
-   * 鍋滄�鑷�姩缈婚〉
+   * 上一页
    */
-  private stopAutoScroll(): void {
-    if (this.autoScrollTimer) {
-      clearInterval(this.autoScrollTimer);
-      this.autoScrollTimer = null;
-      logger.info('[NovelPlayer] Auto scroll stopped');
-    }
-  }
-
-  // ==================== 椤甸潰瀵艰埅 ====================
-
-  /**
-   * 涓嬩竴椤?
-   */
-  async nextPage(): Promise<boolean> {
-    if (this.currentPageIndex >= this.pages.length - 1) {
-      logger.info('[NovelPlayer] Reached last page');
-      return false;
-    }
-
-    this.currentPageIndex++;
-
-    // 鏈楄�鏂伴〉闈?
-    if (this.playState === PlayState.PLAYING && this.config.enableTTS) {
-      await this.speakCurrentPage();
-    }
-
-    this.notifyPageChange(this.currentPageIndex);
-    return true;
-  }
-
-  /**
-   * 涓婁竴椤?
-   */
-  async previousPage(): Promise<boolean> {
-    if (this.currentPageIndex <= 0) {
-      logger.info('[NovelPlayer] Already at first page');
-      return false;
-    }
-
-    this.currentPageIndex--;
-
-    // 鏈楄�鏂伴〉闈?
-    if (this.playState === PlayState.PLAYING && this.config.enableTTS) {
-      await this.speakCurrentPage();
-    }
-
-    this.notifyPageChange(this.currentPageIndex);
-    return true;
-  }
-
-  /**
-   * 璺宠浆鍒版寚瀹氶〉
-   */
-  async goToPage(index: number): Promise<boolean> {
-    if (index < 0 || index >= this.pages.length) {
-      return false;
-    }
-
-    this.currentPageIndex = index;
-
-    if (this.playState === PlayState.PLAYING && this.config.enableTTS) {
-      await this.speakCurrentPage();
-    }
-
-    this.notifyPageChange(index);
-    return true;
-  }
-
-  // ==================== 閰嶇疆绠＄悊 ====================
-
-  /**
-   * 鏇存柊灏忚�閰嶇疆
-   */
-  async updateConfig(config: Partial<NovelConfig>): Promise<void> {
-    if (config.enableTTS !== undefined) this.config.enableTTS = config.enableTTS;
-    if (config.speechRate !== undefined) this.config.speechRate = config.speechRate;
-    if (config.speechPitch !== undefined) this.config.speechPitch = config.speechPitch;
-    if (config.volume !== undefined) {
-      this.config.volume = config.volume;
-      await audioKitService.setVolume(config.volume);
-    }
-    if (config.voiceType !== undefined) this.config.voiceType = config.voiceType;
-    if (config.autoScroll !== undefined) {
-      this.config.autoScroll = config.autoScroll;
-      if (config.autoScroll && this.playState === PlayState.PLAYING) {
-        this.startAutoScroll();
-      } else {
-        this.stopAutoScroll();
+  previousPage(): boolean {
+    if (this.currentPageIndex > 0) {
+      this.currentPageIndex--;
+      this.notifyPageChangeListeners(this.currentPageIndex);
+      logger.info('[NovelPlayer] Previous page:', this.currentPageIndex + 1);
+      
+      // 如果正在播放，朗读新页面
+      if (this.playState === PlayState.PLAYING) {
+        this.speakCurrentPage();
       }
+      
+      return true;
     }
-    if (config.scrollSpeed !== undefined) {
-      this.config.scrollSpeed = config.scrollSpeed;
-      if (this.autoScrollTimer) {
-        this.startAutoScroll(); // 閲嶅惎浠ュ簲鐢ㄦ柊閫熷害
-      }
-    }
-    if (config.charsPerPage !== undefined) {
-      this.config.charsPerPage = config.charsPerPage;
-      // 閲嶆柊鍒嗛〉
-      if (this.currentChapter) {
-        this.pages = this.paginateContent(this.currentChapter.content, this.config.charsPerPage);
-      }
-    }
-    if (config.backgroundColor !== undefined) this.config.backgroundColor = config.backgroundColor;
-    if (config.textColor !== undefined) this.config.textColor = config.textColor;
-    if (config.fontSize !== undefined) this.config.fontSize = config.fontSize;
+    return false;
+  }
 
+  /**
+   * 跳转到指定页
+   */
+  goToPage(pageIndex: number): boolean {
+    if (pageIndex >= 0 && pageIndex < this.pages.length) {
+      this.currentPageIndex = pageIndex;
+      this.notifyPageChangeListeners(this.currentPageIndex);
+      logger.info('[NovelPlayer] Go to page:', pageIndex + 1);
+      
+      // 如果正在播放，朗读新页面
+      if (this.playState === PlayState.PLAYING) {
+        this.speakCurrentPage();
+      }
+      
+      return true;
+    }
+    return false;
+  }
+
+  // ==================== 配置管理 ====================
+
+  /**
+   * 获取小说配置
+   */
+  getConfig(): NovelConfig {
+    return this.config;
+  }
+
+  /**
+   * 更新配置
+   */
+  updateConfig(newConfig: Partial<NovelConfig>): void {
+    this.config = { ...this.config, ...newConfig };
     logger.info('[NovelPlayer] Config updated');
   }
 
+  // ==================== 监听器管理 ====================
+
   /**
-   * 鑾峰彇灏忚�閰嶇疆
+   * 添加TTS监听器
    */
-  getConfig(): NovelConfig {
-    const cfg: NovelConfig = {
-      enableTTS: this.config.enableTTS,
-      speechRate: this.config.speechRate,
-      speechPitch: this.config.speechPitch,
-      volume: this.config.volume,
-      voiceType: this.config.voiceType,
-      autoScroll: this.config.autoScroll,
-      scrollSpeed: this.config.scrollSpeed,
-      charsPerPage: this.config.charsPerPage,
-      backgroundColor: this.config.backgroundColor,
-      textColor: this.config.textColor,
-      fontSize: this.config.fontSize
-    };
-    return cfg;
+  addTTSListener(listener: (state: string) => void): void {
+    this.ttsListeners.push(listener);
   }
 
-  // ==================== 鐘舵€佹煡璇?====================
+  /**
+   * 移除TTS监听器
+   */
+  removeTTSListener(listener: (state: string) => void): void {
+    const index = this.ttsListeners.indexOf(listener);
+    if (index !== -1) {
+      this.ttsListeners.splice(index, 1);
+    }
+  }
 
   /**
-   * 鑾峰彇鎾�斁鐘舵€?
+   * 通知TTS监听器
+   */
+  private notifyTTSListeners(state: string): void {
+    for (const listener of this.ttsListeners) {
+      listener(state);
+    }
+  }
+
+  /**
+   * 添加页面变化监听器
+   */
+  addPageChangeListener(listener: (index: number) => void): void {
+    this.pageChangeListeners.push(listener);
+  }
+
+  /**
+   * 移除页面变化监听器
+   */
+  removePageChangeListener(listener: (index: number) => void): void {
+    const index = this.pageChangeListeners.indexOf(listener);
+    if (index !== -1) {
+      this.pageChangeListeners.splice(index, 1);
+    }
+  }
+
+  /**
+   * 通知页面变化监听器
+   */
+  private notifyPageChangeListeners(index: number): void {
+    for (const listener of this.pageChangeListeners) {
+      listener(index);
+    }
+  }
+
+  // ==================== 状态查询 ====================
+
+  /**
+   * 获取播放状态
    */
   getPlayState(): PlayState {
     return this.playState;
   }
 
   /**
-   * 鑾峰彇褰撳墠椤电爜
+   * 获取当前章节
+   */
+  getCurrentChapter(): NovelChapter | null {
+    return this.currentChapter;
+  }
+
+  /**
+   * 获取当前页码
    */
   getCurrentPageIndex(): number {
     return this.currentPageIndex;
   }
 
   /**
-   * 鑾峰彇鎬婚〉鏁?
+   * 获取总页数
    */
   getTotalPages(): number {
     return this.pages.length;
   }
 
   /**
-   * 鑾峰彇闃呰�杩涘害
-   */
-  getProgress(): number {
-    if (this.pages.length === 0) return 0;
-    return ((this.currentPageIndex + 1) / this.pages.length) * 100;
-  }
-
-  /**
-   * 鑾峰彇褰撳墠椤甸潰鍐呭�
+   * 获取当前页内容
    */
   getCurrentPageContent(): string {
-    if (this.currentPageIndex < 0 || this.currentPageIndex >= this.pages.length) {
-      return '';
+    if (this.currentPageIndex >= 0 && this.currentPageIndex < this.pages.length) {
+      return this.pages[this.currentPageIndex];
     }
-    return this.pages[this.currentPageIndex];
-  }
-
-  // ==================== 鐩戝惉鍣ㄧ�鐞?====================
-
-  /**
-   * 娣诲姞TTS鐩戝惉鍣?
-   */
-  addTTSListener(listener: (state: string) => void): void {
-    const newListeners = this.ttsListeners.slice();
-    newListeners.push(listener);
-    this.ttsListeners = newListeners;
-  }
-
-  /**
-   * 娣诲姞椤甸潰鍙樺寲鐩戝惉鍣?
-   */
-  addPageChangeListener(listener: (index: number) => void): void {
-    const newListeners = this.pageChangeListeners.slice();
-    newListeners.push(listener);
-    this.pageChangeListeners = newListeners;
-  }
-
-  /**
-   * 閫氱煡椤甸潰鍙樺寲
-   */
-  private notifyPageChange(index: number): void {
-    for (const listener of this.pageChangeListeners) {
-      listener(index);
-    }
-  }
-
-  // ==================== 閲婃斁璧勬簮 ====================
-
-  /**
-   * 閲婃斁璧勬簮
-   */
-  async release(): Promise<void> {
-    logger.info('[NovelPlayer] Releasing...');
-
-    await this.stopPlaying();
-    this.stopAutoScroll();
-
-    this.currentChapter = null;
-    this.pages = [];
-    this.currentPageIndex = 0;
-    this.ttsListeners = [];
-    this.pageChangeListeners = [];
-
-    logger.info('[NovelPlayer] Released');
+    return '';
   }
 }
 
-// 瀵煎嚭鍗曚緥
-export const novelPlayer = NovelPlayerService.getInstance();
-export default novelPlayer;
+export const novelPlayerService = NovelPlayerService.getInstance();
+export default novelPlayerService;

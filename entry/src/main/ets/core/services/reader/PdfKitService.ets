@@ -1,7 +1,8 @@
-﻿/**
- * PDF Kit 鏈嶅姟 - 鍩轰簬 HarmonyOS 瀹樻柟 PDF 澶勭悊鏈嶅姟
+/**
+ * PDF Kit 服务 - 基于 HarmonyOS 官方 PDF 处理服务
  * 
- * 鎻愪緵 PDF 鏂囨。娴忚銆佹覆鏌撹兘鍔? * 
+ * 提供 PDF 文档浏览、渲染能力
+ * 
  * @since API 16 (HarmonyOS 5.0.4+)
  */
 
@@ -14,7 +15,7 @@ const LOG_TAG = 'PdfKitService';
 const LOG_DOMAIN = 0x0002;
 
 /**
- * PDF 鏂囨。淇℃伅
+ * PDF 文档信息
  */
 export interface PdfDocumentInfo {
   pageCount: number;
@@ -27,7 +28,7 @@ export interface PdfDocumentInfo {
 }
 
 /**
- * PDF 椤甸潰淇℃伅
+ * PDF 页面信息
  */
 export interface PdfPageInfo {
   width: number;
@@ -36,7 +37,7 @@ export interface PdfPageInfo {
 }
 
 /**
- * PDF 涔︾
+ * PDF 书签
  */
 export interface PdfBookmark {
   title: string;
@@ -46,24 +47,25 @@ export interface PdfBookmark {
 }
 
 /**
- * PDF Kit 鏈嶅姟绫? */
+ * PDF Kit 服务类
+ */
 export class PdfKitService {
   private pdfDocument: pdfService.PdfDocument | null = null;
   private currentFilePath: string = '';
 
   /**
-   * 鎵撳紑 PDF 鏂囨。
-   * @param filePath PDF 鏂囦欢璺緞
+   * 打开 PDF 文档
+   * @param filePath PDF 文件路径
    */
   async openPdf(filePath: string): Promise<PdfDocumentInfo> {
     try {
       hilog.info(LOG_DOMAIN, LOG_TAG, 'Opening PDF: %{public}s', filePath);
       
-      // 鎵撳紑 PDF 鏂囨。
+      // 打开 PDF 文档
       this.pdfDocument = await pdfService.openDocument(filePath);
       this.currentFilePath = filePath;
       
-      // 鑾峰彇鏂囨。淇℃伅
+      // 获取文档信息
       const pageInfo = await this.pdfDocument.getPageInfo(0);
       const info: PdfDocumentInfo = {
         pageCount: await this.pdfDocument.getPageCount(),
@@ -85,7 +87,7 @@ export class PdfKitService {
   }
 
   /**
-   * 鑾峰彇椤甸潰鏁伴噺
+   * 获取页面数量
    */
   async getPageCount(): Promise<number> {
     if (!this.pdfDocument) {
@@ -96,8 +98,8 @@ export class PdfKitService {
   }
 
   /**
-   * 鑾峰彇椤甸潰淇℃伅
-   * @param pageIndex 椤电爜锛堜粠0寮€濮嬶級
+   * 获取页面信息
+   * @param pageIndex 页码（从0开始）
    */
   async getPageInfo(pageIndex: number): Promise<PdfPageInfo> {
     if (!this.pdfDocument) {
@@ -108,29 +110,31 @@ export class PdfKitService {
   }
 
   /**
-   * 娓叉煋椤甸潰涓哄浘鐗?   * @param pageIndex 椤电爜
-   * @param width 瀹藉害
-   * @param height 楂樺害
-   * @param dpi DPI锛堥粯璁?50锛?   */
+   * 渲染页面为图片
+   * @param pageIndex 页码
+   * @param width 宽度
+   * @param height 高度
+   * @param dpi DPI（默认150）
+   */
   async renderPage(pageIndex: number, width: number, height: number, dpi: number = 150): Promise<image.PixelMap> {
     if (!this.pdfDocument) {
       throw new Error('PDF document not opened');
     }
     
-    // 鍒涘缓娓叉煋鍙傛暟
+    // 创建渲染参数
     const renderParam: pdfService.RenderParam = {
       width: width,
       height: height,
       dpi: dpi
     };
     
-    // 娓叉煋椤甸潰
+    // 渲染页面
     const pixelMap = await this.pdfDocument.renderPage(pageIndex, renderParam);
     return pixelMap;
   }
 
   /**
-   * 鑾峰彇 PDF 涔︾
+   * 获取 PDF 书签
    */
   async getBookmarks(): Promise<PdfBookmark[]> {
     if (!this.pdfDocument) {
@@ -147,7 +151,7 @@ export class PdfKitService {
   }
 
   /**
-   * 鍏抽棴 PDF 鏂囨。
+   * 关闭 PDF 文档
    */
   async closePdf(): Promise<void> {
     if (this.pdfDocument) {
@@ -159,14 +163,14 @@ export class PdfKitService {
   }
 
   /**
-   * 妫€鏌ユ槸鍚︿负 PDF 鏍煎紡
+   * 检查是否为 PDF 格式
    */
   static isPdfFormat(format: string): boolean {
     return format.toLowerCase() === 'pdf';
   }
 
   /**
-   * 杞崲涔︾鏍煎紡
+   * 转换书签格式
    */
   private convertBookmarks(bookmarks: pdfService.Bookmark[]): PdfBookmark[] {
     return bookmarks.map(bm => ({
@@ -178,12 +182,12 @@ export class PdfKitService {
   }
 
   /**
-   * 娓呯悊璧勬簮
+   * 清理资源
    */
   async cleanup(): Promise<void> {
     await this.closePdf();
   }
 }
 
-// 瀵煎嚭鍗曚緥
+// 导出单例
 export const pdfKitService = new PdfKitService();

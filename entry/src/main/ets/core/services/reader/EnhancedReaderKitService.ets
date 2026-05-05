@@ -1,14 +1,16 @@
 import { logger } from '../../../utils/Logger';
 /**
- * Enhanced ReaderKit 鏈嶅姟 - 闆嗘垚鎵€鏈夐槄璇荤浉鍏宠兘鍔? * Enhanced ReaderKit Service - Integrating All Reading Capabilities
+ * Enhanced ReaderKit 服务 - 集成所有阅读相关能力
+ * Enhanced ReaderKit Service - Integrating All Reading Capabilities
  * 
- * 闆嗘垚鑳藉姏锛? * 1. Reader Kit - 鐢靛瓙涔﹁В鏋愪笌鎺掔増
- * 2. PDF Kit - PDF涓撲笟澶勭悊
- * 3. Share Kit - 鍐呭�鍒嗕韩
- * 4. File Manager Kit - 鏂囦欢绠＄悊
- * 5. Image Kit - 鍥剧墖澶勭悊
- * 6. Audio Kit - 闊抽�鎾�斁
- * 7. Collaboration Kit - 澶氱�鍗忓悓
+ * 集成能力：
+ * 1. Reader Kit - 电子书解析与排版
+ * 2. PDF Kit - PDF专业处理
+ * 3. Share Kit - 内容分享
+ * 4. File Manager Kit - 文件管理
+ * 5. Image Kit - 图片处理
+ * 6. Audio Kit - 音频播放
+ * 7. Collaboration Kit - 多端协同
  * 
  * @since 2.0.0
  */
@@ -186,7 +188,7 @@ class EnhancedReaderKitServiceClass {
       const format = this.getFileFormat(filePath);
       const metadata: EnhancedBookMetadata = {
         title: this.extractFileName(filePath),
-        author: '鏈�煡浣滆€?,
+        author: '未知作者',
         pageCount: 0,
         format: format
       };
@@ -201,9 +203,9 @@ class EnhancedReaderKitServiceClass {
   async getChapters(filePath: string): Promise<EnhancedChapterInfo[]> {
     try {
       const chapters: EnhancedChapterInfo[] = [
-        { id: 'ch1', title: '绗�竴绔?, level: 0, pageIndex: 0, startOffset: 0, endOffset: 1000 },
-        { id: 'ch2', title: '绗�簩绔?, level: 0, pageIndex: 10, startOffset: 1000, endOffset: 2000 },
-        { id: 'ch3', title: '绗�笁绔?, level: 0, pageIndex: 20, startOffset: 2000, endOffset: 3000 }
+        { id: 'ch1', title: '第一章', level: 0, pageIndex: 0, startOffset: 0, endOffset: 1000 },
+        { id: 'ch2', title: '第二章', level: 0, pageIndex: 10, startOffset: 1000, endOffset: 2000 },
+        { id: 'ch3', title: '第三章', level: 0, pageIndex: 20, startOffset: 2000, endOffset: 3000 }
       ];
       return chapters;
     } catch (error) {

@@ -1,46 +1,47 @@
 import { logger } from '../../../utils/Logger';
-// AI 鏈嶅姟 - 鏅鸿兘闃呰�澧炲己
+// AI 服务 - 智能阅读增强
 // AI Service for Intelligent Reading Enhancement
-// 鍩轰簬鍗庝负浜戞垨鏈�湴妯″瀷鎻愪緵鏅鸿兘鎽樿�銆佺炕璇戙€侀棶绛旂瓑鍔熻兘
-// 閫傜敤浜庨槄璇诲簲鐢ㄧ殑AI杈呭姪鍔熻兘
+// 基于华为云或本地模型提供智能摘要、翻译、问答等功能
+// 适用于阅读应用的AI辅助功能
 
 import { http } from '@kit.NetworkKit';
 import { errorHandler, ErrorLevel } from '../utils/ErrorHandler';
 
 /**
- * AI 寮曟搸绫诲瀷
+ * AI 引擎类型
  * AI Engine Type
  */
 export enum AIEngine {
-  HUAWEI_CLOUD = 'huawei_cloud',  // 鍗庝负浜慉I鏈嶅姟
-  LOCAL = 'local',                 // 鏈�湴AI妯″瀷
-  MOCK = 'mock'                    // 妯℃嫙/娴嬭瘯妯″紡
+  HUAWEI_CLOUD = 'huawei_cloud',  // 华为云AI服务
+  LOCAL = 'local'                 // 本地AI模型
 }
 
 /**
- * AI 浠诲姟绫诲瀷
+ * AI 任务类型
  * AI Task Type
  */
 export enum TaskType {
-  SUMMARY = 'summary',     // 鍐呭�鎽樿�
-  TRANSLATION = 'translation', // 缈昏瘧
-  QNA = 'qna',             // 闂�瓟
-  OUTLINE = 'outline'      // 澶х翰鎻愬彇
+  SUMMARY = 'summary',     // 内容摘要
+  TRANSLATION = 'translation', // 翻译
+  QNA = 'qna',             // 问答
+  OUTLINE = 'outline'      // 大纲提取
 }
 
 /**
- * 鏀�寔鐨勮�瑷€浠ｇ爜
+ * 支持的语言代码
  * Supported Language Codes
  */
 export enum LanguageCode {
-  ZH_CN = 'zh-CN',   // 绠€浣撲腑鏂?  EN_US = 'en-US',   // 鑻辫�
-  JA_JP = 'ja-JP',   // 鏃ヨ�
-  KO_KR = 'ko-KR',   // 闊╄�
-  FR_FR = 'fr-FR',   // 娉曡�
-  DE_DE = 'de-DE',  // 寰疯�
-  ES_ES = 'es-ES',   // 瑗跨彮鐗欒�
-  RU_RU = 'ru-RU',   // 淇勮�
-  AUTO = 'auto'      // 鑷�姩妫€娴?}
+  ZH_CN = 'zh-CN',   // 简体中文
+  EN_US = 'en-US',   // 英语
+  JA_JP = 'ja-JP',   // 日语
+  KO_KR = 'ko-KR',   // 韩语
+  FR_FR = 'fr-FR',   // 法语
+  DE_DE = 'de-DE',  // 德语
+  ES_ES = 'es-ES',   // 西班牙语
+  RU_RU = 'ru-RU',   // 俄语
+  AUTO = 'auto'      // 自动检测
+}
 
 export interface AIResponseContent {
   content?: string;
@@ -60,7 +61,8 @@ export interface SummaryOptions {
 }
 
 /**
- * AI鍒濆�鍖栭厤缃? * AI Initialization Config
+ * AI初始化配置
+ * AI Initialization Config
  */
 export interface AIInitConfig {
   engine?: AIEngine;
@@ -69,7 +71,7 @@ export interface AIInitConfig {
 }
 
 /**
- * AI璇锋眰閫夐」
+ * AI请求选项
  * AI Request Options
  */
 export interface AIRequestOptions {
@@ -80,53 +82,56 @@ export interface AIRequestOptions {
 }
 
 /**
- * AI 璇锋眰鍙傛暟
+ * AI 请求参数
  * AI Request Parameters
  */
 export interface AIRequest {
-  text: string;                    // 杈撳叆鏂囨湰
-  taskType: TaskType;              // 浠诲姟绫诲瀷
-  options?: AIRequestOptions;      // 鍙�€夊弬鏁?}
+  text: string;                    // 输入文本
+  taskType: TaskType;              // 任务类型
+  options?: AIRequestOptions;      // 可选参数
+}
 
 /**
- * AI 鍝嶅簲缁撴灉
+ * AI 响应结果
  * AI Response Result
  */
 export interface AIResponse {
-  success: boolean;           // 鏄�惁鎴愬姛
-  result?: string;            // 澶勭悊缁撴灉
-  error?: string;             // 閿欒�淇℃伅
-  processingTime?: number;    // 澶勭悊鑰楁椂(姣��)
+  success: boolean;           // 是否成功
+  result?: string;            // 处理结果
+  error?: string;             // 错误信息
+  processingTime?: number;    // 处理耗时(毫秒)
 }
 
 /**
- * 鎽樿�缁撴灉
+ * 摘要结果
  * Summary Result
  */
 export interface SummaryResult {
-  summary: string;           // 鎽樿�鍐呭�
-  keyPoints: string[];       // 鍏抽敭瑕佺偣
-  wordCount: number;         // 瀛楁暟
-  estimatedReadTime: number; // 棰勮�闃呰�鏃堕棿(鍒嗛挓)
+  summary: string;           // 摘要内容
+  keyPoints: string[];       // 关键要点
+  wordCount: number;         // 字数
+  estimatedReadTime: number; // 预计阅读时间(分钟)
 }
 
 /**
- * 缈昏瘧缁撴灉
+ * 翻译结果
  * Translation Result
  */
 export interface TranslationResult {
-  translatedText: string;    // 缈昏瘧鏂囨湰
-  sourceLanguage: LanguageCode;  // 婧愯�瑷€
-  targetLanguage: LanguageCode; // 鐩�爣璇�█
-  confidence: number;         // 缃�俊搴?}
+  translatedText: string;    // 翻译文本
+  sourceLanguage: LanguageCode;  // 源语言
+  targetLanguage: LanguageCode; // 目标语言
+  confidence: number;         // 置信度
+}
 
 /**
- * AI 鏈嶅姟绫? * AI Service Class
- * 鎻愪緵鏅鸿兘鎽樿�銆佺炕璇戙€佸ぇ绾叉彁鍙栥€侀棶绛旂瓑鍔熻兘
+ * AI 服务类
+ * AI Service Class
+ * 提供智能摘要、翻译、大纲提取、问答等功能
  */
 class AIService {
   private static instance: AIService;
-  private engine: AIEngine = AIEngine.MOCK;
+  private engine: AIEngine | null = null;
   private apiKey: string = '';
   private endpoint: string = 'https://api.huaweicloud.com/v1/paas/ml/v1';
   private isInitialized: boolean = false;
@@ -134,7 +139,7 @@ class AIService {
   private constructor() {}
 
   /**
-   * 鑾峰彇鍗曚緥瀹炰緥
+   * 获取单例实例
    * Get Singleton Instance
    */
   static getInstance(): AIService {
@@ -145,18 +150,19 @@ class AIService {
   }
 
   /**
-   * 鍒濆�鍖朅I鏈嶅姟
+   * 初始化AI服务
    * Initialize AI Service
-   * @param config 閰嶇疆鍙傛暟
+   * @param config 配置参数
    */
   init(config?: AIInitConfig): void {
-    if (config && config.engine) {
-      this.engine = config.engine;
+    if (!config || !config.engine) {
+      throw new Error('AIEngine must be specified. Please configure engine in init().');
     }
-    if (config && config.apiKey) {
+    this.engine = config.engine;
+    if (config.apiKey) {
       this.apiKey = config.apiKey;
     }
-    if (config && config.endpoint) {
+    if (config.endpoint) {
       this.endpoint = config.endpoint;
     }
     this.isInitialized = true;
@@ -164,14 +170,15 @@ class AIService {
   }
 
   /**
-   * 妫€鏌ユ湇鍔℃槸鍚﹀氨缁?   * Check if service is ready
+   * 检查服务是否就绪
+   * Check if service is ready
    */
   isReady(): boolean {
-    return this.isInitialized;
+    return this.isInitialized && this.engine !== null;
   }
 
   /**
-   * 鑾峰彇褰撳墠寮曟搸绫诲瀷
+   * 获取当前引擎类型
    * Get current engine type
    */
   getEngine(): AIEngine {
@@ -179,52 +186,55 @@ class AIService {
   }
 
   /**
-   * 鏋勫缓鎽樿�鎻愮ず璇?   * Build summary prompt
-   * @param text 鍘熸枃
-   * @param level 璇︾粏绋嬪害
+   * 构建摘要提示词
+   * Build summary prompt
+   * @param text 原文
+   * @param level 详细程度
    */
   private buildSummaryPrompt(text: string, level: string = 'moderate'): string {
     const instruction = level === 'simple' 
-      ? '璇风敤绠€娲佹槗鎳傜殑璇�█鎬荤粨浠ヤ笅鍐呭�瑕佺偣锛? 
+      ? '请用简洁易懂的语言总结以下内容要点：' 
       : level === 'detailed'
-      ? '璇疯�缁嗘€荤粨浠ヤ笅鍐呭�锛屽寘鎷�儗鏅�€佽�鐐瑰拰缁撹�锛?
-      : '璇风畝娲佹€荤粨浠ヤ笅鍐呭�鐨勪富瑕佽�鐐癸細';
+      ? '请详细总结以下内容，包括背景、论点和结论：'
+      : '请简洁总结以下内容的主要论点：';
     return instruction + '\n\n' + text.substring(0, 8000);
   }
 
   /**
-   * 鏋勫缓缈昏瘧鎻愮ず璇?   * Build translation prompt
-   * @param text 鍘熸枃
-   * @param targetLang 鐩�爣璇�█
+   * 构建翻译提示词
+   * Build translation prompt
+   * @param text 原文
+   * @param targetLang 目标语言
    */
   private buildTranslationPrompt(text: string, targetLang: string): string {
     const langMap: Record<string, string> = {
-      'en-US': '鑻辨枃',
-      'zh-CN': '涓�枃',
-      'ja-JP': '鏃ユ枃',
-      'ko-KR': '闊╂枃',
-      'fr-FR': '娉曟枃',
-      'de-DE': '寰锋枃',
-      'es-ES': '瑗跨彮鐗欐枃',
-      'ru-RU': '淇勬枃'
+      'en-US': '英文',
+      'zh-CN': '中文',
+      'ja-JP': '日文',
+      'ko-KR': '韩文',
+      'fr-FR': '法文',
+      'de-DE': '德文',
+      'es-ES': '西班牙文',
+      'ru-RU': '俄文'
     }
-    const targetName = langMap[targetLang] || '涓�枃';
-    return '璇峰皢浠ヤ笅鍐呭�缈昏瘧鎴? + targetName + '锛歕n\n' + text.substring(0, 5000);
+    const targetName = langMap[targetLang] || '中文';
+    return '请将以下内容翻译成' + targetName + '：\n\n' + text.substring(0, 5000);
   }
 
   /**
-   * 鏋勫缓澶х翰鎻愬彇鎻愮ず璇?   * Build outline prompt
-   * @param text 鍘熸枃
+   * 构建大纲提取提示词
+   * Build outline prompt
+   * @param text 原文
    */
   private buildOutlinePrompt(text: string): string {
-    return '璇锋彁鍙栦互涓嬫枃绔犵殑澶х翰缁撴瀯锛屼互markdown鍒楄〃鏍煎紡鍛堢幇锛歕n\n' + text.substring(0, 10000);
+    return '请提取以下文章的大纲结构，以markdown列表格式呈现：\n\n' + text.substring(0, 10000);
   }
 
   /**
-   * 澶勭悊AI璇锋眰
+   * 处理AI请求
    * Process AI Request
-   * @param request AI璇锋眰鍙傛暟
-   * @returns AI鍝嶅簲缁撴灉
+   * @param request AI请求参数
+   * @returns AI响应结果
    */
   async processAI(request: AIRequest): Promise<AIResponse> {
     const startTime = Date.now();
@@ -247,7 +257,7 @@ class AIService {
           taskType = 'outline';
           break;
         case TaskType.QNA:
-          prompt = '鍩轰簬浠ヤ笅鍐呭�锛岃�鍥炵瓟闂��锛歕n\n' + request.text;
+          prompt = '基于以下内容，请回答问题：\n\n' + request.text;
           taskType = 'qna';
           break;
         default:
@@ -276,11 +286,11 @@ class AIService {
   }
 
   /**
-   * 鐢熸垚鍐呭�鎽樿�
+   * 生成内容摘要
    * Generate Content Summary
-   * @param text 瑕佹憳瑕佺殑鏂囨湰
-   * @param options 鎽樿�閫夐」
-   * @returns 鎽樿�缁撴灉
+   * @param text 要摘要的文本
+   * @param options 摘要选项
+   * @returns 摘要结果
    */
   async summarize(text: string, options?: SummaryOptions): Promise<SummaryResult> {
     let level = 'moderate';
@@ -301,7 +311,7 @@ class AIService {
       }
       const keyPoints: string[] = [];
       for (let i = 0; i < Math.min(5, lines.length); i++) {
-        keyPoints.push(lines[i].replace(new RegExp('^[鈥�-\*\d\.\s]+', ''), '').trim());
+        keyPoints.push(lines[i].replace(new RegExp('^[•-*\d.\s]+', ''), '').trim());
       }
       const summary = lines.join('\n');
 
@@ -320,7 +330,7 @@ class AIService {
       logger.error('[AIService] Summary failed:', err.message);
       return {
         summary: text.substring(0, 200) + '...',
-        keyPoints: ['鍐呭�鎽樿�鐢熸垚澶辫触'],
+        keyPoints: ['内容摘要生成失败'],
         wordCount: text.length,
         estimatedReadTime: Math.ceil(text.length / 300)
       };
@@ -328,12 +338,12 @@ class AIService {
   }
 
   /**
-   * 缈昏瘧鏂囨湰
+   * 翻译文本
    * Translate Text
-   * @param text 瑕佺炕璇戠殑鏂囨湰
-   * @param targetLang 鐩�爣璇�█
-   * @param sourceLang 婧愯�瑷€(榛樿�鑷�姩妫€娴?
-   * @returns 缈昏瘧缁撴灉
+   * @param text 要翻译的文本
+   * @param targetLang 目标语言
+   * @param sourceLang 源语言(默认自动检测)
+   * @returns 翻译结果
    */
   async translate(text: string, targetLang: LanguageCode, sourceLang: LanguageCode = LanguageCode.AUTO): Promise<TranslationResult> {
     const prompt = this.buildTranslationPrompt(text, targetLang);
@@ -360,28 +370,32 @@ class AIService {
   }
 
   /**
-   * 璋冪敤AI API
+   * 调用AI API
    * Call AI API
-   * @param prompt 鎻愮ず璇?   * @param taskType 浠诲姟绫诲瀷
-   * @returns AI鍝嶅簲
+   * @param prompt 提示词
+   * @param taskType 任务类型
+   * @returns AI响应
    */
   private async callAIApi(prompt: string, taskType: string): Promise<string> {
-    if (this.engine === AIEngine.MOCK) {
-      return this.mockAIResponse(prompt, taskType);
+    if (!this.engine) {
+      return Promise.reject(new Error('请先调用 init() 初始化 AI 引擎'));
     }
-
     if (this.engine === AIEngine.HUAWEI_CLOUD) {
       return this.callHuaweiCloud(prompt, taskType);
     }
-
-    return this.mockAIResponse(prompt, taskType);
+    if (this.engine === AIEngine.LOCAL) {
+      // TODO: Implement local AI model inference
+      return Promise.reject(new Error('本地 AI 引擎尚未实现，请使用华为云引擎'));
+    }
+    return Promise.reject(new Error('未知的 AI 引擎: ' + this.engine));
   }
 
   /**
-   * 璋冪敤鍗庝负浜慉I
+   * 调用华为云AI
    * Call Huawei Cloud AI
-   * @param prompt 鎻愮ず璇?   * @param taskType 浠诲姟绫诲瀷
-   * @returns AI鍝嶅簲
+   * @param prompt 提示词
+   * @param taskType 任务类型
+   * @returns AI响应
    */
   private async callHuaweiCloud(prompt: string, taskType: string): Promise<string> {
     const request = http.createHttp();
@@ -416,91 +430,56 @@ class AIService {
         } catch (error) {
           const err = error as Error;
           logger.error('AI response parse error:', err.message);
-          return '鐢熸垚鍐呭�澶辫触';
+          return '生成内容失败';
         }
         const content = data?.choices?.[0]?.message?.content;
-        return content ? content : '鐢熸垚鍐呭�澶辫触';
+        return content ? content : '生成内容失败';
       }
 
-      throw new Error('API璇锋眰澶辫触: ' + response.responseCode);
+      throw new Error('API请求失败: ' + response.responseCode);
     } finally {
       request.destroy();
     }
   }
 
-  /**
-   * 妯℃嫙AI鍝嶅簲(鐢ㄤ簬娴嬭瘯)
-   * Mock AI Response (for testing)
-   * @param prompt 鎻愮ず璇?   * @param taskType 浠诲姟绫诲瀷
-   * @returns 妯℃嫙鍝嶅簲
-   */
-  private mockAIResponse(prompt: string, taskType: string): string {
-    if (taskType === 'summary') {
-      return '馃摑 鍐呭�鎽樿�锛歕n' +
-'鈥?鏈�枃璁ㄨ�浜嗛槄璇荤殑閲嶈�鎬у拰鏂规硶\n' +
-'鈥?寮鸿皟浜嗛€夋嫨閫傚悎鑷�繁鐨勯槄璇绘柟寮廫n' +
-'鈥?鎻愬嚭浜嗗嚑鐐瑰疄鐢ㄥ缓璁�緵鍙傝€僜n' +
-'\n' +
-'鍏抽敭瑕佺偣锛歕n' +
-'1. 淇濇寔涓撴敞鐨勯槄璇讳範鎯痋n' +
-'2. 瀹氭湡澶嶄範鍔犳繁璁板繂\n' +
-'3. 缁撳悎瀹炶返鎻愰珮鐞嗚В';
-    }
-
-    if (taskType === 'translation') {
-      if (prompt.includes('鑻辨枃')) {
-        return '[Translated to English content...]';
-      }
-      return '[Translated content...]';
-    }
-
-    if (taskType === 'outline') {
-      return '馃搵 鏂囩珷澶х翰锛歕n' +
-'1. 寮曡█\n' +
-'   - 鑳屾櫙浠嬬粛\n' +
-'   - 鐮旂┒鎰忎箟\n' +
-'2. 涓昏�鍐呭�\n' +
-'   - 绗�竴绔狅細鍩虹�姒傚康\n' +
-'   - 绗�簩绔狅細鏍稿績鏂规硶\n' +
-'   - 绗�笁绔狅細瀹炶返搴旂敤\n' +
-'3. 缁撹�涓庡睍鏈?;
-    }
-
-    return 'AI 鍐呭�鐢熸垚涓?..\n\n杩欐槸涓€娈垫ā鎷熺殑 AI 鍝嶅簲鍐呭�銆傚湪瀹為檯閮ㄧ讲鏃讹紝璇烽厤缃�湁鏁堢殑 API Key 浠ヨ幏寰楁洿鍑嗙‘鐨勭粨鏋溿€?;
-  }
+  // TODO: Implement local AI engine
+  // private async callLocalAI(prompt: string, taskType: string): Promise<string> {
+  //   // Local model inference logic
+  // }
 
   /**
-   * 绔犺妭鎽樿�
+   * 章节摘要
    * Chapter Summary
-   * @param chapterTitle 绔犺妭鏍囬�
-   * @param content 绔犺妭鍐呭�
-   * @returns 鎽樿�鍐呭�
+   * @param chapterTitle 章节标题
+   * @param content 章节内容
+   * @returns 摘要内容
    */
   async summarizeChapter(chapterTitle: string, content: string): Promise<string> {
-    const prompt = '璇蜂负璇昏€呮€荤粨绔犺妭"' + chapterTitle + '"鐨勬牳蹇冨唴瀹癸紝瑕佹眰绠€娲佹槑浜嗭細\n\n' + content.substring(0, 5000);
+    const prompt = '请为读者总结章节"' + chapterTitle + '"的核心内容，要求简洁明了：\n\n' + content.substring(0, 5000);
     return this.callAIApi(prompt, 'summary');
   }
 
   /**
-   * 鏈��瑙ｉ噴
+   * 术语解释
    * Term Explanation
-   * @param term 鏈��
-   * @param context 涓婁笅鏂?   * @returns 瑙ｉ噴鍐呭�
+   * @param term 术语
+   * @param context 上下文
+   * @returns 解释内容
    */
   async explainTerm(term: string, context: string): Promise<string> {
-    const prompt = '鍦ㄤ互涓嬩笂涓嬫枃涓�紝瑙ｉ噴"' + term + '"鐨勫惈涔夛細\n\n' + context.substring(0, 2000);
+    const prompt = '在以下上下文中，解释"' + term + '"的含义：\n\n' + context.substring(0, 2000);
     return this.callAIApi(prompt, 'qna');
   }
 
   /**
-   * 鐢熸垚闃呰�娴嬮獙
+   * 生成阅读测验
    * Generate Reading Quiz
-   * @param content 鍐呭�
-   * @param count 棰樻暟
-   * @returns 闂��鏁扮粍
+   * @param content 内容
+   * @param count 题数
+   * @returns 问题数组
    */
   async generateQuiz(content: string, count: number = 3): Promise<string[]> {
-    const prompt = `鍩轰簬浠ヤ笅鍐呭�锛岀敓鎴?{count}閬撻槄璇荤悊瑙ｉ€夋嫨棰橈紝姣忛�鍗曠嫭涓€琛岋紝鏍煎紡涓?1. 棰樼洰鍐呭�"锛歕n\n${content.substring(0, 3000)}`;
+    const prompt = `基于以下内容，生成${count}道阅读理解选择题，每题单独一行，格式为"1. 题目内容"：\n\n${content.substring(0, 3000)}`;
     const result = await this.callAIApi(prompt, 'qna');
     const lines = result.split('\n').map(line => line.trim()).filter(line => line.length > 0);
     const quizLines: string[] = [];

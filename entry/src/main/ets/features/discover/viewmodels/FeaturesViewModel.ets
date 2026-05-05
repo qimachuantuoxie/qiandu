@@ -35,8 +35,8 @@ loadFeatures(): void {
     this.features = [
       { id: 'online_book', name: '鍦ㄧ嚎涔﹀簵', description: '鍦ㄧ嚎鎼滅储鍜岄槄璇诲浘涔?, icon: 'book', enabled: true },
       { id: 'book_source', name: '涔︽簮绠＄悊', description: '绠＄悊闃呰婧愬拰瑙勫垯', icon: 'source', enabled: true },
-      { id: 'folder_scan', name: '鏂囦欢澶规壂鎻?, description: '鎵弿鏈湴鍥句功鏂囦欢', icon: 'folder', enabled: true },
-      { id: 'reading_stats', name: '闃呰缁熻', description: '鏌ョ湅闃呰鏁版嵁缁熻', icon: 'stats', enabled: true },
+      { id: 'folder_scan', name: '文件夹扫描', description: '扫描本地图书文件', icon: 'folder', enabled: true },
+      { id: 'reading_stats', name: '阅读统计', description: '查看阅读数据统计', icon: 'stats', enabled: true },
       { id: 'todo', name: '寰呭姙浜嬮」', description: '绠＄悊闃呰璁″垝', icon: 'todo', enabled: true },
       { id: 'notes', name: '绗旇绠＄悊', description: '绠＄悊鍜屽鍑虹瑪璁?, icon: 'notes', enabled: true },
       { id: 'bookmarks', name: '涔︾绠＄悊', description: '绠＄悊涔︾睄涔︾', icon: 'bookmark', enabled: true },

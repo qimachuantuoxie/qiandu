@@ -1,5 +1,5 @@
 import { logger } from '../../utils/Logger';
-// 鐢靛瓭涔︽牸寮忚В鏋愬櫒 - 绠€鍖栫増
+// 电子书格式解析器 - 简化版
 import { BookFormat, BookInfoResult } from '../models/CoreBookModel';
 import { fileIo } from '@kit.CoreFileKit';
 import { common } from '@kit.AbilityKit';
@@ -76,13 +76,13 @@ export interface ParseResult {
 export class EbookParser {
   async parseFile(filePath: string, format: BookFormat): Promise<ParseResult> {
     try {
-      // 浣跨敤鍘熺敓妯″潡瑙ｆ瀽锛堝�鏋滃彲鐢�級
+      // 使用原生模块解析（如果可用）
       const result: ParseResult | null = await EbookParser.parseWithNativeParser(filePath, format);
       if (result) {
         return result;
       }
 
-      // Fallback: 杩斿洖榛樿�缁撴灉
+      // Fallback: 返回默认结果
       return EbookParser.createDefaultResult(filePath);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -125,7 +125,7 @@ export class EbookParser {
   }
 
   private static async parseWithNativeParser(filePath: string, format: BookFormat): Promise<ParseResult | null> {
-    // TODO: 鍘熺敓瑙ｆ瀽妯″潡寰呭疄鐜?
+    // TODO: 原生解析模块待实现
     return null;
   }
 
@@ -147,23 +147,23 @@ export class EbookParser {
     }
   }
 
-  // 绠€鍖栫殑浣滆€呮彁鍙?- 閬垮厤浣跨敤琚�牬鍧忕殑姝ｅ垯琛ㄨ揪寮?
+  // 简化的作者提取 - 避免使用被破坏的正则表达式
   static extractAuthorFromText(content: string): string {
     const lines = content.split('\n').slice(0, 20);
     
     for (const line of lines) {
       const trimmed = line.trim();
       
-      // 绠€鍗曠殑浣滆€呭尮閰嶆ā寮?
-      if (trimmed.includes('浣滆€?) && trimmed.includes(':')) {
+      // 简单的作者匹配模式
+      if (trimmed.includes('作者') && trimmed.includes(':')) {
         const parts = trimmed.split(':');
         if (parts.length >= 2 && parts[1].trim().length < 30) {
           return parts[1].trim();
         }
       }
       
-      if (trimmed.includes('钁?) && trimmed.length < 30) {
-        return trimmed.replace(new RegExp('[钁楃紪]', 'g'), '').trim();
+      if (trimmed.includes('著') && trimmed.length < 30) {
+        return trimmed.replace(new RegExp('[著编]', 'g'), '').trim();
       }
     }
     
@@ -176,7 +176,7 @@ export class EbookParser {
     for (const line of lines) {
       const trimmed = line.trim();
       
-      if (trimmed.includes('鍑虹増') && trimmed.includes(':')) {
+      if (trimmed.includes('出版') && trimmed.includes(':')) {
         const parts = trimmed.split(':');
         if (parts.length >= 2 && parts[1].trim().length < 50) {
           return parts[1].trim();

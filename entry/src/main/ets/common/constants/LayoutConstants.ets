@@ -1,11 +1,11 @@
-﻿/**
- * ArkUI 甯冨眬甯搁噺绯荤粺
- * 鎻愪緵缁熶竴鐨勯棿璺濄€佸昂瀵搞€佸渾瑙掔瓑甯冨眬甯搁噺
+/**
+ * ArkUI 布局常量系统
+ * 提供统一的间距、尺寸、圆角等布局常量
  * 
  * @since 7.0.0
  */
 
-// ==================== 鎺ュ彛瀹氫箟 (Interface Definitions) ====================
+// ==================== 接口定义 (Interface Definitions) ====================
 interface SpacingType {
   xs: number;
   sm: number;
@@ -112,18 +112,20 @@ interface OpacityType {
   full: number;
 }
 
-// ==================== 闂磋窛绯荤粺 (Spacing System) ====================
+// ==================== 间距系统 (Spacing System) ====================
 export const Spacing: SpacingType = {
-  xs: 4,    // 瓒呭皬闂磋窛
-  sm: 8,    // 灏忛棿璺?  md: 12,   // 涓瓑闂磋窛
-  lg: 16,   // 澶ч棿璺?  xl: 20,   // 瓒呭ぇ闂磋窛
-  xxl: 24,  // 鐗瑰ぇ闂磋窛
-  xxxl: 32  // 宸ㄥぇ闂磋窛
+  xs: 4,    // 超小间距
+  sm: 8,    // 小间距
+  md: 12,   // 中等间距
+  lg: 16,   // 大间距
+  xl: 20,   // 超大间距
+  xxl: 24,  // 特大间距
+  xxxl: 32  // 巨大间距
 };
 
-// ==================== 灏哄绯荤粺 (Size System) ====================
+// ==================== 尺寸系统 (Size System) ====================
 export const Size: SizeType = {
-  // 鍥炬爣灏哄
+  // 图标尺寸
   iconXS: 16,
   iconSM: 20,
   iconMD: 24,
@@ -131,28 +133,30 @@ export const Size: SizeType = {
   iconXL: 32,
   iconXXL: 40,
 
-  // 澶村儚灏哄
+  // 头像尺寸
   avatarSM: 32,
   avatarMD: 40,
   avatarLG: 48,
   avatarXL: 56,
 
-  // 鎸夐挳楂樺害
+  // 按钮高度
   buttonSM: 36,
   buttonMD: 44,
   buttonLG: 48,
   buttonXL: 56,
 
-  // 杈撳叆妗嗛珮搴?  inputSM: 36,
+  // 输入框高度
+  inputSM: 36,
   inputMD: 40,
   inputLG: 48,
 
-  // 鍗＄墖鏈€灏忛珮搴?  cardSM: 80,
+  // 卡片最小高度
+  cardSM: 80,
   cardMD: 120,
   cardLG: 160
 };
 
-// ==================== 鍦嗚绯荤粺 (Border Radius System) ====================
+// ==================== 圆角系统 (Border Radius System) ====================
 export const BorderRadius: BorderRadiusType = {
   none: 0,
   xs: 4,
@@ -161,33 +165,33 @@ export const BorderRadius: BorderRadiusType = {
   lg: 16,
   xl: 20,
   xxl: 24,
-  full: 999  // 瀹屽叏鍦嗗舰
+  full: 999  // 完全圆形
 };
 
-// ==================== 闃村奖绯荤粺 (Shadow System) ====================
+// ==================== 阴影系统 (Shadow System) ====================
 export const Shadow: ShadowType = {
-  // 杞诲井闃村奖
+  // 轻微阴影
   sm: {
     radius: 4,
     color: 'rgba(0,0,0,0.08)',
     offsetX: 0,
     offsetY: 2
   },
-  // 涓瓑闃村奖
+  // 中等阴影
   md: {
     radius: 8,
     color: 'rgba(0,0,0,0.12)',
     offsetX: 0,
     offsetY: 4
   },
-  // 娣卞害闃村奖
+  // 深度阴影
   lg: {
     radius: 12,
     color: 'rgba(0,0,0,0.16)',
     offsetX: 0,
     offsetY: 6
   },
-  // 鎮诞闃村奖
+  // 悬浮阴影
   xl: {
     radius: 16,
     color: 'rgba(0,0,0,0.2)',
@@ -196,7 +200,7 @@ export const Shadow: ShadowType = {
   }
 };
 
-// 娣辫壊妯″紡闃村奖
+// 深色模式阴影
 export const ShadowDark: ShadowType = {
   sm: {
     radius: 4,
@@ -224,16 +228,20 @@ export const ShadowDark: ShadowType = {
   }
 };
 
-// ==================== 鏂偣绯荤粺 (Breakpoint System) ====================
+// ==================== 断点系统 (Breakpoint System) ====================
 export const Breakpoints: BreakpointsType = {
-  xs: 0,      // 瓒呭皬灞忓箷
-  sm: 320,    // 灏忓睆骞曪紙鎵嬫満绔栧睆锛?  md: 600,    // 涓瓑灞忓箷锛堟姌鍙犲睆/澶ф墜鏈猴級
-  lg: 840,    // 澶у睆骞曪紙骞虫澘绔栧睆锛?  xl: 1200,   // 瓒呭ぇ灞忓箷锛堝钩鏉挎í灞?妗岄潰锛?  xxl: 1600   // 鐗瑰ぇ灞忓箷锛堝ぇ灞忔闈級
+  xs: 0,      // 超小屏幕
+  sm: 320,    // 小屏幕（手机竖屏）
+  md: 600,    // 中等屏幕（折叠屏/大手机）
+  lg: 840,    // 大屏幕（平板竖屏）
+  xl: 1200,   // 超大屏幕（平板横屏/桌面）
+  xxl: 1600   // 特大屏幕（大屏桌面）
 };
 
-// ==================== 缃戞牸绯荤粺 (Grid System) ====================
+// ==================== 网格系统 (Grid System) ====================
 export const Grid: GridType = {
-  columns: 12,  // 鎬诲垪鏁?  gutter: {
+  columns: 12,  // 总列数
+  gutter: {
     xs: 8,
     sm: 12,
     md: 16,
@@ -242,7 +250,7 @@ export const Grid: GridType = {
   }
 };
 
-// ==================== Z-Index 灞傜骇绯荤粺 ====================
+// ==================== Z-Index 层级系统 ====================
 export const ZIndex: ZIndexType = {
   base: 0,
   dropdown: 100,
@@ -255,7 +263,7 @@ export const ZIndex: ZIndexType = {
   toast: 800
 };
 
-// ==================== 鍔ㄧ敾鏃堕暱绯荤粺 ====================
+// ==================== 动画时长系统 ====================
 export const AnimationDuration: AnimationDurationType = {
   fast: 150,
   normal: 200,
@@ -263,7 +271,7 @@ export const AnimationDuration: AnimationDurationType = {
   slower: 400
 };
 
-// ==================== 閫忔槑搴︾郴缁?====================
+// ==================== 透明度系统 ====================
 export const Opacity: OpacityType = {
   disabled: 0.4,
   secondary: 0.6,
@@ -272,8 +280,10 @@ export const Opacity: OpacityType = {
 };
 
 /**
- * 鑾峰彇鍝嶅簲寮忛棿璺? * @param breakpoint 褰撳墠鏂偣
- * @returns 鍚堥€傜殑闂磋窛鍊? */
+ * 获取响应式间距
+ * @param breakpoint 当前断点
+ * @returns 合适的间距值
+ */
 export function getResponsiveSpacing(breakpoint: string): number {
   switch (breakpoint) {
     case 'xs':
@@ -292,8 +302,9 @@ export function getResponsiveSpacing(breakpoint: string): number {
 }
 
 /**
- * 鑾峰彇鍝嶅簲寮忕綉鏍煎垪鏁? * @param screenWidth 灞忓箷瀹藉害
- * @returns 缃戞牸鍒楁暟
+ * 获取响应式网格列数
+ * @param screenWidth 屏幕宽度
+ * @returns 网格列数
  */
 export function getResponsiveColumns(screenWidth: number): number {
   if (screenWidth < Breakpoints.md) {
@@ -308,10 +319,10 @@ export function getResponsiveColumns(screenWidth: number): number {
 }
 
 /**
- * 鑾峰彇闃村奖閰嶇疆
- * @param level 闃村奖绾у埆
- * @param isDarkMode 鏄惁娣辫壊妯″紡
- * @returns 闃村奖閰嶇疆瀵硅薄
+ * 获取阴影配置
+ * @param level 阴影级别
+ * @param isDarkMode 是否深色模式
+ * @returns 阴影配置对象
  */
 export function getShadow(level: 'sm' | 'md' | 'lg' | 'xl', isDarkMode: boolean = false) {
   return isDarkMode ? ShadowDark[level] : Shadow[level];

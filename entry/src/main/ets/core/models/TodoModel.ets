@@ -1,45 +1,64 @@
-﻿// Todo 鏁版嵁妯″瀷
+// Todo 数据模型
 
 /**
- * Todo浼樺厛绾ф灇涓? */
+ * Todo优先级枚举
+ */
 export enum TodoPriority {
-  LOW = 0,      // 浣庝紭鍏堢骇
-  MEDIUM = 1,   // 涓紭鍏堢骇
-  HIGH = 2,     // 楂樹紭鍏堢骇
-  URGENT = 3    // 绱ф€?}
+  LOW = 0,      // 低优先级
+  MEDIUM = 1,   // 中优先级
+  HIGH = 2,     // 高优先级
+  URGENT = 3    // 紧急
+}
 
 /**
- * Todo鐘舵€佹灇涓? */
+ * Todo状态枚举
+ */
 export enum TodoStatus {
-  PENDING = 0,    // 寰呭畬鎴?  IN_PROGRESS = 1, // 杩涜涓?  COMPLETED = 2,   // 宸插畬鎴?  CANCELLED = 3    // 宸插彇娑?}
+  PENDING = 0,    // 待完成
+  IN_PROGRESS = 1, // 进行中
+  COMPLETED = 2,   // 已完成
+  CANCELLED = 3    // 已取消
+}
 
 /**
- * Todo鎺ュ彛瀹氫箟
+ * Todo接口定义
  */
 export interface TodoItem {
-  id: string;               // 鍞竴鏍囪瘑
-  title: string;            // 鏍囬
-  description: string;      // 璇︾粏鎻忚堪
-  priority: TodoPriority;   // 浼樺厛绾?  status: TodoStatus;       // 鐘舵€?  dueDate: number;          // 鎴鏃ユ湡锛堟椂闂存埑锛?  createdTime: number;      // 鍒涘缓鏃堕棿
-  completedTime: number;    // 瀹屾垚鏃堕棿
-  relatedBookId: string;    // 鍏宠仈鐨勪功鏋禝D锛堝彲閫夛級
-  relatedBookTitle: string; // 鍏宠仈鐨勪功绫嶆爣棰?  tags: string[];           // 鏍囩鍒楄〃
-  reminder: boolean;        // 鏄惁寮€鍚彁閱?}
+  id: string;               // 唯一标识
+  title: string;            // 标题
+  description: string;      // 详细描述
+  priority: TodoPriority;   // 优先级
+  status: TodoStatus;       // 状态
+  dueDate: number;          // 截止日期（时间戳）
+  createdTime: number;      // 创建时间
+  completedTime: number;    // 完成时间
+  relatedBookId: string;    // 关联的书架ID（可选）
+  relatedBookTitle: string; // 关联的书籍标题
+  tags: string[];           // 标签列表
+  reminder: boolean;        // 是否开启提醒
+}
 
 /**
- * Todo杩囨护绫诲瀷鏋氫妇
+ * Todo过滤类型枚举
  */
 export enum TodoFilterType {
-  ALL = 0,          // 鍏ㄩ儴
-  PENDING = 1,      // 寰呭畬鎴?  IN_PROGRESS = 2,  // 杩涜涓?  COMPLETED = 3,    // 宸插畬鎴?  TODAY = 4,        // 浠婂ぉ鍒版湡
-  OVERDUE = 5       // 宸茶繃鏈?}
+  ALL = 0,          // 全部
+  PENDING = 1,      // 待完成
+  IN_PROGRESS = 2,  // 进行中
+  COMPLETED = 3,    // 已完成
+  TODAY = 4,        // 今天到期
+  OVERDUE = 5       // 已过期
+}
 
 /**
- * Todo鎺掑簭绫诲瀷鏋氫妇
+ * Todo排序类型枚举
  */
 export enum TodoSortType {
-  PRIORITY = 0,     // 鎸変紭鍏堢骇
-  DUE_DATE = 1,     // 鎸夋埅姝㈡棩鏈?  CREATED_TIME = 2, // 鎸夊垱寤烘椂闂?  TITLE = 3         // 鎸夋爣棰?}
+  PRIORITY = 0,     // 按优先级
+  DUE_DATE = 1,     // 按截止日期
+  CREATED_TIME = 2, // 按创建时间
+  TITLE = 3         // 按标题
+}
 
 export interface TodoStats {
   total: number;
@@ -55,24 +74,26 @@ export function generateTodoId(): string {
 }
 
 /**
- * 鑾峰彇浼樺厛绾ф爣绛炬枃鏈? */
+ * 获取优先级标签文本
+ */
 export function getPriorityLabel(priority: TodoPriority): string {
   switch (priority) {
     case TodoPriority.LOW:
-      return '浣?;
+      return '低';
     case TodoPriority.MEDIUM:
-      return '涓?;
+      return '中';
     case TodoPriority.HIGH:
-      return '楂?;
+      return '高';
     case TodoPriority.URGENT:
-      return '绱ф€?;
+      return '紧急';
     default:
-      return '鏈煡';
+      return '未知';
   }
 }
 
 /**
- * 鑾峰彇浼樺厛绾ч鑹? */
+ * 获取优先级颜色
+ */
 export function getPriorityColor(priority: TodoPriority, isDarkMode: boolean = false): string {
   switch (priority) {
     case TodoPriority.LOW:
@@ -89,44 +110,47 @@ export function getPriorityColor(priority: TodoPriority, isDarkMode: boolean = f
 }
 
 /**
- * 鑾峰彇鐘舵€佹爣绛炬枃鏈? */
+ * 获取状态标签文本
+ */
 export function getStatusLabel(status: TodoStatus): string {
   switch (status) {
     case TodoStatus.PENDING:
-      return '寰呭畬鎴?;
+      return '待完成';
     case TodoStatus.IN_PROGRESS:
-      return '杩涜涓?;
+      return '进行中';
     case TodoStatus.COMPLETED:
-      return '宸插畬鎴?;
+      return '已完成';
     case TodoStatus.CANCELLED:
-      return '宸插彇娑?;
+      return '已取消';
     default:
-      return '鏈煡';
+      return '未知';
   }
 }
 
 /**
- * 鑾峰彇浼樺厛绾у浘鏍? */
+ * 获取优先级图标
+ */
 export function getPriorityIcon(priority: TodoPriority): string {
   switch (priority) {
     case TodoPriority.LOW:
-      return '馃敺';
+      return '🔽';
     case TodoPriority.MEDIUM:
-      return '馃敹';
+      return '▶️';
     case TodoPriority.HIGH:
-      return '馃敶';
+      return '⬆️';
     case TodoPriority.URGENT:
-      return '鈿?;
+      return '⚠️';
     default:
-      return '鉂?;
+      return '❓';
   }
 }
 
 /**
- * 鏍煎紡鍖栨埅姝㈡棩鏈熸樉绀? */
+ * 格式化截止日期显示
+ */
 export function formatDueDate(dueDate: number): string {
   if (dueDate <= 0) {
-    return '鏃犳埅姝㈡棩鏈?;
+    return '无截止日期';
   }
   
   const now = Date.now();
@@ -134,13 +158,13 @@ export function formatDueDate(dueDate: number): string {
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   
   if (days < 0) {
-    return '宸茶繃鏈? + Math.abs(days) + ' 澶?;
+    return '已过期' + Math.abs(days) + '天';
   } else if (days === 0) {
-    return '浠婂ぉ鍒版湡';
+    return '今天到期';
   } else if (days === 1) {
-    return '鏄庡ぉ鍒版湡';
+    return '明天到期';
   } else if (days < 7) {
-    return days + ' 澶╁悗鍒版湡';
+    return days + '天后到期';
   } else {
     const date = new Date(dueDate);
     return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
@@ -148,7 +172,8 @@ export function formatDueDate(dueDate: number): string {
 }
 
 /**
- * 妫€鏌odo鏄惁宸茶繃鏈? */
+ * 检查Todo是否已过期
+ */
 export function isTodoOverdue(todo: TodoItem): boolean {
   if (todo.dueDate <= 0 || todo.status === TodoStatus.COMPLETED || todo.status === TodoStatus.CANCELLED) {
     return false;
@@ -157,7 +182,8 @@ export function isTodoOverdue(todo: TodoItem): boolean {
 }
 
 /**
- * 鍒涘缓榛樿Todo椤? */
+ * 创建默认Todo项
+ */
 export function createDefaultTodo(relatedBookId: string = '', relatedBookTitle: string = ''): TodoItem {
   return {
     id: generateTodoId(),

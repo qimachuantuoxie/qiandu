@@ -1,13 +1,13 @@
-﻿/**
- * 閫氱敤 LazyForEach 鏁版嵁婧愰€傞厤鍣?
- * 灏嗘櫘閫氭暟缁勮浆鎹负 IDataDataSource 鎺ュ彛
- * 鐢ㄤ簬浼樺寲澶ф暟鎹垪琛ㄧ殑娓叉煋鎬ц兘
+/**
+ * 通用 LazyForEach 数据源适配器
+ * 将普通数组转换为 IDataDataSource 接口
+ * 用于优化大数据列表的渲染性能
  *
  * @since 6.0.0
  */
 
 /**
- * 鏁版嵁鍙樺寲鐩戝惉鍣ㄦ帴鍙ｏ紙鏇夸唬 @kit.ArkUI 涓殑瀵煎嚭锛?
+ * 数据变化监听器接口（替代 @kit.ArkUI 中的导出）
  */
 interface DataChangeListener {
   onDataReloaded(): void;
@@ -22,7 +22,7 @@ interface DataChangeListener {
 }
 
 /**
- * 鏁版嵁婧愭帴鍙ｏ紙鏇夸唬 @kit.ArkUI 涓殑瀵煎嚭锛?
+ * 数据源接口（替代 @kit.ArkUI 中的导出）
  */
 interface IDataSource {
   totalCount(): number;
@@ -32,8 +32,8 @@ interface IDataSource {
 }
 
 /**
- * 閫氱敤 LazyForEach 鏁版嵁婧?
- * 鏀寔浠绘剰绫诲瀷鐨勬暟缁勬暟鎹?
+ * 通用 LazyForEach 数据源
+ * 支持任意类型的数组数据
  */
 export class LazyDataSource<T extends Object> implements IDataSource {
   private dataArray: T[] = [];
@@ -46,8 +46,8 @@ export class LazyDataSource<T extends Object> implements IDataSource {
   }
 
   /**
-   * 璁剧疆鏁版嵁
-   * @param data 鏂版暟鎹暟缁?
+   * 设置数据
+   * @param data 新数据数组
    */
   setData(data: T[]): void {
     this.dataArray = data;
@@ -59,8 +59,8 @@ export class LazyDataSource<T extends Object> implements IDataSource {
   }
 
   /**
-   * 杩藉姞鏁版嵁
-   * @param items 瑕佽拷鍔犵殑鏁版嵁椤?
+   * 追加数据
+   * @param items 要追加的数据项
    */
   appendData(items: T[]): void {
     for (let i = 0; i < items.length; i++) {
@@ -71,9 +71,9 @@ export class LazyDataSource<T extends Object> implements IDataSource {
   }
 
   /**
-   * 鏇存柊鍗曚釜鏁版嵁椤?
-   * @param index 鏁版嵁绱㈠紩
-   * @param item 鏂版暟鎹」
+   * 更新单个数据项
+   * @param index 数据索引
+   * @param item 新数据项
    */
   updateData(index: number, item: T): void {
     if (index >= 0 && index < this.dataArray.length) {
@@ -84,8 +84,8 @@ export class LazyDataSource<T extends Object> implements IDataSource {
   }
 
   /**
-   * 鍒犻櫎鍗曚釜鏁版嵁椤?
-   * @param index 鏁版嵁绱㈠紩
+   * 删除单个数据项
+   * @param index 数据索引
    */
   removeData(index: number): void {
     if (index >= 0 && index < this.dataArray.length) {
@@ -105,7 +105,7 @@ export class LazyDataSource<T extends Object> implements IDataSource {
   }
 
   /**
-   * 娓呯┖鎵€鏈夋暟鎹?
+   * 清空所有数据
    */
   clear(): void {
     this.dataArray = [];
@@ -114,28 +114,28 @@ export class LazyDataSource<T extends Object> implements IDataSource {
   }
 
   /**
-   * 鑾峰彇鏁版嵁鎬绘暟
+   * 获取数据总数
    */
   totalCount(): number {
     return this.dataArray.length;
   }
 
   /**
-   * 鑾峰彇鎸囧畾浣嶇疆鐨勬暟鎹」
+   * 获取指定位置的数据项
    */
   getData(index: number): T {
     return this.dataArray[index];
   }
 
   /**
-   * 娉ㄥ唽鏁版嵁鍙樺寲鐩戝惉
+   * 注册数据变化监听
    */
   registerDataChangeListener(listener: DataChangeListener): void {
     this.listeners.push(listener);
   }
 
   /**
-   * 娉ㄩ攢鏁版嵁鍙樺寲鐩戝惉
+   * 注销数据变化监听
    */
   unregisterDataChangeListener(listener: DataChangeListener): void {
     const index = this.listeners.indexOf(listener);

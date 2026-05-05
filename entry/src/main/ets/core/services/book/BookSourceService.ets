@@ -1,35 +1,39 @@
 import { logger } from '../../../utils/Logger';
-// 涔︽簮鏈嶅姟 - 缃戠粶涔︾睄鎼滅储涓庡�鍏?// Book Source Service - Network Book Search & Import
-// 鏀�寔闃呰�3.0 (Legado) 涔︽簮鏍煎紡鐨勫�鍏ャ€佹悳绱㈠拰娴嬭瘯
-// 鎻愪緵鍦ㄧ嚎涔︽簮绠＄悊鍜屼功绫嶅唴瀹硅幏鍙栧姛鑳?
+// 书源服务 - 网络书籍搜索与导入
+// Book Source Service - Network Book Search & Import
+// 支持阅读3.0 (Legado) 书源格式的导入、搜索和测试
+// 提供在线书源管理和书籍内容获取功能
 import { http } from '@kit.NetworkKit';
 import { BookSource, BookSourceType, SearchRule, ContentRule } from '../models/BookSourceModel';
 import { BookSourceImporter, LegadoBookSource } from '../utils/BookSourceImporter';
 import { errorHandler, ErrorLevel } from '../utils/ErrorHandler';
 
 /**
- * 缃戠粶涔︽簮鎼滅储缁撴灉
+ * 网络书源搜索结果
  * Source Search Result
  */
 export interface SourceSearchResult {
-  bookName: string;        // 涔﹀悕
-  author: string;          // 浣滆€?  coverUrl: string;        // 灏侀潰URL
-  bookUrl: string;         // 涔︾睄璇︽儏椤礥RL
-  sourceName: string;      // 鏉ユ簮鍚嶇О
-  sourceId: string;        // 鏉ユ簮ID
-  latestChapter: string;   // 鏈€鏂扮珷鑺?  intro: string;           // 绠€浠?}
+  bookName: string;        // 书名
+  author: string;          // 作者
+  coverUrl: string;        // 封面URL
+  bookUrl: string;         // 书籍详情页URL
+  sourceName: string;      // 来源名称
+  sourceId: string;        // 来源ID
+  latestChapter: string;   // 最新章节
+  intro: string;           // 简介
+}
 
 /**
- * 涔︽簮娴嬭瘯缁撴灉
+ * 书源测试结果
  * Source Test Result
  */
 export interface SourceTestResult {
-  sourceId: string;        // 鏉ユ簮ID
-  sourceName: string;      // 鏉ユ簮鍚嶇О
-  success: boolean;        // 鏄�惁鎴愬姛
-  responseTime: number;    // 鍝嶅簲鏃堕棿(ms)
-  bookCount: number;       // 鎼滅储鍒扮殑涔︾睄鏁伴噺
-  error?: string;          // 閿欒�淇℃伅
+  sourceId: string;        // 来源ID
+  sourceName: string;      // 来源名称
+  success: boolean;        // 是否成功
+  responseTime: number;    // 响应时间(ms)
+  bookCount: number;       // 搜索到的书籍数量
+  error?: string;          // 错误信息
 }
 
 export interface SourceStats {
@@ -39,7 +43,7 @@ export interface SourceStats {
 }
 
 /**
- * 鍦ㄧ嚎涔︽簮淇℃伅
+ * 在线书源信息
  * Online Source Info
  */
 export interface OnlineSource {
@@ -54,7 +58,7 @@ export interface OnlineSource {
 }
 
 /**
- * 瀵煎叆缁撴灉
+ * 导入结果
  * Import Result
  */
 export interface ImportResult {
@@ -65,8 +69,9 @@ export interface ImportResult {
 }
 
 /**
- * 涔︽簮鏈嶅姟绫? * Book Source Service Class
- * 绠＄悊鍦ㄧ嚎涔︽簮鐨勫�鍏ャ€佹悳绱€€佹祴璇曠瓑鍔熻兘
+ * 书源服务类
+ * Book Source Service Class
+ * 管理在线书源的导入、搜索、测试等功能
  */
 class BookSourceService {
   private static instance: BookSourceService;
@@ -78,7 +83,7 @@ class BookSourceService {
   private constructor() {}
 
   /**
-   * 鑾峰彇鍗曚緥瀹炰緥
+   * 获取单例实例
    * Get Singleton Instance
    */
   static getInstance(): BookSourceService {
@@ -89,7 +94,8 @@ class BookSourceService {
   }
 
   /**
-   * 鍒濆�鍖栨湇鍔?   * Initialize Service
+   * 初始化服务
+   * Initialize Service
    */
   async init(): Promise<void> {
     this.isInitialized = true;
@@ -97,17 +103,18 @@ class BookSourceService {
   }
 
   /**
-   * 妫€鏌ユ湇鍔℃槸鍚﹀氨缁?   * Check if service is ready
+   * 检查服务是否就绪
+   * Check if service is ready
    */
   isReady(): boolean {
     return this.isInitialized;
   }
 
   /**
-   * 浠嶶RL 瀵煎叆涔︽簮 (鏀�寔闃呰�3.0 Legado鏍煎紡)
+   * 从URL导入书源 (支持阅读3.0 Legado格式)
    * Import book sources from URL (supports Legado format)
-   * @param url 涔︽簮JSON鏂囦欢鐨刄RL
-   * @returns 瀵煎叆缁撴灉缁熻�
+   * @param url 书源JSON文件的URL
+   * @returns 导入结果统计
    */
   async importFromUrl(url: string): Promise<ImportResult> {
     try {
@@ -139,10 +146,11 @@ class BookSourceService {
   }
 
   /**
-   * 鑾峰彇缃戠粶鍐呭�
+   * 获取网络内容
    * Fetch network content
-   * @param url 鐩�爣URL
-   * @returns 鍐呭�瀛楃�涓?   */
+   * @param url 目标URL
+   * @returns 内容字符串
+   */
   private async fetchContent(url: string): Promise<string> {
     const httpRequest = http.createHttp();
     try {
@@ -159,9 +167,10 @@ class BookSourceService {
   }
 
   /**
-   * 瑙ｆ瀽 JSON 瀛楃�涓插�鍏?(闃呰�3.0鏍煎紡)
+   * 解析 JSON 字符串导入 (阅读3.0格式)
    * Import from JSON string (Legado format)
-   * @param jsonString 涔︽簮JSON瀛楃�涓?   * @returns 瀵煎叆缁撴灉缁熻�
+   * @param jsonString 书源JSON字符串
+   * @returns 导入结果统计
    */
   importFromJson(jsonString: string): ImportResult {
     try {
@@ -173,7 +182,7 @@ class BookSourceService {
           success: 0,
           fail: 0,
           total: 0,
-          message: '鏃犳晥鐨勪功婧愭牸寮?
+          message: '无效的书源格式'
         };
       }
 
@@ -202,7 +211,7 @@ class BookSourceService {
         success: successCount,
         fail: totalCount - successCount,
         total: totalCount,
-        message: '鎴愬姛瀵煎叆 ' + successCount + ' 涓�功婧?
+        message: '成功导入 ' + successCount + ' 个书源'
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
@@ -210,15 +219,16 @@ class BookSourceService {
         success: 0,
         fail: 0,
         total: 0,
-        message: '瑙ｆ瀽澶辫触: ' + message
+        message: '解析失败: ' + message
       };
     }
   }
 
   /**
-   * 浠嶣ase64 瀵煎叆
+   * 从Base64导入
    * Import from Base64 string
-   * @param base64String Base64缂栫爜鐨勪功婧愭暟鎹?   * @returns 瀵煎叆缁撴灉缁熻�
+   * @param base64String Base64编码的书源数据
+   * @returns 导入结果统计
    */
   importFromBase64(base64String: string): ImportResult {
     try {
@@ -230,15 +240,17 @@ class BookSourceService {
         success: 0,
         fail: 0,
         total: 0,
-        message: '瑙ｆ瀽澶辫触: ' + message
+        message: '解析失败: ' + message
       };
     }
   }
 
   /**
-   * Base64瑙ｇ爜
+   * Base64解码
    * Base64 decode
-   * @param str Base64瀛楃�涓?   * @returns 瑙ｇ爜鍚庣殑瀛楃�涓?   */
+   * @param str Base64字符串
+   * @returns 解码后的字符串
+   */
   private base64Decode(str: string): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
     let output = '';
@@ -258,10 +270,11 @@ class BookSourceService {
   }
 
   /**
-   * 鎼滅储涔︾睄
+   * 搜索书籍
    * Search Books
-   * @param keyword 鎼滅储鍏抽敭璇?   * @param sourceId 鍙�€夛紝鎸囧畾涔︽簮ID
-   * @returns 鎼滅储缁撴灉鏁扮粍
+   * @param keyword 搜索关键词
+   * @param sourceId 可选，指定书源ID
+   * @returns 搜索结果数组
    */
   async searchBook(keyword: string, sourceId?: string): Promise<SourceSearchResult[]> {
     const results: SourceSearchResult[] = [];
@@ -307,9 +320,11 @@ class BookSourceService {
   }
 
   /**
-   * 浠庢寚瀹氫功婧愭悳绱?   * Search from specific source
-   * @param source 涔︽簮瀵硅薄
-   * @param keyword 鍏抽敭璇?   * @returns 鎼滅储缁撴灉
+   * 从指定书源搜索
+   * Search from specific source
+   * @param source 书源对象
+   * @param keyword 关键词
+   * @returns 搜索结果
    */
   private async searchFromSource(source: BookSource, keyword: string): Promise<SourceSearchResult[]> {
     const results: SourceSearchResult[] = [];
@@ -351,12 +366,12 @@ class BookSourceService {
   }
 
   /**
-   * 瑙ｆ瀽涔︾睄鍒楄〃
+   * 解析书籍列表
    * Parse book list from HTML
-   * @param html HTML鍐呭�
-   * @param rule 瑙ｆ瀽瑙勫垯
-   * @param source 涔︽簮瀵硅薄
-   * @returns 涔︾睄鏁版嵁鏁扮粍
+   * @param html HTML内容
+   * @param rule 解析规则
+   * @param source 书源对象
+   * @returns 书籍数据数组
    */
   private parseBookList(html: string, rule: string, source: BookSource): SourceSearchResult[] {
     const results: SourceSearchResult[] = [];
@@ -375,7 +390,7 @@ class BookSourceService {
       for (let i = 0; i < limitCount; i++) {
         const match = bookMatches[i];
         const nameMatch = nameRule ? this.extractRuleValue(match, nameRule) : '';
-        const authorMatch = authorRule ? this.extractRuleValue(match, authorRule) : '鏈�煡浣滆€?;
+        const authorMatch = authorRule ? this.extractRuleValue(match, authorRule) : '未知作者';
 
         if (nameMatch) {
           results.push({
@@ -399,10 +414,12 @@ class BookSourceService {
   }
 
   /**
-   * 鏍规嵁瑙勫垯鎻愬彇鍊?   * Extract value by rule
-   * @param html HTML鍐呭�
-   * @param rule 鎻愬彇瑙勫垯
-   * @returns 鎻愬彇鐨勫€?   */
+   * 根据规则提取值
+   * Extract value by rule
+   * @param html HTML内容
+   * @param rule 提取规则
+   * @returns 提取的值
+   */
   private extractRuleValue(html: string, rule: string): string {
     try {
       if (rule.startsWith('class.')) {
@@ -436,9 +453,11 @@ class BookSourceService {
   }
 
   /**
-   * 鍘婚櫎HTML鏍囩�
+   * 去除HTML标签
    * Strip HTML tags
-   * @param html HTML瀛楃�涓?   * @returns 绾�枃鏈?   */
+   * @param html HTML字符串
+   * @returns 纯文本
+   */
   private stripHtml(html: string): string {
     return html
       .replace(new RegExp('<[^>]*>', 'g'), '')
@@ -450,10 +469,10 @@ class BookSourceService {
   }
 
   /**
-   * 娴嬭瘯涔︽簮
+   * 测试书源
    * Test Book Source
-   * @param source 瑕佹祴璇曠殑涔︽簮
-   * @returns 娴嬭瘯缁撴灉
+   * @param source 要测试的书源
+   * @returns 测试结果
    */
   async testSource(source: BookSource): Promise<SourceTestResult> {
     const startTime = Date.now();
@@ -558,27 +577,27 @@ class BookSourceService {
   }
 
   /**
-   * 娣诲姞涔︽簮
+   * 添加书源
    * Add source
-   * @param source 涔︽簮瀵硅薄
+   * @param source 书源对象
    */
   addSource(source: BookSource): void {
     this.sources.set(source.id, source);
   }
 
   /**
-   * 绉婚櫎涔︽簮
+   * 移除书源
    * Remove source
-   * @param id 涔︽簮ID
+   * @param id 书源ID
    */
   removeSource(id: string): void {
     this.sources.delete(id);
   }
 
   /**
-   * 鍚�敤涔︽簮
+   * 启用书源
    * Enable source
-   * @param id 涔︽簮ID
+   * @param id 书源ID
    */
   enableSource(id: string): void {
     const source = this.sources.get(id);
@@ -589,9 +608,9 @@ class BookSourceService {
   }
 
   /**
-   * 绂佺敤涔︽簮
+   * 禁用书源
    * Disable source
-   * @param id 涔︽簮ID
+   * @param id 书源ID
    */
   disableSource(id: string): void {
     const source = this.sources.get(id);
@@ -602,26 +621,27 @@ class BookSourceService {
   }
 
   /**
-   * 鑾峰彇涔︽簮鎬绘暟
+   * 获取书源总数
    * Get total source count
-   * @returns 涔︽簮鏁伴噺
+   * @returns 书源数量
    */
   getSourceCount(): number {
     return this.sources.size;
   }
 
   /**
-   * 鑾峰彇鍚�敤鐨勪功婧愭暟
+   * 获取启用的书源数
    * Get enabled source count
-   * @returns 鍚�敤鐨勪功婧愭暟閲?   */
+   * @returns 启用的书源数量
+   */
   getEnabledSourceCount(): number {
     return this.getEnabledSources().length;
   }
 
   /**
-   * 鑾峰彇鎺掑簭鍚庣殑涔︽簮(鎸夋潈閲?
+   * 获取排序后的书源(按权重)
    * Get ranked sources by weight
-   * @returns 鎺掑簭鍚庣殑涔︽簮鏁扮粍
+   * @returns 排序后的书源数组
    */
   getRankingSources(): BookSource[] {
     const allSources: BookSource[] = [];
@@ -656,9 +676,10 @@ class BookSourceService {
   }
 
   /**
-   * 鎸夊垎绫昏幏鍙栦功婧?   * Get sources by category
-   * @param category 鍒嗙被鍚嶇О
-   * @returns 璇ヤ功婧愮殑涔︽簮鏁扮粍
+   * 按分类获取书源
+   * Get sources by category
+   * @param category 分类名称
+   * @returns 该书源的书源数组
    */
   getSourcesByCategory(category: string): BookSource[] {
     const results: BookSource[] = [];

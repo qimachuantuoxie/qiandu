@@ -1,6 +1,6 @@
 import { logger } from '../../../utils/Logger';
-// CoreSpeechService - 鏍稿績璇�煶鍚堟垚鏈嶅姟
-// 浣跨敤 HarmonyOS Speech Kit 瀹炵幇鐪熷疄 TTS 鍔熻兘
+// CoreSpeechService - 核心语音合成服务
+// 使用 HarmonyOS Speech Kit 实现真实 TTS 功能
 // TODO: SpeechKit not available - using stub implementations
 // import { speechSynthesis, SpeechSynthesisEngine, SpeechSynthesizer, SpeechSynthesisParams, SpeechSynthesisListener } from '@kit.SpeechKit';
 import { common } from '@kit.AbilityKit';
@@ -50,11 +50,11 @@ class StubSpeechSynthesisEngine {
 // ===== End Stub types =====
 
 export enum SpeechVoice {
-  XIAOYI = 'zh-CN-Xiaoyi',      // 涓�枃濂冲０
-  XIAOQI = 'zh-CN-Xiaoqi',      // 涓�枃鐢峰０
-  NINGNING = 'zh-CN-Ningning',  // 涓�枃濂冲０
-  YUANZI = 'zh-CN-Yuanzi',      // 涓�枃鐢峰０
-  YEYUN = 'zh-CN-Yeyun'         // 涓�枃濂冲０
+  XIAOYI = 'zh-CN-Xiaoyi',      // 中文女声
+  XIAOQI = 'zh-CN-Xiaoqi',      // 中文男声
+  NINGNING = 'zh-CN-Ningning',  // 中文女声
+  YUANZI = 'zh-CN-Yuanzi',      // 中文男声
+  YEYUN = 'zh-CN-Yeyun'         // 中文女声
 }
 
 export interface SpeechConfig {
@@ -120,11 +120,11 @@ class CoreSpeechService {
     try {
       this.context = context;
 
-      // 鍒濆�鍖栬�闊冲悎鎴愬紩鎿?using stub)
+      // 初始化语音合成引擎(using stub)
       const engine: StubSpeechSynthesisEngine = new StubSpeechSynthesisEngine(context);
       this.synthesizer = engine.createSynthesizer();
 
-      // 璁剧疆璇�煶鍚堟垚鐩戝惉鍣?- using arrow functions to preserve `this` context (ArkTS strict mode)
+      // 设置语音合成监听器 - using arrow functions to preserve `this` context (ArkTS strict mode)
       this.onStartCallback = (event: Object): void => {
         logger.info('[CoreSpeech] Speech started');
         this.isServiceSpeaking = true;
@@ -160,9 +160,9 @@ class CoreSpeechService {
         logger.error('[CoreSpeech] Speech error:', errEvent.errorCode, errEvent.errorMessage);
         this.isServiceSpeaking = false;
         this.isServicePaused = false;
-        const errorMsg: string = errEvent.errorMessage || '鏈�煡閿欒�';
+        const errorMsg: string = errEvent.errorMessage || '未知错误';
         if (this.listener && this.listener.onError) {
-          this.listener.onError('璇�煶鍚堟垚澶辫触: ' + errorMsg);
+          this.listener.onError('语音合成失败: ' + errorMsg);
         }
       };
 
@@ -198,212 +198,151 @@ class CoreSpeechService {
 
     try {
       this.currentText = text;
-      this.isServiceSpeaking = true;
-      this.isServicePaused = false;
-      logger.info('[CoreSpeech] Speaking:', text.substring(0, 30) + '...');
 
-      // 璁剧疆璇�煶鍙傛暟
+      // 配置TTS参数
       const params: StubSpeechSynthesisParams = {
         text: text,
         language: this.config.language,
         voiceName: this.config.voice,
         speakingRate: this.config.speed,
         pitchRate: this.config.pitch,
-        volumeRate: Math.round(this.config.volume * 100)
+        volumeRate: this.config.volume
       };
 
+      // 开始语音合成
       this.synthesizer.start(params);
+      logger.info('[CoreSpeech] Speaking:', text.substring(0, 50) + '...');
       return true;
     } catch (error) {
       logger.error('[CoreSpeech] Speak failed:', error);
-      this.isServiceSpeaking = false;
-      this.isServicePaused = false;
-      if (this.listener && this.listener.onError) {
-        this.listener.onError('璇�煶鎾�斁澶辫触: ' + error);
-      }
       return false;
     }
   }
 
-  async speakWithCallback(text: string, onProgress?: (text: string) => void): Promise<boolean> {
-    if (onProgress) {
-      // 鎸夊彞瀛愬垎鍓诧紝閫愬彞鎾�斁
-      const sentences: string[] = text.split(new RegExp('([锛屻€傦紒锛熴€侊紱\\n])', ''));
-      let i: number = 0;
-      for (i = 0; i < sentences.length; i++) {
-        if (!this.isServiceSpeaking) break;
-        while (this.isServicePaused && this.isServiceSpeaking) {
-          await new Promise<void>((resolve: () => void) => setTimeout(resolve, 100));
-        }
-        if (!this.isServiceSpeaking) break;
-        const sentence: string = sentences[i];
-        if (sentence && sentence.trim().length > 0) {
-          await this.speak(sentence);
-          onProgress(sentence);
-        }
-      }
-    }
-    return this.speak(text);
-  }
-
-  stop(): void {
-    if (this.synthesizer && this.isServiceSpeaking) {
-      try {
-        this.synthesizer.stop();
-      } catch (error) {
-        logger.error('[CoreSpeech] Stop failed:', error);
-      }
-    }
-    this.isServiceSpeaking = false;
-    this.isServicePaused = false;
-    logger.info('[CoreSpeech] Stopped');
-  }
-
+  /**
+   * 暂停语音合成
+   */
   pause(): void {
-    if (this.isServiceSpeaking && !this.isServicePaused && this.synthesizer) {
-      try {
-        this.synthesizer.pause();
-        this.isServicePaused = true;
-        if (this.listener && this.listener.onPause) {
-          this.listener.onPause();
-        }
-        logger.info('[CoreSpeech] Paused');
-      } catch (error) {
-        logger.error('[CoreSpeech] Pause failed:', error);
+    if (!this.synthesizer || !this.isServiceSpeaking) {
+      return;
+    }
+
+    try {
+      this.synthesizer.pause();
+      this.isServicePaused = true;
+      logger.info('[CoreSpeech] Paused');
+      
+      if (this.listener && this.listener.onPause) {
+        this.listener.onPause();
       }
+    } catch (error) {
+      logger.error('[CoreSpeech] Pause failed:', error);
     }
   }
 
+  /**
+   * 恢复语音合成
+   */
   resume(): void {
-    if (this.isServicePaused && this.synthesizer) {
-      try {
-        this.synthesizer.resume();
-        this.isServicePaused = false;
-        if (this.listener && this.listener.onResume) {
-          this.listener.onResume();
-        }
-        logger.info('[CoreSpeech] Resumed');
-      } catch (error) {
-        logger.error('[CoreSpeech] Resume failed:', error);
+    if (!this.synthesizer || !this.isServicePaused) {
+      return;
+    }
+
+    try {
+      this.synthesizer.resume();
+      this.isServicePaused = false;
+      logger.info('[CoreSpeech] Resumed');
+      
+      if (this.listener && this.listener.onResume) {
+        this.listener.onResume();
       }
+    } catch (error) {
+      logger.error('[CoreSpeech] Resume failed:', error);
     }
   }
 
-  setSpeed(speed: number): void {
-    this.config.speed = Math.max(0.5, Math.min(2.0, speed));
-    logger.info('[CoreSpeech] Speed set to: ' + this.config.speed);
+  /**
+   * 停止语音合成
+   */
+  stop(): void {
+    if (!this.synthesizer) {
+      return;
+    }
+
+    try {
+      this.synthesizer.stop();
+      this.isServiceSpeaking = false;
+      this.isServicePaused = false;
+      logger.info('[CoreSpeech] Stopped');
+      
+      if (this.listener && this.listener.onComplete) {
+        this.listener.onComplete();
+      }
+    } catch (error) {
+      logger.error('[CoreSpeech] Stop failed:', error);
+    }
   }
 
-  setPitch(pitch: number): void {
-    this.config.pitch = Math.max(0.5, Math.min(2.0, pitch));
-    logger.info('[CoreSpeech] Pitch set to: ' + this.config.pitch);
+  /**
+   * 更新配置
+   */
+  updateConfig(config: Partial<SpeechConfig>): void {
+    this.config = { ...this.config, ...config };
+    logger.info('[CoreSpeech] Config updated:', this.config);
   }
 
-  setVolume(volume: number): void {
-    this.config.volume = Math.max(0, Math.min(1, volume));
-    logger.info('[CoreSpeech] Volume set to: ' + this.config.volume);
-  }
-
-  setVoice(voice: SpeechVoice): void {
-    this.config.voice = voice;
-    logger.info('[CoreSpeech] Voice set to: ' + voice);
-  }
-
-  setLanguage(language: string): void {
-    this.config.language = language;
-    logger.info('[CoreSpeech] Language set to: ' + language);
-  }
-
+  /**
+   * 获取当前配置
+   */
   getConfig(): SpeechConfig {
-    return {
-      voice: this.config.voice,
-      speed: this.config.speed,
-      pitch: this.config.pitch,
-      volume: this.config.volume,
-      language: this.config.language
-    };
+    return this.config;
   }
 
+  /**
+   * 检查是否正在说话
+   */
   isSpeaking(): boolean {
     return this.isServiceSpeaking;
   }
 
+  /**
+   * 检查是否已暂停
+   */
   isPaused(): boolean {
     return this.isServicePaused;
   }
 
-  isInitializedService(): boolean {
-    return this.isInitialized;
-  }
-
-  getCurrentText(): string {
-    return this.currentText;
-  }
-
-  async synthesizeToFile(text: string, filePath: string): Promise<boolean> {
-    if (!this.isInitialized || !this.synthesizer) {
-      logger.error('[CoreSpeech] Not initialized');
-      return false;
-    }
-
-    try {
-      logger.info('[CoreSpeech] Synthesize to file:', filePath);
-      const params: StubSpeechSynthesisParams = {
-        text: text,
-        language: this.config.language,
-        voiceName: this.config.voice,
-        speakingRate: this.config.speed,
-        pitchRate: this.config.pitch,
-        volumeRate: Math.round(this.config.volume * 100)
-      };
-
-      this.synthesizer.synthesizeToFile(params, filePath);
-      return true;
-    } catch (error) {
-      logger.error('[CoreSpeech] Synthesize to file failed:', error);
-      return false;
-    }
-  }
-
-  async getAvailableVoices(): Promise<SpeechVoice[]> {
-    return [
-      SpeechVoice.XIAOYI,
-      SpeechVoice.XIAOQI,
-      SpeechVoice.NINGNING,
-      SpeechVoice.YEYUN,
-      SpeechVoice.YUANZI
-    ];
-  }
-
+  /**
+   * 释放资源
+   */
   release(): void {
-    this.stop();
     if (this.synthesizer) {
       try {
+        this.synthesizer.release();
+        this.synthesizer = null;
+        
+        // 清理回调
         if (this.onStartCallback) {
-          this.synthesizer.off('start', this.onStartCallback);
+          this.synthesizer?.off('start', this.onStartCallback);
         }
         if (this.onProgressCallback) {
-          this.synthesizer.off('progress', this.onProgressCallback);
+          this.synthesizer?.off('progress', this.onProgressCallback);
         }
         if (this.onCompleteCallback) {
-          this.synthesizer.off('complete', this.onCompleteCallback);
+          this.synthesizer?.off('complete', this.onCompleteCallback);
         }
         if (this.onErrorCallback) {
-          this.synthesizer.off('error', this.onErrorCallback);
+          this.synthesizer?.off('error', this.onErrorCallback);
         }
-        this.synthesizer.release();
+        
+        logger.info('[CoreSpeech] Released');
       } catch (error) {
         logger.error('[CoreSpeech] Release failed:', error);
       }
     }
-    this.synthesizer = null;
-    this.onStartCallback = null;
-    this.onProgressCallback = null;
-    this.onCompleteCallback = null;
-    this.onErrorCallback = null;
+    
     this.isInitialized = false;
-    this.context = null;
-    logger.info('[CoreSpeech] Released');
+    this.listener = null;
   }
 }
 

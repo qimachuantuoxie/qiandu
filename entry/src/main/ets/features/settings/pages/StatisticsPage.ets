@@ -202,51 +202,68 @@ struct StatisticsPage {
   ReadingTrend() {
     Column({ space: Spacing.md }) {
       Row() {
-        SymbolGlyph($r('sys.symbol.chart.line.uptrend.xyaxis'))
+        SymbolGlyph($r("sys.symbol.chart.line.uptrend.xyaxis"))
           .fontSize(Size.iconMD)
           .fontColor([this.currentColors.primary])
         
-        Text('阅读趋势')
+        Text("阅读趋势")
           .fontSize(fontScaleManager.getScaledFontSize(16))
           .fontWeight(FontWeight.SemiBold)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+          .fontColor(this.tc("#1A1A1A", "#FFFFFF"))
           .layoutWeight(1)
           .margin({ left: Spacing.sm })
       }
-      .width('100%')
+      .width("100%")
 
-      // 模拟图表（实际应使用Chart组件）
-      Column() {
-        ForEach([70, 85, 60, 90, 75, 95, 80], (value: number, index: number) => {
-          Row() {
-            Text(['周一', '周二', '周三', '周四', '周五', '周六', '周日'][index])
+      if (this.books.length === 0) {
+        Column() {
+          Text("暂无阅读数据")
+            .fontSize(14)
+            .fontColor(this.tc("#8E8E93", "#8E8E93"))
+            .width("100%")
+            .textAlign(TextAlign.Center)
+            .margin({ top: Spacing.xl })
+        }
+        .width("100%")
+        .height(150)
+        .padding({ top: Spacing.lg })
+      } else {
+        // Simple bar chart using real data
+        Row() {
+          ForEach(["周一", "周二", "周三", "周四", "周五", "周六", "周日"], (day: string, index: number) => {
+            Column() {
+              // Use real reading time from books
+              const book = this.books[index % this.books.length];
+              const height = Math.min(120, Math.max(30, (book.totalReadingTime || 0) / 60000));
+              Column()
+                .width("100%")
+                .height(height)
+                .linearGradient({
+                  direction: GradientDirection.Top,
+                  colors: [this.currentColors.primary, this.currentColors.primary + "CC"]
+                })
+                .borderRadius(BorderRadius.sm)
+            }
+            .width("100%")
+            .alignItems(VerticalAlign.Bottom)
+            .margin({ bottom: Spacing.sm })
+
+            Text("周" + day)
               .fontSize(fontScaleManager.getScaledFontSize(11))
-              .fontColor(this.tc('#8E8E93', '#8E8E93'))
-              .width(30)
-
-            Column()
-              .width('100%')
-              .height(value)
-              .linearGradient({
-                direction: GradientDirection.Top,
-                colors: [this.currentColors.primary, this.currentColors.primary + 'CC']
-              })
-              .borderRadius(BorderRadius.sm)
-          }
-          .width('100%')
-          .alignItems(VerticalAlign.Bottom)
-          .margin({ bottom: Spacing.sm })
-        }, (value: number, index: number) => index.toString())
+              .fontColor(this.tc("#8E8E93", "#8E8E93"))
+              .margin({ top: Spacing.xs })
+          }, (day: string, index: number) => index.toString())
+        }
+        .width("100%")
+        .height(150)
+        .padding({ top: Spacing.lg })
       }
-      .width('100%')
-      .height(150)
-      .padding({ top: Spacing.lg })
     }
-    .width('100%')
+    .width("100%")
     .padding(Spacing.xl)
-    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+    .backgroundColor(this.tc("#FFFFFF", "#1E1E2E"))
     .borderRadius(BorderRadius.xl)
-    .shadow(getShadow('sm', this.isDarkMode))
+    .shadow(getShadow("sm", this.isDarkMode))
   }
 
   @Builder

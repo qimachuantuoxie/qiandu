@@ -175,22 +175,11 @@ export enum ReplaceScope {
 /**
  * 姒涙顓绘稊锔界爱
  */
-export const DEFAULT_BOOK_SOURCES: BookSource[] = [
-  {
-    id: 'source_001',
-    name: '姒涙顓绘稊锔界爱',
-    url: 'https://api.example.com',
-    enabled: true,
-    weight: 10,
-    priority: 1,
-    bookSourceType: BookSourceType.TEXT,
-    loginRequired: false
-  }
-];
+// DEFAULT_BOOK_SOURCES removed - load from storage or network only
+// Empty array as default - actual sources should be loaded from storage
+export const DEFAULT_BOOK_SOURCES: BookSource[] = [];
 
-/**
- * 姒涙顓婚弴鎸庡床鐟欏嫬鍨?
- */
+// Default replace rules (can be empty)
 export const DEFAULT_REPLACE_RULES: ReplaceRule[] = [];
 
 /**

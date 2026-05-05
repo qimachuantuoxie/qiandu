@@ -1,12 +1,12 @@
 import { logger } from '../../utils/Logger';
 /**
- * DOCX Parser - Word 鏂囨。瑙ｆ瀽鍣?
+ * DOCX Parser - Word 文档解析器
  *
- * 鎻愪緵 DOCX 鏍煎紡鏂囨。鐨勮В鏋愬姛鑳斤紝鍖呮嫭锛?
- * - ZIP 瀹瑰櫒瑙ｅ帇锛圖OCX 鏈�川鏄?ZIP锛?
- * - 鏍稿績鍏冩暟鎹�彁鍙栵紙鏍囬�銆佷綔鑰呯瓑锛?
- * - Word XML 鏂囨湰鎻愬彇
- * - 绔犺妭鏅鸿兘璇嗗埆
+ * 提供 DOCX 格式文档的解析功能，包括：
+ * - ZIP 容器解压（DOCX 本质是 ZIP）
+ * - 核心元数据提取（标题、作者等）
+ * - Word XML 文本提取
+ * - 章节智能识别
  *
  * @since 6.0.0
  */
@@ -17,14 +17,14 @@ import { ZipUtils } from '../utils/ZipUtils';
 import { LocalChapterInfo, ParseResult, ZipParseResult } from '../models/EbookTypes';
 
 /**
- * DOCX 瑙ｆ瀽鍣ㄧ被
+ * DOCX 解析器类
  */
 export class DocxParser {
 
   /**
-   * 瑙ｆ瀽 DOCX 鏂囦欢
-   * @param filePath DOCX 鏂囦欢璺�緞
-   * @returns 瑙ｆ瀽缁撴灉
+   * 解析 DOCX 文件
+   * @param filePath DOCX 文件路径
+   * @returns 解析结果
    */
   static async parse(filePath: string): Promise<ParseResult> {
     logger.info('[DocxParser] Parsing DOCX file:', filePath);
@@ -104,8 +104,8 @@ export class DocxParser {
   }
 
   /**
-   * 璇诲彇鏂囦欢缂撳啿鍖?
-   * @param filePath 鏂囦欢璺�緞
+   * 读取文件缓冲区
+   * @param filePath 文件路径
    * @returns ArrayBuffer
    */
   private static async readFileBuffer(filePath: string): Promise<ArrayBuffer> {
@@ -121,9 +121,9 @@ export class DocxParser {
   }
 
   /**
-   * 浠?DOCX XML 鍐呭�涓�彁鍙栨枃鏈?
-   * @param xmlContent XML 鍐呭�
-   * @returns 鎻愬彇鐨勬枃鏈?
+   * 从 DOCX XML 内容中提取文本
+   * @param xmlContent XML 内容
+   * @returns 提取的文本
    */
   private static extractDocxText(xmlContent: string): string {
     let text = '';
@@ -147,24 +147,24 @@ export class DocxParser {
   }
 
   /**
-   * 瑙ｆ瀽绔犺妭缁撴瀯锛堝�鐢?TXT 鐨勭珷鑺傝瘑鍒�€昏緫锛?
-   * @param content 鏂囨。鍐呭�
-   * @returns 绔犺妭鍒楄〃
+   * 解析章节结构（复用 TXT 的章节识别逻辑）
+   * @param content 文档内容
+   * @returns 章节列表
    */
   private static parseTxtChapters(content: string): LocalChapterInfo[] {
     const chapters: LocalChapterInfo[] = [];
     const lines = content.split('\n');
 
-    // 澶氱�绔犺妭鏍囬�鍖归厤妯″紡
+    // 多种章节标题匹配模式
     const patterns: RegExp[] = [
-      new RegExp('^(绗琜涓€浜屼笁鍥涗簲鍏�竷鍏�節鍗佺櫨鍗冮浂\\d]+绔燵\\s\\.路]*(.+)?$', ''),
-      new RegExp('^(绗琜\\d]+绔燵\\s\\.路]*(.+)?$', ''),
-      new RegExp('^(绗琜涓€浜屼笁鍥涗簲鍏�竷鍏�節鍗佺櫨鍗僜\d]+鑺?[\\s\\.路]*(.+)?$', ''),
+      new RegExp('^(第[一二三四五六七八九十百千零\\d]+章[\\s\\.·]*(.+)?$', ''),
+      new RegExp('^(第[\\d]+章[\\s\\.·]*(.+)?$', ''),
+      new RegExp('^(第[一二三四五六七八九十百千\\d]+节?[\\s\\.·]*(.+)?$', ''),
       new RegExp('^(Chapter\\s+\\d+)[\\s\\.]*(.+)?$', 'i'),
       new RegExp('^(Part\\s+\\d+)[\\s\\.]*(.+)?$', 'i'),
-      new RegExp('^(\\d+)[\\s\\.路]+(.+)$', ''),
+      new RegExp('^(\\d+)[\\s\\.·]+(.+)$', ''),
       new RegExp('^\\d+\\.\\s+(.+)$', ''),
-      new RegExp('^([涓€浜屼笁鍥涗簲鍏�竷鍏�節鍗乚+)[\\s\\.路]+(.+)$', '')
+      new RegExp('^([一二三四五六七八九]+)[\\s\\.·]+(.+)$', '')
     ];
 
     const isChapterTitle = (line: string): boolean => {
@@ -212,37 +212,31 @@ export class DocxParser {
       });
     }
 
-    logger.info('[DocxParser] Parsed ' + chapters.length + ' chapters');
     return chapters;
   }
 
   /**
-   * 鑾峰彇绔犺妭灞傜骇
-   * @param title 绔犺妭鏍囬�
-   * @returns 灞傜骇锛?=绔狅紝2=鑺傦紝3=灏忚妭锛?
+   * 获取章节级别
+   * @param title 章节标题
+   * @returns 级别（1-3）
    */
   private static getChapterLevel(title: string): number {
-    if (new RegExp('^绗?*鑺?).test(title)) return 2;
-    if (new RegExp('^绗?).test(title)) return 1;
-    if (new RegExp('^\\d+\\.').test(title)) return 3;
-    return 2;
+    if (title.includes('第') && (title.includes('章') || title.includes('节'))) {
+      return 1;
+    }
+    if (new RegExp('^\\d+[\\.·]').test(title)) {
+      return 2;
+    }
+    return 3;
   }
 
   /**
-   * 浠庢枃浠惰矾寰勬彁鍙栨枃浠跺悕
-   * @param filePath 鏂囦欢璺�緞
-   * @returns 鏂囦欢鍚?
+   * 提取文件名
+   * @param filePath 文件路径
+   * @returns 文件名
    */
   private static extractFileName(filePath: string): string {
     const parts = filePath.split('/');
-    const lastPart = parts[parts.length - 1];
-    try {
-      return decodeURIComponent(lastPart);
-    } catch {
-      return lastPart;
-    }
+    return parts[parts.length - 1] || filePath;
   }
 }
-
-/** DOCX 瑙ｆ瀽鍣ㄥ崟渚嬪疄渚?*/
-export const docxParser = DocxParser;

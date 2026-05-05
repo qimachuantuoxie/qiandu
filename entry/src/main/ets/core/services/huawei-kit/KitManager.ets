@@ -1,9 +1,9 @@
 import { logger } from '../../../utils/Logger';
 /**
- * Kit Manager - 缁熶竴Kit鏈嶅姟绠＄悊鍣?
+ * Kit Manager - 统一Kit服务管理器
  * Kit Manager - Unified Kit Service Manager
  *
- * 闆嗕腑绠＄悊鎵€鏈塊it鏈嶅姟鐨勫垵濮嬪寲銆侀厤缃�拰鐢熷懡鍛ㄦ湡
+ * 集中管理所有Kit服务的初始化、配置和生命周期
  *
  * @since 2.0.0
  */
@@ -11,7 +11,7 @@ import { logger } from '../../../utils/Logger';
 import { common } from '@kit.AbilityKit';
 import { preferenceManager } from '../utils/PreferenceManager';
 import { errorHandler, ErrorLevel } from '../utils/ErrorHandler';
-import { enhancedReaderKitService as enhancedReaderKit } from '../reader/EnhancedReaderKitService';
+import { enhancedReaderKITService as enhancedReaderKit } from '../reader/EnhancedReaderKitService';
 import { shareKitService } from './ShareKitService';
 import { fileManagerKitService as fileManagerKit } from '../book/FileManagerKitService';
 import { imageKitService as imageKit } from './ImageKitService';
@@ -20,69 +20,69 @@ import { collaborationKitService as collaborationKit } from '../reader/Collabora
 import { adsKitService } from './AdsKitService';
 
 /**
- * Kit鏈嶅姟鐘舵€?
+ * Kit服务状态
  */
 export enum KitServiceStatus {
-  /** 鏈�垵濮嬪寲 */
+  /** 未初始化 */
   NOT_INITIALIZED = 'not_initialized',
-  /** 鍒濆�鍖栦腑 */
+  /** 初始化中 */
   INITIALIZING = 'initializing',
-  /** 宸插氨缁?*/
+  /** 已就绪*/
   READY = 'ready',
-  /** 閿欒� */
+  /** 错误 */
   ERROR = 'error'
 }
 
 /**
- * Kit鏈嶅姟淇℃伅
+ * Kit服务信息
  */
 export interface KitServiceInfo {
-  /** 鏈嶅姟鍚嶇О */
+  /** 服务名称 */
   name: string;
-  /** 鏈嶅姟鐘舵€?*/
+  /** 服务状态*/
   status: KitServiceStatus;
-  /** 鏄�惁鍚�敤 */
+  /** 是否启用 */
   enabled: boolean;
-  /** 閿欒�淇℃伅 */
+  /** 错误信息 */
   error?: string;
-  /** 鍒濆�鍖栨椂闂?*/
+  /** 初始化时间*/
   initTime?: number;
 }
 
 /**
- * Kit閰嶇疆
+ * Kit配置
  */
 export interface KitConfig {
-  /** 鏄�惁鍚�敤Reader Kit */
+  /** 是否启用Reader Kit */
   enableReaderKit: boolean;
-  /** 鏄�惁鍚�敤Share Kit */
+  /** 是否启用Share Kit */
   enableShareKit: boolean;
-  /** 鏄�惁鍚�敤File Manager Kit */
+  /** 是否启用File Manager Kit */
   enableFileManagerKit: boolean;
-  /** 鏄�惁鍚�敤Image Kit */
+  /** 是否启用Image Kit */
   enableImageKit: boolean;
-  /** 鏄�惁鍚�敤Audio Kit */
+  /** 是否启用Audio Kit */
   enableAudioKit: boolean;
-  /** 鏄�惁鍚�敤Collaboration Kit */
+  /** 是否启用Collaboration Kit */
   enableCollaborationKit: boolean;
-  /** 鏄�惁鍚�敤Ads Kit */
+  /** 是否启用Ads Kit */
   enableAdsKit: boolean;
 }
 
 /**
- * Kit绠＄悊鍣ㄧ被
+ * Kit管理器类
  */
 export class KitManager {
-  /** 鍗曚緥瀹炰緥 */
+  /** 单例实例 */
   private static instance: KitManager;
 
-  /** 涓婁笅鏂?*/
+  /** 上下文*/
   private context: common.Context | null = null;
 
-  /** 鏄�惁宸插垵濮嬪寲 */
+  /** 是否已初始化 */
   private isInitialized: boolean = false;
 
-  /** Kit閰嶇疆 */
+  /** Kit配置 */
   private config: KitConfig = {
     enableReaderKit: true,
     enableShareKit: true,
@@ -90,16 +90,16 @@ export class KitManager {
     enableImageKit: true,
     enableAudioKit: true,
     enableCollaborationKit: true,
-    enableAdsKit: false // 榛樿�绂佺敤骞垮憡锛岀敤鎴峰彲鎵嬪姩鍚�敤
+    enableAdsKit: false // 默认禁用广告，用户可手动启用
   };
 
-  /** Kit鏈嶅姟淇℃伅鍒楄〃 */
+  /** Kit服务信息列表 */
   private serviceInfoList: Map<string, KitServiceInfo> = new Map();
 
   private constructor() {}
 
   /**
-   * 鑾峰彇鍗曚緥瀹炰緥
+   * 获取单例实例
    */
   static getInstance(): KitManager {
     if (!KitManager.instance) {
@@ -109,7 +109,7 @@ export class KitManager {
   }
 
   /**
-   * 鍒濆�鍖栨墍鏈塊it鏈嶅姟
+   * 初始化所有Kit服务
    */
   async initAllKits(context: common.Context): Promise<boolean> {
     try {
@@ -120,7 +120,7 @@ export class KitManager {
       let successCount = 0;
       let errorCount = 0;
 
-      // 1. 鍒濆�鍖朢eader Kit
+      // 1. 初始化Reader Kit
       if (this.config.enableReaderKit) {
         await this.initKit('ReaderKit', async () => {
           return await enhancedReaderKit.init(context);
@@ -128,7 +128,7 @@ export class KitManager {
         successCount++;
       }
 
-      // 2. 鍒濆�鍖朣hare Kit
+      // 2. 初始化Share Kit
       if (this.config.enableShareKit) {
         await this.initKit('ShareKit', async () => {
           return await shareKitService.init(context);
@@ -136,7 +136,7 @@ export class KitManager {
         successCount++;
       }
 
-      // 3. 鍒濆�鍖朏ile Manager Kit
+      // 3. 初始化File Manager Kit
       if (this.config.enableFileManagerKit) {
         await this.initKit('FileManagerKit', async () => {
           return await fileManagerKit.init(context);
@@ -144,7 +144,7 @@ export class KitManager {
         successCount++;
       }
 
-      // 4. 鍒濆�鍖朓mage Kit
+      // 4. 初始化Image Kit
       if (this.config.enableImageKit) {
         await this.initKit('ImageKit', async () => {
           return await imageKit.init(context);
@@ -152,7 +152,7 @@ export class KitManager {
         successCount++;
       }
 
-      // 5. 鍒濆�鍖朅udio Kit
+      // 5. 初始化Audio Kit
       if (this.config.enableAudioKit) {
         await this.initKit('AudioKit', async () => {
           return await audioKitService.init(context);
@@ -160,7 +160,7 @@ export class KitManager {
         successCount++;
       }
 
-      // 6. 鍒濆�鍖朇ollaboration Kit
+      // 6. 初始化Collaboration Kit
       if (this.config.enableCollaborationKit) {
         await this.initKit('CollaborationKit', async () => {
           return await collaborationKit.init(context);
@@ -168,7 +168,7 @@ export class KitManager {
         successCount++;
       }
 
-      // 7. 鍒濆�鍖朅ds Kit
+      // 7. 初始化Ads Kit
       if (this.config.enableAdsKit) {
         await this.initKit('AdsKit', async () => {
           return await adsKitService.init(context);
@@ -188,7 +188,7 @@ export class KitManager {
   }
 
   /**
-   * 鍒濆�鍖栧崟涓狵it鏈嶅姟
+   * 初始化单个Kit服务
    */
   private async initKit(
     name: string,
@@ -224,7 +224,7 @@ export class KitManager {
   }
 
   /**
-   * 妫€鏌ユ墍鏈塊it鏈嶅姟鏄�惁灏辩华
+   * 检查所有Kit服务是否就绪
    */
   isReady(): boolean {
     if (!this.isInitialized) {
@@ -244,21 +244,21 @@ export class KitManager {
   }
 
   /**
-   * 鑾峰彇Kit鏈嶅姟鐘舵€?
+   * 获取Kit服务状态
    */
   getServiceStatus(name: string): KitServiceInfo | undefined {
     return this.serviceInfoList.get(name);
   }
 
   /**
-   * 鑾峰彇鎵€鏈塊it鏈嶅姟鐘舵€?
+   * 获取所有Kit服务状态
    */
   getAllServiceStatus(): KitServiceInfo[] {
     return Array.from(this.serviceInfoList.values());
   }
 
   /**
-   * 鑾峰彇灏辩华鐨凨it鏈嶅姟鏁伴噺
+   * 获取就绪的Kit服务数量
    */
   getReadyServiceCount(): number {
     let count = 0;
@@ -273,7 +273,7 @@ export class KitManager {
   }
 
   /**
-   * 鑾峰彇鍚�敤鐨凨it鏈嶅姟鏁伴噺
+   * 获取启用的Kit服务数量
    */
   getEnabledServiceCount(): number {
     let count = 0;
@@ -287,61 +287,61 @@ export class KitManager {
     return count;
   }
 
-  // ==================== Kit鏈嶅姟璁块棶 ====================
+  // ==================== Kit服务访问 ====================
 
   /**
-   * 鑾峰彇Reader Kit鏈嶅姟
+   * 获取Reader Kit服务
    */
   getReaderKit(): object {
     return enhancedReaderKit;
   }
 
   /**
-   * 鑾峰彇Share Kit鏈嶅姟
+   * 获取Share Kit服务
    */
   getShareKit(): object {
     return shareKitService;
   }
 
   /**
-   * 鑾峰彇File Manager Kit鏈嶅姟
+   * 获取File Manager Kit服务
    */
   getFileManagerKit(): object {
     return fileManagerKit;
   }
 
   /**
-   * 鑾峰彇Image Kit鏈嶅姟
+   * 获取Image Kit服务
    */
   getImageKit(): object {
     return imageKit;
   }
 
   /**
-   * 鑾峰彇Audio Kit鏈嶅姟
+   * 获取Audio Kit服务
    */
   getAudioKit(): object {
     return audioKitService;
   }
 
   /**
-   * 鑾峰彇Collaboration Kit鏈嶅姟
+   * 获取Collaboration Kit服务
    */
   getCollaborationKit(): object {
     return collaborationKit;
   }
 
   /**
-   * 鑾峰彇Ads Kit鏈嶅姟
+   * 获取Ads Kit服务
    */
   getAdsKit(): object {
     return adsKitService;
   }
 
-  // ==================== 閰嶇疆绠＄悊 ====================
+  // ==================== 配置管理 ====================
 
   /**
-   * 鍔犺浇閰嶇疆
+   * 加载配置
    */
   async loadConfig(): Promise<void> {
     try {
@@ -363,7 +363,7 @@ export class KitManager {
   }
 
   /**
-   * 淇濆瓨閰嶇疆
+   * 保存配置
    */
   async saveConfig(): Promise<void> {
     try {
@@ -384,7 +384,7 @@ export class KitManager {
   }
 
   /**
-   * 鏇存柊閰嶇疆
+   * 更新配置
    */
   async updateConfig(config: Partial<KitConfig>): Promise<void> {
     if (config.enableReaderKit !== undefined) { this.config.enableReaderKit = config.enableReaderKit; }
@@ -400,7 +400,7 @@ export class KitManager {
   }
 
   /**
-   * 鑾峰彇閰嶇疆
+   * 获取配置
    */
   getConfig(): KitConfig {
     const configCopy: KitConfig = {
@@ -416,7 +416,7 @@ export class KitManager {
   }
 
   /**
-   * 鍚�敤Kit鏈嶅姟
+   * 启用Kit服务
    */
   async enableKitService(name: string): Promise<void> {
     const info = this.serviceInfoList.get(name);
@@ -427,7 +427,7 @@ export class KitManager {
   }
 
   /**
-   * 绂佺敤Kit鏈嶅姟
+   * 禁用Kit服务
    */
   async disableKitService(name: string): Promise<void> {
     const info = this.serviceInfoList.get(name);
@@ -437,22 +437,22 @@ export class KitManager {
     }
   }
 
-  // ==================== 鐢熷懡鍛ㄦ湡绠＄悊 ====================
+  // ==================== 生命周期管理 ====================
 
   /**
-   * 搴旂敤杩涘叆鍓嶅彴鏃剁殑澶勭悊
-   * 鎭㈠�闇€瑕佸悓姝ョ殑鏈嶅姟
+   * 应用进入前台时的处理
+   * 恢复需要同步的服务
    */
   onForeground(): void {
     try {
       logger.info('[KitManager] App entered foreground');
 
-      // 鎭㈠�闃呰�鍣ㄦ湇鍔?
+      // 恢复阅读器服务
       if (this.config.enableReaderKit) {
         enhancedReaderKit.onForeground();
       }
 
-      // 鎭㈠�鍗忎綔鏈嶅姟
+      // 恢复协作服务
       if (this.config.enableCollaborationKit) {
         collaborationKit.onForeground();
       }
@@ -464,19 +464,19 @@ export class KitManager {
   }
 
   /**
-   * 搴旂敤杩涘叆鍚庡彴鏃剁殑澶勭悊
-   * 淇濆瓨杩涘害銆佹殏鍋滀笉蹇呰�鐨勫悓姝?
+   * 应用进入后台时的处理
+   * 保存进度、暂停不需要的同步
    */
   onBackground(): void {
     try {
       logger.info('[KitManager] App entered background');
 
-      // 鏆傚仠闃呰�鍣ㄦ湇鍔?
+      // 暂停阅读器服务
       if (this.config.enableReaderKit) {
         enhancedReaderKit.onBackground();
       }
 
-      // 鏆傚仠鍗忎綔鏈嶅姟
+      // 暂停协作服务
       if (this.config.enableCollaborationKit) {
         collaborationKit.onBackground();
       }
@@ -488,7 +488,7 @@ export class KitManager {
   }
 
   /**
-   * 閲婃斁鎵€鏈塊it鏈嶅姟
+   * 释放所有Kit服务
    */
   async releaseAllKits(): Promise<void> {
     try {
@@ -532,7 +532,7 @@ export class KitManager {
   }
 
   /**
-   * 鑾峰彇Kit绠＄悊鍣ㄦ憳瑕佷俊鎭?
+   * 获取Kit管理器摘要信息
    */
   getSummary(): string {
     const readyCount = this.getReadyServiceCount();
@@ -543,7 +543,7 @@ export class KitManager {
   }
 
   /**
-   * 鎵撳嵃Kit鏈嶅姟鐘舵€?
+   * 打印Kit服务状态
    */
   printStatus(): void {
     logger.info('===== Kit Service Status =====');
@@ -560,6 +560,6 @@ export class KitManager {
   }
 }
 
-// 瀵煎嚭鍗曚緥
+// 导出单例
 export const kitManager = KitManager.getInstance();
 export default kitManager;

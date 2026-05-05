@@ -1,5 +1,6 @@
-﻿/**
- * 甯冨眬杈呭姪宸ュ叿绫? * 鎻愪緵灞忓箷妫€娴嬨€佸搷搴斿紡鍊艰绠椼€佸瓧浣撶缉鏀剧瓑瀹炵敤鍔熻兘
+/**
+ * 布局辅助工具类
+ * 提供屏幕检测、响应式值计算、字体缩放等实用功能
  * 
  * @since 7.0.0
  */
@@ -23,14 +24,15 @@ class LayoutHelper {
   private context: common.Context | null = null;
 
   /**
-   * 鍒濆鍖栧睆骞曚俊鎭?   */
+   * 初始化屏幕信息
+   */
   async init(context: common.Context): Promise<void> {
     this.context = context;
     await this.updateScreenInfo();
   }
 
   /**
-   * 鏇存柊灞忓箷淇℃伅
+   * 更新屏幕信息
    */
   async updateScreenInfo(): Promise<void> {
     if (!this.context) return;
@@ -59,7 +61,7 @@ class LayoutHelper {
   }
 
   /**
-   * 鑾峰彇褰撳墠鏂偣
+   * 获取当前断点
    */
   private getBreakpoint(width: number): 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' {
     if (width < Breakpoints.sm) return 'xs';
@@ -71,14 +73,17 @@ class LayoutHelper {
   }
 
   /**
-   * 鑾峰彇灞忓箷淇℃伅
+   * 获取屏幕信息
    */
   getScreenInfo(): ScreenInfo | null {
     return this.screenInfo;
   }
 
   /**
-   * 鏍规嵁鏂偣鑾峰彇鍝嶅簲寮忓€?   * @param values 涓嶅悓鏂偣瀵瑰簲鐨勫€?   * @returns 褰撳墠鏂偣瀵瑰簲鐨勫€?   */
+   * 根据断点获取响应式值
+   * @param values 不同断点对应的值
+   * @returns 当前断点对应的值
+   */
   getResponsiveValue<T>(values: { xs?: T; sm?: T; md?: T; lg?: T; xl?: T; xxl?: T }): T | undefined {
     if (!this.screenInfo) return undefined;
 
@@ -102,7 +107,8 @@ class LayoutHelper {
   }
 
   /**
-   * 鑾峰彇鍝嶅簲寮忛棿璺?   */
+   * 获取响应式间距
+   */
   getResponsiveSpacing(): number {
     return this.getResponsiveValue({
       xs: Spacing.xs,
@@ -115,7 +121,8 @@ class LayoutHelper {
   }
 
   /**
-   * 鑾峰彇鍝嶅簲寮忕綉鏍煎垪鏁?   */
+   * 获取响应式网格列数
+   */
   getResponsiveColumns(): number {
     if (!this.screenInfo) return 2;
 
@@ -127,8 +134,10 @@ class LayoutHelper {
   }
 
   /**
-   * 鑾峰彇鍝嶅簲寮忓瓧浣撳ぇ灏?   * @param baseSize 鍩虹瀛椾綋澶у皬
-   * @returns 鍝嶅簲寮忓瓧浣撳ぇ灏?   */
+   * 获取响应式字体大小
+   * @param baseSize 基础字体大小
+   * @returns 响应式字体大小
+   */
   getResponsiveFontSize(baseSize: number): number {
     if (!this.screenInfo) return baseSize;
 
@@ -145,9 +154,10 @@ class LayoutHelper {
   }
 
   /**
-   * 鑾峰彇鍝嶅簲寮忓崱鐗囧搴?   * @param columns 鍒楁暟
-   * @param gutter 闂磋窛
-   * @returns 鍗＄墖瀹藉害
+   * 获取响应式卡片宽度
+   * @param columns 列数
+   * @param gutter 间距
+   * @returns 卡片宽度
    */
   getCardWidth(columns: number = 2, gutter: number = Spacing.md): number {
     if (!this.screenInfo) return 150;
@@ -157,18 +167,20 @@ class LayoutHelper {
   }
 
   /**
-   * 鍒ゆ柇鏄惁涓烘í灞?   */
+   * 判断是否为横屏
+   */
   isLandscape(): boolean {
     if (!this.screenInfo) return false;
     return this.screenInfo.width > this.screenInfo.height;
   }
 
   /**
-   * 鑾峰彇瀹夊叏鐨勯《閮ㄩ棿璺濓紙閬垮紑鐘舵€佹爮锛?   */
+   * 获取安全的顶部间距（避开状态栏）
+   */
   getSafeTopPadding(): number {
     if (!this.screenInfo) return Spacing.lg;
     
-    // 骞虫澘鍜屾闈㈢闇€瑕佹洿澶х殑椤堕儴闂磋窛
+    // 平板和桌面端需要更大的顶部间距
     if (this.screenInfo.isTablet || this.screenInfo.breakpoint === 'xl' || this.screenInfo.breakpoint === 'xxl') {
       return Spacing.xl;
     }
@@ -176,12 +188,12 @@ class LayoutHelper {
   }
 
   /**
-   * 鑾峰彇瀹夊叏鐨勫簳閮ㄩ棿璺濓紙閬垮紑瀵艰埅鏍忥級
+   * 获取安全的底部间距（避开导航栏）
    */
   getSafeBottomPadding(): number {
     if (!this.screenInfo) return Spacing.lg;
     
-    // 骞虫澘鍜屾闈㈢闇€瑕佹洿澶х殑搴曢儴闂磋窛
+    // 平板和桌面端需要更大的底部间距
     if (this.screenInfo.isTablet || this.screenInfo.breakpoint === 'xl' || this.screenInfo.breakpoint === 'xxl') {
       return Spacing.xl;
     }
@@ -189,8 +201,9 @@ class LayoutHelper {
   }
 
   /**
-   * 璁＄畻鍚堥€傜殑鍒楄〃椤归珮搴?   * @param baseHeight 鍩虹楂樺害
-   * @returns 鍝嶅簲寮忓垪琛ㄩ」楂樺害
+   * 计算合适的列表项高度
+   * @param baseHeight 基础高度
+   * @returns 响应式列表项高度
    */
   getListItemHeight(baseHeight: number = 60): number {
     if (!this.screenInfo) return baseHeight;
@@ -208,15 +221,17 @@ class LayoutHelper {
   }
 
   /**
-   * 鑾峰彇鍝嶅簲寮忓浘鐗囧昂瀵?   * @param baseSize 鍩虹灏哄
-   * @returns 鍝嶅簲寮忓浘鐗囧昂瀵?   */
+   * 获取响应式图片尺寸
+   * @param baseSize 基础尺寸
+   * @returns 响应式图片尺寸
+   */
   getImageSize(baseSize: number): number {
     return this.getResponsiveFontSize(baseSize);
   }
 
   /**
-   * 鑾峰彇閫傚悎褰撳墠灞忓箷鐨勫竷灞€妯″紡
-   * @returns 甯冨眬妯″紡锛歴ingle锛堝崟鏍忥級銆乻plit锛堝垎鏍忥級銆乬rid锛堢綉鏍硷級
+   * 获取适合当前屏幕的布局模式
+   * @returns 布局模式：single（单栏）、split（分栏）、grid（网格）
    */
   getLayoutMode(): 'single' | 'split' | 'grid' {
     if (!this.screenInfo) return 'single';
@@ -228,5 +243,5 @@ class LayoutHelper {
   }
 }
 
-// 瀵煎嚭鍗曚緥
+// 导出单例
 export const layoutHelper = new LayoutHelper();

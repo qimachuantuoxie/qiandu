@@ -47,36 +47,49 @@ struct WordBookPage {
   }
 
   private loadWords(): void {
-    // 模拟数据 - 实际应从数据库加载
-    this.words = [
-      {
-        id: '1',
-        word: 'ephemeral',
-        phonetic: '/ɪˈfemərəl/',
-        meaning: 'adj. 短暂的；瞬息的',
-        bookTitle: 'English Literature',
-        createTime: Date.now() - 86400000,
-        reviewCount: 3
-      },
-      {
-        id: '2',
-        word: 'serendipity',
-        phonetic: '/ˌserənˈdɪpəti/',
-        meaning: 'n. 意外发现珍奇事物的运气',
-        bookTitle: 'Modern Poetry',
-        createTime: Date.now() - 172800000,
-        reviewCount: 5
-      },
-      {
-        id: '3',
-        word: 'eloquent',
-        phonetic: '/ˈeləkwənt/',
-        meaning: 'adj. 雄辩的；有说服力的',
-        bookTitle: 'Public Speaking',
-        createTime: Date.now() - 259200000,
-        reviewCount: 2
-      }
-    ];
+    try {
+      const wordsJson = preferenceManager.getString('wordbook_words', '[]');
+      const saved = JSON.parse(wordsJson) as WordItem[];
+      this.words = saved;
+      logger.info('[WordBookPage] Loaded ' + saved.length + ' words');
+    } catch (error) {
+      const err = error as Error;
+      logger.error('[WordBookPage] Failed to load words:', err.message);
+      this.words = [];
+    }
+  }
+
+  private saveWords(): void {
+    try {
+      const json = JSON.stringify(this.words);
+      preferenceManager.setString('wordbook_words', json);
+    } catch (error) {
+      const err = error as Error;
+      logger.error('[WordBookPage] Failed to save words:', err.message);
+    }
+  }
+
+  addWord(word: string, meaning: string, bookTitle: string, phonetic?: string): void {
+    const newWord: WordItem = {
+      id: 'word_' + Date.now().toString(36),
+      word: word,
+      phonetic: phonetic || '',
+      meaning: meaning,
+      bookTitle: bookTitle,
+      createTime: Date.now(),
+      reviewCount: 0
+    };
+    const newWords = [...this.words, newWord];
+    this.words = newWords;
+    this.saveWords();
+    promptAction.showToast({ message: '已添加：' + word, duration: 1500 });
+  }
+
+  deleteWord(id: string): void {
+    const newWords = this.words.filter(w => w.id !== id);
+    this.words = newWords;
+    this.saveWords();
+    promptAction.showToast({ message: '已删除', duration: 1500 });
   }
 
   private tc(light: string, dark: string): string {

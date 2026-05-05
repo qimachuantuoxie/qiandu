@@ -1,7 +1,7 @@
-﻿/**
- * Native CBZ Parser 妯″潡灏佽
+/**
+ * Native CBZ Parser 模块封装
  * 
- * 鎻愪緵 CBZ/CBR 婕敾鏂囦欢鐨?Native 瑙ｆ瀽鑳藉姏
+ * 提供 CBZ/CBR 漫画文件的 Native 解析能力
  */
 
 import nativeCbzParser from 'libcbzparser.so';
@@ -11,7 +11,7 @@ const LOG_TAG = 'NativeCbzParser';
 const LOG_DOMAIN = 0x0050;
 
 /**
- * CBZ 鏂囦欢淇℃伅
+ * CBZ 文件信息
  */
 export interface CbzFileInfo {
   title: string;
@@ -20,11 +20,12 @@ export interface CbzFileInfo {
 }
 
 /**
- * Native CBZ 瑙ｆ瀽鍣? */
+ * Native CBZ 解析器
+ */
 export class NativeCbzParser {
   
   /**
-   * 瑙ｆ瀽 CBZ 鏂囦欢淇℃伅
+   * 解析 CBZ 文件信息
    */
   static parseCbzInfo(filePath: string): CbzFileInfo | null {
     try {
@@ -38,7 +39,7 @@ export class NativeCbzParser {
   }
   
   /**
-   * 鑾峰彇椤甸潰鏁伴噺
+   * 获取页面数量
    */
   static getPageCount(filePath: string): number {
     try {
@@ -51,10 +52,10 @@ export class NativeCbzParser {
   }
   
   /**
-   * 鑾峰彇椤甸潰鍥剧墖鏁版嵁
-   * @param filePath CBZ 鏂囦欢璺緞
-   * @param pageIndex 椤电爜锛堜粠0寮€濮嬶級
-   * @returns 鍥剧墖鏁版嵁锛圝PEG/PNG 绛夊師濮嬫牸寮忥級
+   * 获取页面图片数据
+   * @param filePath CBZ 文件路径
+   * @param pageIndex 页码（从0开始）
+   * @returns 图片数据（JPEG/PNG 等原始格式）
    */
   static getPageImage(filePath: string, pageIndex: number): Uint8Array | null {
     try {
@@ -68,7 +69,7 @@ export class NativeCbzParser {
   }
   
   /**
-   * 鑾峰彇鎵€鏈夐〉闈㈡枃浠跺悕鍒楄〃
+   * 获取所有页面文件名列表
    */
   static getPageFileNames(filePath: string): string[] | null {
     try {
@@ -82,7 +83,7 @@ export class NativeCbzParser {
   }
   
   /**
-   * 妫€鏌?Native 妯″潡鏄惁鍙敤
+   * 检查 Native 模块是否可用
    */
   static isAvailable(): boolean {
     try {

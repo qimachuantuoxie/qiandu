@@ -1,6 +1,6 @@
 import { logger } from '../../../utils/Logger';
 /**
- * 鍦ㄧ嚎涔︾睄鏈嶅姟 - 瀹屾暣鐨勭綉缁滀功绫嶆悳绱€€佽�鎯呫€佺洰褰曘€佸唴瀹硅幏鍙?
+ * 在线书籍服务 - 完整的网络书籍搜索、详情、目录、内容获取
  *
  * @since 2.8.0
  */
@@ -12,16 +12,16 @@ import { OnlineSearchResult, OnlineBookDetail, OnlineChapterInfo } from '../mode
 import { errorHandler, ErrorLevel } from '../utils/ErrorHandler';
 
 /**
- * 鍦ㄧ嚎涔︾睄鏈嶅姟
+ * 在线书籍服务
  */
 class OnlineBookService {
   private static instance: OnlineBookService;
 
-  // 绔犺妭鍐呭�缂撳瓨
+  // 章节内容缓存
   private chapterCache: Map<string, string> = new Map();
-  // 鐩�綍缂撳瓨
+  // 目录缓存
   private tocCache: Map<string, OnlineChapterInfo[]> = new Map();
-  // 璇︽儏缂撳瓨
+  // 详情缓存
   private detailCache: Map<string, OnlineBookDetail> = new Map();
 
   private constructor() {}
@@ -33,19 +33,19 @@ class OnlineBookService {
     return OnlineBookService.instance;
   }
 
-  // ==================== 鍦ㄧ嚎鎼滅储 ====================
+  // ==================== 在线搜索 ====================
 
   /**
-   * 鍦ㄧ嚎鎼滅储涔︾睄
-   * @param keyword 鎼滅储鍏抽敭璇?
-   * @param sourceId 涔︽簮ID锛堝彲閫夛紝涓嶄紶鍒欐悳绱㈡墍鏈変功婧愶級
-   * @returns 鎼滅储缁撴灉
+   * 在线搜索书籍
+   * @param keyword 搜索关键词
+   * @param sourceId 书源ID（可选，不传则搜索所有书源）
+   * @returns 搜索结果
    */
   async searchOnlineBooks(keyword: string, sourceId?: string): Promise<OnlineSearchResult[]> {
     logger.info('[OnlineBook] Searching for:', keyword, 'sourceId:', sourceId);
 
     try {
-      // 鑾峰彇涔︽簮
+      // 获取书源
       let sources: BookSource[] = [];
       if (sourceId) {
         const src = bookSourceService.getSourceById(sourceId);
@@ -61,7 +61,7 @@ class OnlineBookService {
         return [];
       }
 
-      // 骞惰�鎼滅储鎵€鏈変功婧?
+      // 并发搜索所有书源
       const searchPromises: Promise<OnlineSearchResult[]>[] = [];
       for (let i = 0; i < sources.length; i++) {
         searchPromises.push(this.searchFromSource(sources[i] as BookSource, keyword));
@@ -69,7 +69,7 @@ class OnlineBookService {
 
       const results = await Promise.all(searchPromises);
 
-      // 鍚堝苟缁撴灉
+      // 合并结果
       const allResults: OnlineSearchResult[] = [];
       for (let i = 0; i < results.length; i++) {
         const r = results[i];
@@ -88,7 +88,7 @@ class OnlineBookService {
   }
 
   /**
-   * 浠庡崟涓�功婧愭悳绱?
+   * 从单一书源搜索
    */
   private async searchFromSource(source: BookSource, keyword: string): Promise<OnlineSearchResult[]> {
     try {
@@ -96,19 +96,19 @@ class OnlineBookService {
         return [];
       }
 
-      // 鏋勫缓鎼滅储URL
+      // 构建搜索URL
       const searchUrl = this.buildSearchUrl(source, keyword);
       if (!searchUrl) {
         return [];
       }
 
-      // 鍙戦€丠TTP璇锋眰
+      // 发送HTTP请求
       const html = await this.fetchUrl(searchUrl);
       if (!html) {
         return [];
       }
 
-      // 瑙ｆ瀽鎼滅储缁撴灉
+      // 解析搜索结果
       return this.parseSearchResults(html, source);
     } catch (error) {
       const errorErr = error as Error;
@@ -118,7 +118,7 @@ class OnlineBookService {
   }
 
   /**
-   * 鏋勫缓鎼滅储URL
+   * 构建搜索URL
    */
   private buildSearchUrl(source: BookSource, keyword: string): string | null {
     try {
@@ -126,14 +126,14 @@ class OnlineBookService {
         ? source.ruleSearch as SearchRule
         : null;
 
-      // 浼樺厛浣跨敤鎼滅储URL
+      // 优先使用搜索URL
       if (searchRule && searchRule.searchUrl) {
         return searchRule.searchUrl
           .replace('{{key}}', encodeURIComponent(keyword))
           .replace('{{key+}}', keyword);
       }
 
-      // 鍥為€€鍒颁功婧怳RL
+      // 回退到书源URL
       if (source.url) {
         return source.url
           .replace('{{key}}', encodeURIComponent(keyword))
@@ -149,7 +149,7 @@ class OnlineBookService {
   }
 
   /**
-   * 瑙ｆ瀽鎼滅储缁撴灉
+   * 解析搜索结果
    */
   private parseSearchResults(html: string, source: BookSource): OnlineSearchResult[] {
     try {
@@ -163,16 +163,16 @@ class OnlineBookService {
 
       const results: OnlineSearchResult[] = [];
 
-      // 鑾峰彇涔︾睄鍒楄〃瀹瑰櫒
+      // 获取书籍列表容器
       const listRule = searchRule.bookList || '';
       const books: string[] = listRule
         ? RuleEngine.extractAllFromHtml(html, listRule)
         : [html];
 
-      // 鎻愬彇姣忔湰涔︾殑淇℃伅
+      // 提取每本书的信息
       for (let i = 0; i < books.length; i++) {
         const bookHtml = books[i];
-        // TODO: 瀹炵幇涔︾睄淇℃伅鎻愬彇閫昏緫
+        // TODO: 实现书籍信息提取逻辑
       }
 
       return results;
@@ -183,17 +183,17 @@ class OnlineBookService {
     }
   }
 
-  // ==================== 涔︾睄璇︽儏 ====================
+  // ==================== 书籍详情 ====================
 
   /**
-   * 鑾峰彇涔︾睄璇︽儏
-   * @param bookUrl 涔︾睄璇︽儏椤礥RL
-   * @param sourceId 涔︽簮ID
-   * @returns 涔︾睄璇︽儏
+   * 获取书籍详情
+   * @param bookUrl 书籍详情页URL
+   * @param sourceId 书源ID
+   * @returns 书籍详情
    */
   async getBookDetail(bookUrl: string, sourceId: string): Promise<OnlineBookDetail | null> {
     try {
-      // 妫€鏌ョ紦瀛?
+      // 检查缓存
       const cacheKey = sourceId + '_' + bookUrl;
       if (this.detailCache.has(cacheKey)) {
         const cached = this.detailCache.get(cacheKey);
@@ -207,14 +207,14 @@ class OnlineBookService {
         return null;
       }
 
-      // 鑾峰彇璇︽儏椤礖TML
+      // 获取详情页HTML
       const fullUrl = this.resolveRelativeUrl(source.url, bookUrl);
       const html = await this.fetchUrl(fullUrl);
       if (!html) {
         return null;
       }
 
-      // 瑙ｆ瀽璇︽儏
+      // 解析详情
       const detail = this.parseBookDetail(html, source);
 
       if (detail) {
@@ -232,7 +232,7 @@ class OnlineBookService {
   }
 
   /**
-   * 瑙ｆ瀽涔︾睄璇︽儏
+   * 解析书籍详情
    */
   private parseBookDetail(html: string, source: BookSource): OnlineBookDetail | null {
     try {
@@ -250,7 +250,7 @@ class OnlineBookService {
 
       const author: string = bookInfoRule.author
         ? RuleEngine.extractFromHtml(html, bookInfoRule.author) as string
-        : '鏈�煡浣滆€?;
+        : '未知作者';
 
       const coverUrl: string = bookInfoRule.coverUrl
         ? RuleEngine.extractFromHtml(html, bookInfoRule.coverUrl) as string
@@ -290,17 +290,17 @@ class OnlineBookService {
     }
   }
 
-  // ==================== 鐩�綍鑾峰彇 ====================
+  // ==================== 目录获取 ====================
 
   /**
-   * 鑾峰彇涔︾睄鐩�綍
-   * @param bookUrl 涔︾睄璇︽儏椤礥RL
-   * @param sourceId 涔︽簮ID
-   * @returns 绔犺妭鍒楄〃
+   * 获取书籍目录
+   * @param bookUrl 书籍详情页URL
+   * @param sourceId 书源ID
+   * @returns 章节列表
    */
   async fetchToc(bookUrl: string, sourceId: string): Promise<OnlineChapterInfo[]> {
     try {
-      // 妫€鏌ョ紦瀛?
+      // 检查缓存
       const cacheKey = sourceId + '_' + bookUrl;
       if (this.tocCache.has(cacheKey)) {
         const cached = this.tocCache.get(cacheKey);
@@ -314,14 +314,14 @@ class OnlineBookService {
         return [];
       }
 
-      // 鑾峰彇鐩�綍椤礖TML
+      // 获取目录页HTML
       const fullUrl = this.resolveRelativeUrl(source.url, bookUrl);
       const html = await this.fetchUrl(fullUrl);
       if (!html) {
         return [];
       }
 
-      // 瑙ｆ瀽鐩�綍
+      // 解析目录
       const toc = this.parseToc(html, source);
 
       if (toc.length > 0) {
@@ -337,7 +337,7 @@ class OnlineBookService {
   }
 
   /**
-   * 瑙ｆ瀽鐩�綍
+   * 解析目录
    */
   private parseToc(html: string, source: BookSource): OnlineChapterInfo[] {
     try {
@@ -351,13 +351,13 @@ class OnlineBookService {
 
       const chapters: OnlineChapterInfo[] = [];
 
-      // 鑾峰彇绔犺妭鍒楄〃瀹瑰櫒
+      // 获取章节列表容器
       const tocListRule = tocRule.tocList || '';
       const chapterItems: string[] = tocListRule
         ? RuleEngine.extractAllFromHtml(html, tocListRule)
         : [];
 
-      // 鎻愬彇姣忎釜绔犺妭
+      // 提取每个章节
       for (let i = 0; i < chapterItems.length; i++) {
         const itemHtml: string = chapterItems[i];
 
@@ -389,17 +389,17 @@ class OnlineBookService {
     }
   }
 
-  // ==================== 绔犺妭鍐呭�鑾峰彇 ====================
+  // ==================== 章节内容获取 ====================
 
   /**
-   * 鑾峰彇绔犺妭鍐呭�
-   * @param chapterUrl 绔犺妭URL
-   * @param sourceId 涔︽簮ID
-   * @returns 绔犺妭鍐呭�
+   * 获取章节内容
+   * @param chapterUrl 章节URL
+   * @param sourceId 书源ID
+   * @returns 章节内容
    */
   async fetchChapterContent(chapterUrl: string, sourceId: string): Promise<string> {
     try {
-      // 妫€鏌ョ紦瀛?
+      // 检查缓存
       const cacheKey = sourceId + '_' + chapterUrl;
       if (this.chapterCache.has(cacheKey)) {
         const cached = this.chapterCache.get(cacheKey);
@@ -413,14 +413,14 @@ class OnlineBookService {
         return '';
       }
 
-      // 鑾峰彇绔犺妭HTML
+      // 获取章节HTML
       const fullUrl = this.resolveRelativeUrl(source.url, chapterUrl);
       const html = await this.fetchUrl(fullUrl);
       if (!html) {
         return '';
       }
 
-      // 鎻愬彇鍐呭�
+      // 提取内容
       const content = this.parseChapterContent(html, source);
 
       if (content) {
@@ -436,7 +436,7 @@ class OnlineBookService {
   }
 
   /**
-   * 瑙ｆ瀽绔犺妭鍐呭�
+   * 解析章节内容
    */
   private parseChapterContent(html: string, source: BookSource): string {
     try {
@@ -448,13 +448,13 @@ class OnlineBookService {
         return '';
       }
 
-      // 鎻愬彇姝ｆ枃鍐呭�
+      // 提取正文内容
       let content: string = RuleEngine.extractFromHtml(html, contentRule.content) as string;
 
-      // 鍐呭�鍑€鍖?
+      // 内容净化
       content = this.cleanContent(content);
 
-      // 搴旂敤鏇挎崲瑙勫垯
+      // 应用替换规则
       if (contentRule.replaceRegex) {
         try {
           const parts = contentRule.replaceRegex.split('&&');
@@ -477,29 +477,29 @@ class OnlineBookService {
   }
 
   /**
-   * 鍐呭�鍑€鍖?
+   * 内容净化
    */
   private cleanContent(content: string): string {
     return content
-      // 绉婚櫎澶氫綑绌虹櫧
+      // 移除多余空白
       .replace(new RegExp('&nbsp;', 'g'), ' ')
       .replace(new RegExp('&amp;', 'g'), '&')
       .replace(new RegExp('&lt;', 'g'), '<')
       .replace(new RegExp('&gt;', 'g'), '>')
       .replace(new RegExp('<[^>]+>', 'g'), '')
-      // 绉婚櫎骞垮憡鏍囪�
-      .replace(new RegExp('\[.*?骞垮憡.*?\]', 'g'), '')
+      // 移除广告标记
+      .replace(new RegExp('\[.*?广告.*?\]', 'g'), '')
       .replace(new RegExp('\[.*?www\..*?\]', 'g'), '')
-      // 瑙勮寖鍖栨崲琛?
+      // 规范化换行
       .replace(new RegExp('\r\n', 'g'), '\n')
       .replace(new RegExp('\n{3,}', 'g'), '\n\n')
       .trim();
   }
 
-  // ==================== 宸ュ叿鏂规硶 ====================
+  // ==================== 工具方法 ====================
 
   /**
-   * HTTP GET 璇锋眰
+   * HTTP GET 请求
    */
   private async fetchUrl(url: string): Promise<string | null> {
     try {
@@ -531,7 +531,7 @@ class OnlineBookService {
   }
 
   /**
-   * 瑙ｆ瀽鐩稿�URL
+   * 解析相对URL
    */
   private resolveRelativeUrl(baseUrl: string, relativeUrl: string): string {
     if (!relativeUrl) return '';
@@ -553,7 +553,7 @@ class OnlineBookService {
         return relativeUrl;
       }
     }
-    // 鐩稿�璺�緞
+    // 相对路径
     try {
       const protocolEnd = baseUrl.indexOf('://');
       const protocol = protocolEnd > 0 ? baseUrl.substring(0, protocolEnd + 3) : 'https://';
@@ -570,7 +570,7 @@ class OnlineBookService {
   }
 
   /**
-   * 娓呴櫎缂撳瓨
+   * 清除缓存
    */
   clearCache(): void {
     this.chapterCache.clear();
@@ -580,8 +580,8 @@ class OnlineBookService {
 }
 
 /**
- * RuleEngine - 鏈�湴瑙勫垯寮曟搸瀹炵幇
- * 鐢ㄤ簬浠嶩TML涓�牴鎹��鍒欐彁鍙栧唴瀹?
+ * RuleEngine - 本地规则引擎实现
+ * 用于从HTML中根据规则提取内容
  */
 class RuleEngine {
   static extractFromHtml(html: string, rule: string): string {
@@ -665,9 +665,6 @@ class RuleEngine {
   }
 }
 
-// 瀵煎嚭鍗曚緥
+// 导出单例
 export const onlineBookService = OnlineBookService.getInstance();
 export default onlineBookService;
-
-
-

@@ -69,7 +69,7 @@ export interface AdvancedSearchOptions {
   searchDescription?: boolean;
 }
 
-// ==================== State 瀹氫箟 ====================
+// ==================== State 定义 ====================
 
 @ObservedV2
 export class BookState {
@@ -88,7 +88,7 @@ export class BookState {
   @Trace readRecords: ReadRecord[] = [];
 }
 
-// ==================== Actions 瀹氫箟 ====================
+// ==================== Actions 定义 ====================
 
 export const LOAD_BOOKS = StateStore.createAction("LOAD_BOOKS");
 export const ADD_BOOK = StateStore.createAction("ADD_BOOK");
@@ -112,7 +112,7 @@ export const REMOVE_BOOK_FROM_GROUP = StateStore.createAction("REMOVE_BOOK_FROM_
 export const ADD_READ_RECORD = StateStore.createAction("ADD_READ_RECORD");
 export const DELETE_READ_RECORD = StateStore.createAction("DELETE_READ_RECORD");
 
-// ==================== Reducer 瀹氫箟 ====================
+// ==================== Reducer 定义 ====================
 
 const bookReducer: Reducer<BookState> = (state: BookState, action: Action) => {
   switch (action.type) {

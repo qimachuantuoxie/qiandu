@@ -1,7 +1,8 @@
 import { logger } from '../../../utils/Logger';
 /**
- * HarmonyOS Payment Service - 楦胯挋鏀�粯鏈嶅姟
- * 鎺ュ叆鍗庝负搴旂敤鍐呮敮浠橈紙IAP锛? * 浣跨敤 @kit.InAppPurchasesKit 瀹炵幇鐪熷疄鏀�粯
+ * HarmonyOS Payment Service - 鸿蒙支付服务
+ * 接入华为应用内支付（IAP）
+ * 使用 @kit.InAppPurchasesKit 实现真实支付
  *
  * @since 7.0.0
  */
@@ -72,92 +73,92 @@ type PurchaseResult = StubPurchaseResult;
 const DOMAIN = 0xFF04;
 
 /**
- * 鎵撹祻閲戦�閫夐」
+ * 打赏金额选项
  */
 export interface RewardOption {
-  /** 閲戦�锛堝厓锛?*/
+  /** 金额（元）*/
   amount: number;
-  /** 鍟嗗搧ID锛堝湪AppGallery Connect涓�厤缃�級 */
+  /** 商品ID（在AppGallery Connect中配置） */
   productId: string;
-  /** 鏄剧ず鍚嶇О */
+  /** 显示名称 */
   displayName: string;
-  /** 鎻忚堪 */
+  /** 描述 */
   description: string;
-  /** 鍥炬爣 */
+  /** 图标 */
   icon: string;
 }
 
 /**
- * 鏀�粯鐘舵€? */
+ * 支付状态 */
 export enum PaymentStatus {
-  /** 寰呮敮浠?*/
+  /** 待支付*/
   PENDING = 'pending',
-  /** 鏀�粯鎴愬姛 */
+  /** 支付成功 */
   SUCCESS = 'success',
-  /** 鏀�粯澶辫触 */
+  /** 支付失败 */
   FAILED = 'failed',
-  /** 宸插彇娑?*/
+  /** 已取消*/
   CANCELLED = 'cancelled'
 }
 
 /**
- * 鏀�粯缁撴灉
+ * 支付结果
  */
 export interface PaymentResult {
-  /** 鏄�惁鎴愬姛 */
+  /** 是否成功 */
   success: boolean;
-  /** 鐘舵€?*/
+  /** 状态*/
   status: PaymentStatus;
-  /** 璁㈠崟鍙?*/
+  /** 订单号*/
   orderId?: string;
-  /** 鍟嗗搧ID */
+  /** 商品ID */
   productId?: string;
-  /** 閲戦� */
+  /** 金额 */
   amount?: number;
-  /** 閿欒�淇℃伅 */
+  /** 错误信息 */
   error?: string;
 }
 
 /**
- * 鎵撹祻璁板綍
+ * 打赏记录
  */
 export interface RewardRecord {
-  /** 璁板綍ID */
+  /** 记录ID */
   id: string;
-  /** 閲戦� */
+  /** 金额 */
   amount: number;
-  /** 鍟嗗搧ID */
+  /** 商品ID */
   productId: string;
-  /** 鏃堕棿 */
+  /** 时间 */
   timestamp: number;
-  /** 璁㈠崟鍙?*/
+  /** 订单号*/
   orderId: string;
-  /** 鐣欒█ */
+  /** 留言 */
   message?: string;
 }
 
 /**
- * 楦胯挋鏀�粯鏈嶅姟绫? */
+ * 鸿蒙支付服务类 */
 class HarmonyPaymentService {
-  /** 鍗曚緥瀹炰緥 */
+  /** 单例实例 */
   private static instance: HarmonyPaymentService;
 
-  /** 涓婁笅鏂?*/
+  /** 上下文*/
   private context: common.Context | null = null;
 
-  /** 鏄�惁宸插垵濮嬪寲 */
+  /** 是否已初始化 */
   private isInitialized: boolean = false;
 
-  /** 鎵撹祻璁板綍 */
+  /** 打赏记录 */
   private rewardRecords: RewardRecord[] = [];
 
-  /** IAP 瀹㈡埛绔?*/
+  /** IAP 客户端*/
   private iapClient: IapClient | null = null;
 
   private constructor() {}
 
   /**
-   * 鑾峰彇鍗曚緥瀹炰緥
+   * 获取单例实例
    */
   static getInstance(): HarmonyPaymentService {
     if (!HarmonyPaymentService.instance) {
@@ -167,18 +168,18 @@ class HarmonyPaymentService {
   }
 
   /**
-   * 鍒濆�鍖栨敮浠樻湇鍔?   */
+   * 初始化支付服务   */
   async init(context: common.Context): Promise<boolean> {
     try {
       logger.info('[HarmonyPayment] Initializing...');
       this.context = context;
 
-      // 鍒涘缓 IAP 瀹㈡埛绔?      this.iapClient = iap.createIapClient();
+      // 创建 IAP 客户端      this.iapClient = iap.createIapClient();
 
-      // 鍒濆�鍖?IAP 鏈嶅姟
+      // 初始化 IAP 服务
       await this.iapClient.init();
 
-      // 鍔犺浇鍘嗗彶璁板綍
+      // 加载历史记录
       await this.loadRewardRecords();
 
       this.isInitialized = true;
@@ -191,67 +192,67 @@ class HarmonyPaymentService {
   }
 
   /**
-   * 妫€鏌ユ湇鍔℃槸鍚﹀氨缁?   */
+   * 检查服务是否就绪   */
   isReady(): boolean {
     return this.isInitialized && this.context !== null && this.iapClient !== null;
   }
 
-  // ==================== 鎵撹祻閫夐」 ====================
+  // ==================== 打赏选项 ====================
 
   /**
-   * 鑾峰彇鎵撹祻閲戦�閫夐」
+   * 获取打赏金额选项
    */
   getRewardOptions(): RewardOption[] {
     return [
       {
         amount: 1,
         productId: 'reward_1_cny',
-        displayName: '璇蜂綔鑰呭枬鏉�按',
-        description: '鎰熻阿鎮ㄧ殑鏀�寔锛?,
-        icon: '猸?
+        displayName: '请作者喝杯水',
+        description: '感谢您的支持！',
+        icon: '⭐'
       },
       {
         amount: 6,
         productId: 'reward_6_cny',
-        displayName: '璇蜂綔鑰呭悆涓�啺娣囨穻',
-        description: '鎮ㄧ殑鏀�寔鏄�垜鏈€澶х殑鍔ㄥ姏锛?,
-        icon: '馃崷'
+        displayName: '请作者吃个冰淇淋',
+        description: '您的支持是我最大的动力！',
+        icon: '🍦'
       },
       {
         amount: 18,
         productId: 'reward_18_cny',
-        displayName: '缁欎綔鑰呭姞涓�浮鑵?,
-        description: '鎰熻阿鎮ㄧ殑鎱锋叏鎵撹祻锛?,
-        icon: '馃崡'
+        displayName: '给作者加个鸡腿',
+        description: '感谢您的慷慨打赏！',
+        icon: '🍗'
       },
       {
         amount: 30,
         productId: 'reward_30_cny',
-        displayName: 'VIP瓒呯骇鎵撹祻',
-        description: '鎮ㄦ槸鐪熺埍绮夛紒',
-        icon: '馃挅'
+        displayName: 'VIP超级打赏',
+        description: '您是真爱粉！',
+        icon: '💎'
       },
       {
         amount: 66,
         productId: 'reward_66_cny',
-        displayName: '66澶ч『',
-        description: '绁濇偍浜嬩簨椤哄績锛?,
-        icon: '馃帄'
+        displayName: '66大顺',
+        description: '祝您事事顺心！',
+        icon: '🎁'
       },
       {
         amount: 88,
         productId: 'reward_88_cny',
-        displayName: '88鍙戣储',
-        description: '鎭�枩鍙戣储锛岃储婧愬箍杩涳紒',
-        icon: '馃挵'
+        displayName: '88发财',
+        description: '恭喜发财，财源广进！',
+        icon: '💰'
       }
     ];
   }
 
-  // ==================== 鏀�粯娴佺▼ ====================
+  // ==================== 支付流程 ====================
 
   /**
-   * 鍒涘缓鎵撹祻璁㈠崟
+   * 创建打赏订单
    */
   async createRewardOrder(productId: string, amount: number, message?: string): Promise<PaymentResult> {
     try {
@@ -261,26 +262,26 @@ class HarmonyPaymentService {
 
       logger.info('[HarmonyPayment] Creating reward order:', productId, amount);
 
-      // 鑾峰彇鍟嗗搧淇℃伅
+      // 获取商品信息
       const productInfo = await this.getProductInfo(productId);
       if (!productInfo) {
         throw new Error(`Product not found: ${productId}`);
       }
 
-      // 鍒涘缓璐�拱璇锋眰
+      // 创建购买请求
       const purchaseRequest: PurchaseRequest = {
         productId: productId,
         developerPayload: message || ''
       };
 
-      // 鎵ц�璐�拱
+      // 执行购买
       const purchaseResult: PurchaseResult = await this.iapClient!.createPurchase(purchaseRequest);
 
       if (purchaseResult.returnCode === 0) {
-        // 鏀�粯鎴愬姛
+        // 支付成功
         const purchaseInfo: PurchaseInfo = purchaseResult.purchaseInfo!;
         
-        // 淇濆瓨鎵撹祻璁板綍
+        // 保存打赏记录
         const record: RewardRecord = {
           id: Date.now().toString(),
           amount: amount,
@@ -303,15 +304,15 @@ class HarmonyPaymentService {
           amount: amount
         };
       } else if (purchaseResult.returnCode === 60050) {
-        // 鐢ㄦ埛鍙栨秷
+        // 用户取消
         logger.info('[HarmonyPayment] User cancelled payment');
         return {
           success: false,
           status: PaymentStatus.CANCELLED,
-          error: '鐢ㄦ埛鍙栨秷鏀�粯'
+          error: '用户取消支付'
         };
       } else {
-        // 鏀�粯澶辫触
+        // 支付失败
         throw new Error(`Purchase failed with code: ${purchaseResult.returnCode}`);
       }
     } catch (error) {
@@ -331,7 +332,7 @@ class HarmonyPaymentService {
   }
 
   /**
-   * 鑾峰彇鍟嗗搧淇℃伅
+   * 获取商品信息
    */
   async getProductInfo(productId: string): Promise<ProductInfo | null> {
     try {
@@ -357,7 +358,7 @@ class HarmonyPaymentService {
   }
 
   /**
-   * 鑾峰彇鎵€鏈夊晢鍝佸垪琛?   */
+   * 获取所有商品列表   */
   async getAllProducts(productIds: string[]): Promise<ProductInfo[]> {
     try {
       if (!this.isReady()) {
@@ -382,7 +383,7 @@ class HarmonyPaymentService {
   }
 
   /**
-   * 鏌ヨ�宸茶喘鍟嗗搧
+   * 查询已购商品
    */
   async getOwnedPurchases(): Promise<PurchaseInfo[]> {
     try {
@@ -405,7 +406,7 @@ class HarmonyPaymentService {
   }
 
   /**
-   * 娑堣€楀晢鍝侊紙鐢ㄤ簬娑堣€楀瀷鍟嗗搧锛?   */
+   * 消耗商品（用于消耗型商品）   */
   async consumePurchase(purchaseToken: string): Promise<boolean> {
     try {
       if (!this.isReady()) {
@@ -425,7 +426,7 @@ class HarmonyPaymentService {
   }
 
   /**
-   * 纭��璁㈠崟锛堢敤浜庣‘璁ゆ敹璐э級
+   * 确认订单（用于确认收货）
    */
   async confirmOrder(orderId: string): Promise<boolean> {
     try {
@@ -445,10 +446,10 @@ class HarmonyPaymentService {
     }
   }
 
-  // ==================== 鎵撹祻璁板綍 ====================
+  // ==================== 打赏记录 ====================
 
   /**
-   * 鍔犺浇鎵撹祻璁板綍
+   * 加载打赏记录
    */
   private async loadRewardRecords(): Promise<void> {
     try {
@@ -462,7 +463,7 @@ class HarmonyPaymentService {
   }
 
   /**
-   * 淇濆瓨鎵撹祻璁板綍
+   * 保存打赏记录
    */
   private async saveRewardRecords(): Promise<void> {
     try {
@@ -474,36 +475,36 @@ class HarmonyPaymentService {
   }
 
   /**
-   * 鑾峰彇鎵撹祻璁板綍
+   * 获取打赏记录
    */
   getRewardRecords(): RewardRecord[] {
     return this.rewardRecords;
   }
 
   /**
-   * 鑾峰彇鎵撹祻鎬婚�
+   * 获取打赏总额
    */
   getTotalRewardAmount(): number {
     return this.rewardRecords.reduce((sum: number, record: RewardRecord) => sum + record.amount, 0);
   }
 
   /**
-   * 鑾峰彇鎵撹祻娆℃暟
+   * 获取打赏次数
    */
   getRewardCount(): number {
     return this.rewardRecords.length;
   }
 
   /**
-   * 鏍煎紡鍖栭噾棰濇樉绀?   */
+   * 格式化金额显示   */
   formatAmount(amount: number): string {
-    return `楼${amount.toFixed(2)}`;
+    return `¥${amount.toFixed(2)}`;
   }
 
-  // ==================== 宸ュ叿鏂规硶 ====================
+  // ==================== 工具方法 ====================
 
   /**
-   * 閲婃斁璧勬簮
+   * 释放资源
    */
   release(): void {
     if (this.iapClient) {
@@ -516,6 +517,6 @@ class HarmonyPaymentService {
   }
 }
 
-// 瀵煎嚭鍗曚緥
+// 导出单例
 export const harmonyPayment = HarmonyPaymentService.getInstance();
 export default harmonyPayment;

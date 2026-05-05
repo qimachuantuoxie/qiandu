@@ -1,10 +1,10 @@
 import { logger } from '../../../utils/Logger';
 /**
- * Comic Reader Service - 婕�敾闃呰�鏈嶅姟
+ * Comic Reader Service - 漫画阅读服务
  * Comic Reader Service - Comic Reading with ImageKit
  *
- * 浣跨敤Image Kit瀹炵幇婕�敾闃呰�鍔熻兘
- * 鏀�寔CBZ/CBR鏍煎紡銆佸浘鐗囬�鍔犺浇銆佺紦瀛樸€佺缉鏀?
+ * 使用Image Kit实现漫画阅读功能
+ * 支持CBZ/CBR格式、图片预加载、缓存、缩放
  *
  * @since 6.0.0
  */
@@ -14,130 +14,130 @@ import { fileIo } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
 
 /**
- * Native妯″潡鎺ュ彛锛堢敤浜嶤BZ瑙ｅ帇锛?
+ * Native模块接口（用于CBZ解压）
  */
 interface NativeModules {
   extractZip?: (filePath: string) => Promise<ZipEntry[]>;
 }
 
 /**
- * 鍘嬬缉鍖呮潯鐩�俊鎭?
+ * 压缩包条目信息
  */
 interface ZipEntry {
-  /** 鏂囦欢璺�緞 */
+  /** 文件路径 */
   path: string;
-  /** 鏂囦欢URI */
+  /** 文件URI */
   uri: string;
 }
 
-// 澹版槑native妯″潡锛堝�鏋滃瓨鍦�級
+// 声明native模块（如果存在）
 declare const nativeModules: NativeModules | undefined;
 
 /**
- * 婕�敾椤甸潰淇℃伅
+ * 漫画页面信息
  */
 export interface ComicPage {
-  /** 椤甸潰绱㈠紩 */
+  /** 页面索引 */
   index: number;
-  /** 鍥剧墖URI */
+  /** 图片URI */
   imageUri: string;
-  /** 鍥剧墖瀹藉害 */
+  /** 图片宽度 */
   width: number;
-  /** 鍥剧墖楂樺害 */
+  /** 图片高度 */
   height: number;
-  /** 鏄�惁宸插姞杞?*/
+  /** 是否已加载*/
   isLoaded: boolean;
-  /** 鍔犺浇杩涘害 */
+  /** 加载进度 */
   loadProgress: number;
 }
 
 /**
- * 婕�敾淇℃伅
+ * 漫画信息
  */
 export interface ComicInfo {
-  /** 婕�敾鏍囬� */
+  /** 漫画标题 */
   title: string;
-  /** 浣滆€?*/
+  /** 作者*/
   author: string;
-  /** 灏侀潰URI */
+  /** 封面URI */
   coverUri: string;
-  /** 鎬婚〉鏁?*/
+  /** 总页数*/
   totalPages: number;
-  /** 鏍煎紡 */
+  /** 格式 */
   format: 'cbz' | 'cbr';
-  /** 鏂囦欢澶у皬 */
+  /** 文件大小 */
   fileSize: number;
 }
 
 /**
- * 闃呰�妯″紡
+ * 阅读模式
  */
 export enum ComicReadMode {
-  /** 鍗曢〉妯″紡 */
+  /** 单页模式 */
   SINGLE_PAGE = 'single',
-  /** 鍙岄〉妯″紡 */
+  /** 双页模式 */
   DOUBLE_PAGE = 'double',
-  /** 闀挎潯妯″紡 */
+  /** 长条模式 */
   WEBTOON = 'webtoon',
-  /** 浠庡彸鍒板乏锛堟棩婕�級 */
+  /** 从右到左（日漫） */
   RTL = 'rtl'
 }
 
 /**
- * 鍥剧墖缂╂斁妯″紡
+ * 图片缩放模式
  */
 export enum ComicScaleMode {
-  /** 閫傚簲瀹藉害 */
+  /** 适应宽度 */
   FIT_WIDTH = 'fit_width',
-  /** 閫傚簲楂樺害 */
+  /** 适应高度 */
   FIT_HEIGHT = 'fit_height',
-  /** 閫傚簲灞忓箷 */
+  /** 适应屏幕 */
   FIT_SCREEN = 'fit_screen',
-  /** 鍘熷�澶у皬 */
+  /** 原始大小 */
   ORIGINAL = 'original',
-  /** 鑷�敱缂╂斁 */
+  /** 自由缩放 */
   FREE = 'free'
 }
 
 /**
- * 婕�敾闃呰�閰嶇疆
+ * 漫画阅读配置
  */
 export interface ComicConfig {
-  /** 闃呰�妯″紡 */
+  /** 阅读模式 */
   readMode: ComicReadMode;
-  /** 缂╂斁妯″紡 */
+  /** 缩放模式 */
   scaleMode: ComicScaleMode;
-  /** 鏄�惁鏄剧ず椤电爜 */
+  /** 是否显示页码 */
   showPageNumber: boolean;
-  /** 鏄�惁棰勫姞杞?*/
+  /** 是否预加载*/
   enablePreload: boolean;
-  /** 棰勫姞杞介〉鏁?*/
+  /** 预加载页数*/
   preloadCount: number;
-  /** 鍥剧墖璐ㄩ噺 */
+  /** 图片质量 */
   imageQuality: number;
-  /** 鑳屾櫙棰滆壊 */
+  /** 背景颜色 */
   backgroundColor: string;
-  /** 缈婚〉鍔ㄧ敾 */
+  /** 翻页动画 */
   enableAnimation: boolean;
 }
 
 /**
- * 婕�敾闃呰�鏈嶅姟绫?
+ * 漫画阅读服务类
  */
 class ComicReaderService {
-  /** 鍗曚緥瀹炰緥 */
+  /** 单例实例 */
   private static instance: ComicReaderService;
 
-  /** 褰撳墠婕�敾 */
+  /** 当前漫画 */
   private currentComic: ComicInfo | null = null;
 
-  /** 婕�敾椤甸潰鍒楄〃 */
+  /** 漫画页面列表 */
   private pages: ComicPage[] = [];
 
-  /** 褰撳墠椤电爜 */
+  /** 当前页码 */
   private currentPageIndex: number = 0;
 
-  /** 闃呰�閰嶇疆 */
+  /** 阅读配置 */
   private config: ComicConfig = {
     readMode: ComicReadMode.SINGLE_PAGE,
     scaleMode: ComicScaleMode.FIT_WIDTH,
@@ -149,19 +149,19 @@ class ComicReaderService {
     enableAnimation: true
   };
 
-  /** 鍥剧墖缂撳瓨 */
+  /** 图片缓存 */
   private imageCache: Map<number, string> = new Map();
 
-  /** 鍔犺浇鐩戝惉鍣?*/
+  /** 加载监听器*/
   private loadListeners: Array<(progress: number) => void> = [];
 
-  /** 椤甸潰鍙樺寲鐩戝惉鍣?*/
+  /** 页面变化监听器*/
   private pageChangeListeners: Array<(index: number) => void> = [];
 
   private constructor() {}
 
   /**
-   * 鑾峰彇鍗曚緥瀹炰緥
+   * 获取单例实例
    */
   static getInstance(): ComicReaderService {
     if (!ComicReaderService.instance) {
@@ -170,10 +170,10 @@ class ComicReaderService {
     return ComicReaderService.instance;
   }
 
-  // ==================== 婕�敾鍔犺浇 ====================
+  // ==================== 漫画加载 ====================
 
   /**
-   * 鍔犺浇婕�敾
+   * 加载漫画
    */
   async loadComic(filePath: string): Promise<ComicInfo | null> {
     try {
@@ -181,7 +181,7 @@ class ComicReaderService {
 
       const format = filePath.endsWith('.cbz') ? 'cbz' : 'cbr';
 
-      // 瑙ｆ瀽鍘嬬缉鍖?
+      // 解析压缩包
       const imageUris = await this.extractComicImages(filePath);
 
       if (imageUris.length === 0) {
@@ -189,7 +189,7 @@ class ComicReaderService {
         return null;
       }
 
-      // 鏋勫缓椤甸潰鍒楄〃
+      // 构建页面列表
       const newPages: ComicPage[] = [];
       for (let i = 0; i < imageUris.length; i++) {
         const page: ComicPage = {
@@ -204,21 +204,21 @@ class ComicReaderService {
       }
       this.pages = newPages;
 
-      // 鑾峰彇婕�敾淇℃伅
+      // 获取漫画信息
       const fileName = this.extractFileName(filePath);
       this.currentComic = {
         title: fileName,
-        author: '鏈�煡浣滆€?,
+        author: '未知作者',
         coverUri: imageUris[0],
         totalPages: imageUris.length,
         format,
         fileSize: fileIo.statSync(filePath).size
       };
 
-      // 閲嶇疆椤电爜
+      // 重置页码
       this.currentPageIndex = 0;
 
-      // 棰勫姞杞藉浘鐗?
+      // 预加载图片
       if (this.config.enablePreload) {
         await this.preloadImages();
       }
@@ -233,17 +233,17 @@ class ComicReaderService {
   }
 
   /**
-   * 瑙ｅ帇婕�敾鍥剧墖
+   * 解压漫画图片
    */
   private async extractComicImages(filePath: string): Promise<string[]> {
     try {
       const format = filePath.endsWith('.cbz') ? 'cbz' : 'cbr';
 
       if (format === 'cbz') {
-        // CBZ 鏄?ZIP 鏍煎紡锛屼娇鐢?HarmonyOS 鍘熺敓鑳藉姏瑙ｅ帇
+        // CBZ 是ZIP 格式，使用HarmonyOS 原生能力解压
         return await this.extractCBZImages(filePath);
       } else {
-        // CBR 鏄?RAR 鏍煎紡锛屾殏涓嶆敮鎸?
+        // CBR 是RAR 格式，暂不支持
         logger.warn('[ComicReader] CBR format not supported yet');
         return [];
       }
@@ -255,25 +255,25 @@ class ComicReaderService {
   }
 
   /**
-   * 瑙ｅ帇 CBZ (ZIP) 鍥剧墖
+   * 解压 CBZ (ZIP) 图片
    */
   private async extractCBZImages(filePath: string): Promise<string[]> {
     try {
-      // 浣跨敤 HarmonyOS 鐨勫帇缂╄兘鍔?
-      // 鐢变簬 ArkTS 娌℃湁鐩存帴鐨?ZIP 瑙ｅ帇 API锛屾垜浠�娇鐢?native 妯″潡
+      // 使用 HarmonyOS 的压缩能力
+      // 由于 ArkTS 没有直接的ZIP 解压 API，我们使用native 模块
       const imageUris: string[] = [];
 
-      // 璇诲彇鏂囦欢
+      // 读取文件
       const file = fileIo.openSync(filePath, fileIo.OpenMode.READ_ONLY);
       const stat = fileIo.statSync(filePath);
       const buffer = new ArrayBuffer(stat.size);
       fileIo.readSync(file.fd, buffer);
       fileIo.closeSync(file);
 
-      // 浣跨敤 native 妯″潡瑙ｅ帇锛堝�鏋滄湁鐨勮瘽锛?
-      // 鍚﹀垯浣跨敤鍩烘湰鏂规硶
+      // 使用 native 模块解压（如果有的话）
+      // 否则使用基本方法
       try {
-        // 灏濊瘯浣跨敤 native 妯″潡
+        // 尝试使用 native 模块
         if (nativeModules && nativeModules.extractZip) {
           const entries = await nativeModules.extractZip(filePath);
           for (const entry of entries) {
@@ -282,12 +282,12 @@ class ComicReaderService {
             }
           }
         } else {
-          // 闄嶇骇鏂规�锛氳繑鍥炴枃浠惰矾寰勶紝璁?ImageKit 澶勭悊
+          // 降级方案：返回文件路径，让ImageKit 处理
           imageUris.push(filePath);
         }
       } catch (e) {
         logger.warn('[ComicReader] Native extract failed, using fallback');
-        // 闄嶇骇鏂规�
+        // 降级方案
         imageUris.push(filePath);
       }
 
@@ -301,7 +301,7 @@ class ComicReaderService {
   }
 
   /**
-   * 鍒ゆ柇鏄�惁鏄�浘鐗囨枃浠?
+   * 判断是否是图片文件
    */
   private isImageFile(path: string): boolean {
     const ext = path.toLowerCase().split('.').pop();
@@ -315,10 +315,10 @@ class ComicReaderService {
     return false;
   }
 
-  // ==================== 鍥剧墖棰勫姞杞?====================
+  // ==================== 图片预加载====================
 
   /**
-   * 棰勫姞杞藉浘鐗?
+   * 预加载图片
    */
   async preloadImages(): Promise<void> {
     if (!this.config.enablePreload) return;
@@ -334,7 +334,7 @@ class ComicReaderService {
   }
 
   /**
-   * 鍔犺浇鍗曞紶鍥剧墖
+   * 加载单张图片
    */
   async loadImage(index: number): Promise<boolean> {
     try {
@@ -344,7 +344,7 @@ class ComicReaderService {
 
       const page = this.pages[index];
 
-      // 妫€鏌ョ紦瀛?
+      // 检查缓存
       if (this.imageCache.has(index)) {
         const cachedUri = this.imageCache.get(index);
         if (cachedUri !== undefined) {
@@ -355,7 +355,7 @@ class ComicReaderService {
         return true;
       }
 
-      // 浣跨敤 ImageKit 鍔犺浇鍜屼紭鍖栧浘鐗?
+      // 使用 ImageKit 加载和优化图片
       try {
         if (imageKit && imageKit.processImage) {
           const result: ImageProcessResult = await imageKit.processImage(page.imageUri, {
@@ -363,8 +363,8 @@ class ComicReaderService {
           });
           if (result && result.outputUri) {
             page.imageUri = result.outputUri;
-            // 娉ㄦ剰: ImageKit 鐨?ImageProcessResult 涓嶅寘鍚?width/height
-            // 濡傛灉闇€瑕侊紝鍙�互閫氳繃鍏朵粬鏂瑰紡鑾峰彇
+            // 注意: ImageKit 的ImageProcessResult 不包含width/height
+            // 如果需要，可以通过其他方式获取
           }
         }
       } catch (e) {
@@ -374,7 +374,7 @@ class ComicReaderService {
       page.isLoaded = true;
       page.loadProgress = 100;
 
-      // 鍔犲叆缂撳瓨
+      // 加入缓存
       this.imageCache.set(index, page.imageUri);
 
       this.notifyPageChange(index);
@@ -386,10 +386,10 @@ class ComicReaderService {
     }
   }
 
-  // ==================== 椤甸潰瀵艰埅 ====================
+  // ==================== 页面导航 ====================
 
   /**
-   * 璺宠浆鍒版寚瀹氶〉
+   * 跳转到指定页
    */
   async goToPage(index: number): Promise<boolean> {
     if (index < 0 || index >= this.pages.length) {
@@ -398,10 +398,10 @@ class ComicReaderService {
 
     this.currentPageIndex = index;
 
-    // 鍔犺浇褰撳墠椤?
+    // 加载当前页
     await this.loadImage(index);
 
-    // 棰勫姞杞?
+    // 预加载
     if (this.config.enablePreload) {
       await this.preloadImages();
     }
@@ -411,21 +411,21 @@ class ComicReaderService {
   }
 
   /**
-   * 涓嬩竴椤?
+   * 下一页
    */
   async nextPage(): Promise<boolean> {
     return await this.goToPage(this.currentPageIndex + 1);
   }
 
   /**
-   * 涓婁竴椤?
+   * 上一页
    */
   async previousPage(): Promise<boolean> {
     return await this.goToPage(this.currentPageIndex - 1);
   }
 
   /**
-   * 鑾峰彇褰撳墠椤?
+   * 获取当前页
    */
   getCurrentPage(): ComicPage | null {
     if (this.currentPageIndex < 0 || this.currentPageIndex >= this.pages.length) {
@@ -435,23 +435,23 @@ class ComicReaderService {
   }
 
   /**
-   * 鑾峰彇褰撳墠椤电爜
+   * 获取当前页码
    */
   getCurrentPageIndex(): number {
     return this.currentPageIndex;
   }
 
   /**
-   * 鑾峰彇鎬婚〉鏁?
+   * 获取总页数
    */
   getTotalPages(): number {
     return this.pages.length;
   }
 
-  // ==================== 鍙岄〉妯″紡 ====================
+  // ==================== 双页模式 ====================
 
   /**
-   * 鑾峰彇鍙岄〉妯″紡鐨勯〉闈?
+   * 获取双页模式的页面
    */
   getDoublePages(): [ComicPage | null, ComicPage | null] {
     const left = this.currentPageIndex;
@@ -463,10 +463,10 @@ class ComicReaderService {
     return [leftPage, rightPage];
   }
 
-  // ==================== 閰嶇疆绠＄悊 ====================
+  // ==================== 配置管理 ====================
 
   /**
-   * 鏇存柊闃呰�閰嶇疆
+   * 更新阅读配置
    */
   async updateConfig(config: Partial<ComicConfig>): Promise<void> {
     if (config.readMode !== undefined) this.config.readMode = config.readMode;
@@ -482,7 +482,7 @@ class ComicReaderService {
   }
 
   /**
-   * 鑾峰彇闃呰�閰嶇疆
+   * 获取阅读配置
    */
   getConfig(): ComicConfig {
     const cfg: ComicConfig = {
@@ -498,10 +498,10 @@ class ComicReaderService {
     return cfg;
   }
 
-  // ==================== 鐩戝惉鍣ㄧ�鐞?====================
+  // ==================== 监听器管理====================
 
   /**
-   * 娣诲姞鍔犺浇鐩戝惉鍣?
+   * 添加加载监听器
    */
   addLoadListener(listener: (progress: number) => void): void {
     const newListeners = this.loadListeners.slice();
@@ -510,7 +510,7 @@ class ComicReaderService {
   }
 
   /**
-   * 娣诲姞椤甸潰鍙樺寲鐩戝惉鍣?
+   * 添加页面变化监听器
    */
   addPageChangeListener(listener: (index: number) => void): void {
     const newListeners = this.pageChangeListeners.slice();
@@ -519,7 +519,7 @@ class ComicReaderService {
   }
 
   /**
-   * 閫氱煡椤甸潰鍙樺寲
+   * 通知页面变化
    */
   private notifyPageChange(index: number): void {
     for (const listener of this.pageChangeListeners) {
@@ -527,10 +527,10 @@ class ComicReaderService {
     }
   }
 
-  // ==================== 杈呭姪鏂规硶 ====================
+  // ==================== 辅助方法 ====================
 
   /**
-   * 鎻愬彇鏂囦欢鍚?
+   * 提取文件名
    */
   private extractFileName(filePath: string): string {
     const parts = filePath.split('/');
@@ -540,7 +540,7 @@ class ComicReaderService {
   }
 
   /**
-   * 鑾峰彇闃呰�杩涘害
+   * 获取阅读进度
    */
   getProgress(): number {
     if (this.pages.length === 0) return 0;
@@ -548,7 +548,7 @@ class ComicReaderService {
   }
 
   /**
-   * 閲婃斁璧勬簮
+   * 释放资源
    */
   async release(): Promise<void> {
     logger.info('[ComicReader] Releasing...');
@@ -562,7 +562,7 @@ class ComicReaderService {
   }
 }
 
-// 瀵煎嚭鍗曚緥
+// 导出单例
 export const comicReaderService = ComicReaderService.getInstance();
 export const comicReader = comicReaderService;
 export default comicReaderService;

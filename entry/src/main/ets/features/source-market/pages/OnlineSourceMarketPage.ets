@@ -1,25 +1,13 @@
 import { logger } from '../../../common/utils/Logger';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
-import { router, promptAction } from '@kit.ArkUI';
+import { promptAction } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { preferenceManager } from '../../../core/utils/PreferenceManager';
 import { themeManager, AppColors, COMMON_COLORS } from '../../../core/utils/AppTheme';
 import { fontScaleManager } from '../../../core/utils/FontScaleManager';
 import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
-
-interface OnlineSourceItem {
-  id: string;
-  name: string;
-  url: string;
-  description: string;
-  bookCount: number;
-  rating: number;
-  downloadCount: number;
-  author: string;
-  tags: string[];
-  isVerified: boolean;
-}
+import { onlineSourceMarketViewModel, OnlineSourceInfo } from '../viewmodels/OnlineSourceMarketViewModel';
 
 @Entry
 @ComponentV2
@@ -30,10 +18,10 @@ struct OnlineSourceMarketPage {
   @Local screenInfo: ScreenInfo | null = null;
   @Local searchText: string = '';
   @Local selectedCategory: string = '全部';
-  @Local sources: OnlineSourceItem[] = [];
+  @Local sources: OnlineSourceInfo[] = [];
+  @Local categories: string[] = [];
+  @Local isLoading: boolean = false;
   private context: common.Context | null = null;
-
-  private categories: string[] = ['全部', '小说', '文学', '漫画', '学术', '其他'];
 
   async aboutToAppear(): Promise<void> {
     this.context = this.getUIContext().getHostContext() as common.Context;
@@ -41,7 +29,7 @@ struct OnlineSourceMarketPage {
     this.currentColors = themeManager.getColors();
     this.fontScale = await fontScaleManager.getFontScale();
     await this.initData();
-    this.loadSources();
+    await this.loadSources();
   }
 
   private async initData(): Promise<void> {
@@ -52,46 +40,23 @@ struct OnlineSourceMarketPage {
     }
   }
 
-  private loadSources(): void {
-    // 模拟数据
-    this.sources = [
-      {
-        id: '1',
-        name: '精选小说网',
-        url: 'https://example.com/novel',
-        description: '热门网络小说资源，更新快速',
-        bookCount: 80000,
-        rating: 4.9,
-        downloadCount: 25600,
-        author: '官方认证',
-        tags: ['小说', '热门', '官方'],
-        isVerified: true
-      },
-      {
-        id: '2',
-        name: '经典文学库',
-        url: 'https://example.com/literature',
-        description: '中外经典文学作品，品质保证',
-        bookCount: 15000,
-        rating: 4.8,
-        downloadCount: 18900,
-        author: '文学社',
-        tags: ['文学', '经典'],
-        isVerified: true
-      },
-      {
-        id: '3',
-        name: '高清漫画站',
-        url: 'https://example.com/comic',
-        description: '优质漫画资源，高清无水印',
-        bookCount: 5000,
-        rating: 4.7,
-        downloadCount: 32100,
-        author: '漫画联盟',
-        tags: ['漫画', '高清'],
-        isVerified: false
+  private async loadSources(): Promise<void> {
+    this.isLoading = true;
+    try {
+      await onlineSourceMarketViewModel.loadSources(true);
+      this.categories = ['全部'];
+      for (let i = 0; i < onlineSourceMarketViewModel.categories.length; i++) {
+        if (onlineSourceMarketViewModel.categories[i] !== 'all') {
+          this.categories.push(onlineSourceMarketViewModel.categories[i]);
+        }
       }
-    ];
+      this.sources = onlineSourceMarketViewModel.sources;
+    } catch (error) {
+      const err = error as Error;
+      logger.error('[OnlineSourceMarketPage] Load sources failed:', err.message);
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   private tc(light: string, dark: string): string {
@@ -107,6 +72,35 @@ struct OnlineSourceMarketPage {
       return (num / 10000).toFixed(1) + '万';
     }
     return num.toString();
+  }
+
+  private getFilteredSources(): OnlineSourceInfo[] {
+    let filtered = this.sources;
+    if (this.selectedCategory !== '全部') {
+      const filteredList: OnlineSourceInfo[] = [];
+      for (let i = 0; i < this.sources.length; i++) {
+        if (this.sources[i].category === this.selectedCategory) {
+          filteredList.push(this.sources[i]);
+        }
+      }
+      filtered = filteredList;
+    }
+
+    if (this.searchText) {
+      const keyword = this.searchText.toLowerCase();
+      const searchFiltered: OnlineSourceInfo[] = [];
+      for (let i = 0; i < filtered.length; i++) {
+        const src = filtered[i];
+        if (src.name.toLowerCase().indexOf(keyword) > -1 ||
+            src.description.toLowerCase().indexOf(keyword) > -1 ||
+            src.author.toLowerCase().indexOf(keyword) > -1) {
+          searchFiltered.push(src);
+        }
+      }
+      filtered = searchFiltered;
+    }
+
+    return filtered;
   }
 
   build() {
@@ -223,23 +217,27 @@ struct OnlineSourceMarketPage {
       .scrollBar(BarState.Off)
 
       // 书源列表
-      List({ space: Spacing.md }) {
-        ForEach(this.sources, (source: OnlineSourceItem) => {
-          ListItem() {
-            this.SourceItem(source)
-          }
-        }, (source: OnlineSourceItem) => source.id)
+      if (this.getFilteredSources().length === 0) {
+        this.EmptyState()
+      } else {
+        List({ space: Spacing.md }) {
+          ForEach(this.getFilteredSources(), (source: OnlineSourceInfo) => {
+            ListItem() {
+              this.SourceItem(source)
+            }
+          }, (source: OnlineSourceInfo) => source.id)
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .padding({ 
+          left: Spacing.lg, 
+          right: Spacing.lg,
+          top: Spacing.md,
+          bottom: Spacing.xxxl
+        })
+        .scrollBar(BarState.Auto)
+        .edgeEffect(EdgeEffect.Spring)
       }
-      .width('100%')
-      .layoutWeight(1)
-      .padding({ 
-        left: Spacing.lg, 
-        right: Spacing.lg,
-        top: Spacing.md,
-        bottom: Spacing.xxxl
-      })
-      .scrollBar(BarState.Auto)
-      .edgeEffect(EdgeEffect.Spring)
     }
     .width('100%')
     .height('100%')
@@ -247,9 +245,48 @@ struct OnlineSourceMarketPage {
   }
 
   @Builder
-  SourceItem(source: OnlineSourceItem) {
+  EmptyState() {
+    Column({ space: Spacing.xl }) {
+      Column() {
+        SymbolGlyph($r('sys.symbol.book.closed'))
+          .fontSize(Size.iconXXXL * 1.5)
+          .fontColor([this.tc('#D1D1D6', '#48484A')])
+      }
+      .width(100)
+      .height(100)
+      .borderRadius(BorderRadius.full)
+      .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+      .justifyContent(FlexAlign.Center)
+
+      Text('暂无在线书源')
+        .fontSize(fontScaleManager.getScaledFontSize(16))
+        .fontWeight(FontWeight.Medium)
+        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+
+      Text('请先在书源管理中添加书源')
+        .fontSize(fontScaleManager.getScaledFontSize(13))
+        .fontColor(this.tc('#8E8E93', '#8E8E93'))
+
+      Button('管理书源')
+        .height(Size.buttonMD)
+        .fontSize(fontScaleManager.getScaledFontSize(14))
+        .fontColor('#FFFFFF')
+        .backgroundColor(COMMON_COLORS.PRIMARY_BLUE)
+        .borderRadius(BorderRadius.xl)
+        .padding({ left: Spacing.xxl, right: Spacing.xxl })
+        .onClick(() => {
+          navigateTo('pages/BookSourceManagePage');
+        })
+    }
+    .width('100%')
+    .layoutWeight(1)
+    .justifyContent(FlexAlign.Center)
+  }
+
+  @Builder
+  SourceItem(source: OnlineSourceInfo) {
     Column({ space: Spacing.md }) {
-      // 头部：名称和验证标识
+      // 头部：名称
       Row({ space: Spacing.sm }) {
         Text(source.name)
           .fontSize(fontScaleManager.getScaledFontSize(16))
@@ -257,16 +294,8 @@ struct OnlineSourceMarketPage {
           .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
           .layoutWeight(1)
 
-        if (source.isVerified) {
-          Row({ space: Spacing.xs }) {
-            SymbolGlyph($r('sys.symbol.checkmark.seal.fill'))
-              .fontSize(Size.iconSM)
-              .fontColor([COMMON_COLORS.PRIMARY_BLUE])
-            
-            Text('已认证')
-              .fontSize(fontScaleManager.getScaledFontSize(11))
-              .fontColor(COMMON_COLORS.PRIMARY_BLUE)
-          }
+        Text(source.category)
+          .fontSize(fontScaleManager.getScaledFontSize(11))
           .padding({ 
             left: Spacing.sm, 
             right: Spacing.sm, 
@@ -274,8 +303,8 @@ struct OnlineSourceMarketPage {
             bottom: Spacing.xs 
           })
           .backgroundColor(COMMON_COLORS.PRIMARY_BLUE + '15')
+          .fontColor(COMMON_COLORS.PRIMARY_BLUE)
           .borderRadius(BorderRadius.xl)
-        }
       }
       .width('100%')
 
@@ -290,16 +319,6 @@ struct OnlineSourceMarketPage {
       // 统计信息
       Row({ space: Spacing.lg }) {
         Row({ space: Spacing.xs }) {
-          SymbolGlyph($r('sys.symbol.books.vertical'))
-            .fontSize(Size.iconXS)
-            .fontColor([this.tc('#8E8E93', '#8E8E93')])
-          
-          Text(this.formatNumber(source.bookCount))
-            .fontSize(fontScaleManager.getScaledFontSize(12))
-            .fontColor(this.tc('#8E8E93', '#8E8E93'))
-        }
-
-        Row({ space: Spacing.xs }) {
           SymbolGlyph($r('sys.symbol.star.fill'))
             .fontSize(Size.iconXS)
             .fontColor(['#FFD700'])
@@ -310,11 +329,11 @@ struct OnlineSourceMarketPage {
         }
 
         Row({ space: Spacing.xs }) {
-          SymbolGlyph($r('sys.symbol.arrow.down.circle'))
+          SymbolGlyph($r('sys.symbol.person'))
             .fontSize(Size.iconXS)
             .fontColor([this.tc('#8E8E93', '#8E8E93')])
           
-          Text(this.formatNumber(source.downloadCount))
+          Text(source.author)
             .fontSize(fontScaleManager.getScaledFontSize(12))
             .fontColor(this.tc('#8E8E93', '#8E8E93'))
         }

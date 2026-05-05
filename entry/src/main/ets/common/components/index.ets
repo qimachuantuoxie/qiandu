@@ -1,37 +1,32 @@
 /**
  * 统一UI组件库导出文件
+ * V3架构 - 按功能分类组织
  */
 
-// 按钮组件
-export { CommonButton, ButtonType, ButtonSize, ButtonConfig } from './CommonButton';
+// ==================== 基础组件 (Base) ====================
+export { CommonButton, ButtonType, ButtonSize, ButtonConfig } from './base/CommonButton';
+export { AppTag } from './base/AppTag';
+export { AppDivider } from './base/AppDivider';
+export { AppAvatar } from './base/AppAvatar';
+export { SysIcon } from './base/SysIcon';
 
-// 卡片组件
-export { CommonCard, CardType } from './CommonButton';
+// ==================== 反馈组件 (Feedback) ====================
+export { AppToast, AppToastType } from './feedback/AppToast';
+export { AppLoading } from './feedback/AppLoading';
+export { AppProgress } from './feedback/AppProgress';
+export { AppEmpty } from './feedback/AppEmpty';
+export { AppRating } from './feedback/AppRating';
 
-// 列表项组件
-export { CommonListItem, ListItemAction } from './CommonButton';
+// ==================== 布局组件 (Layout) ====================
+export { PageLayout } from './layout/PageLayout';
+export { ParallelView } from './layout/ParallelView';
+export { AppSwiper } from './layout/AppSwiper';
+export { AppPullToRefresh } from './layout/AppPullToRefresh';
 
-// 空状态组件
-export { EmptyState, EmptyStateType } from './CommonButton';
+// ==================== 导航组件 (Navigation) ====================
+export { CommonHeader, UnifiedHeader } from './navigation/CommonHeader';
+export { BackButton } from './navigation/BackButton';
+export { OptimizedTabBar } from './navigation/OptimizedTabBar';
 
-// 加载骨架屏组件
-export { SkeletonCard, SkeletonList } from './CommonButton';
-
-// 分割线组件
-export { CommonDivider } from './CommonButton';
-
-// 标签组件
-export { CommonTag, TagType, IconSize, CommonIcon } from './CommonButton';
-
-// 进度条组件
-export { CommonProgress } from './CommonButton';
-
-// 头部组件
-export { CommonHeader, HeaderAction, GradientHeader, TabHeader, TabItem } from './CommonHeader';
-
-// 页面布局组件
-export { StandardPageLayout, ListPageLayout, FormPageLayout, PageLayoutConfig } from './PageLayout';
-export { UnifiedHeader } from './UnifiedHeader';
-
-// 底部导航栏组件
-export { OptimizedTabBar, TabBarItem } from './OptimizedTabBar';
+// ==================== 展示组件 (Display) ====================
+export { MaterialProgressBar, MaterialProgressStyle, MaterialModel } from './display/MaterialProgressBar';

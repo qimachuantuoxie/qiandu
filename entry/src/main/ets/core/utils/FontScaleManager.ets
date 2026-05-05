@@ -1,6 +1,6 @@
 import { logger } from '../../utils/Logger';
 /**
- * 瀛椾綋澶у皬绠＄悊 - 璺熼殢绯荤粺瀛椾綋缂╂斁
+ * 字体大小管理 - 跟随系统字体缩放
  * Font Scale Manager - Follow system font scaling
  */
 
@@ -8,16 +8,16 @@ import { common } from '@kit.AbilityKit';
 import { preferenceManager } from './PreferenceManager';
 
 /**
- * 瀛椾綋缂╂斁閰嶇疆
+ * 字体缩放配置
  */
 export interface FontScaleConfig {
-  /** 缂╂斁姣斾緥 (0.8 - 1.5) */
+  /** 缩放比例 (0.8 - 1.5) */
   scale: number;
-  /** 鏄�惁璺熼殢绯荤粺 */
+  /** 是否跟随系统 */
   followSystem: boolean;
-  /** 鏈€灏忓瓧浣撳ぇ灏?*/
+  /** 最小字体大小*/
   minFontSize: number;
-  /** 鏈€澶у瓧浣撳ぇ灏?*/
+  /** 最大字体大小*/
   maxFontSize: number;
 }
 
@@ -26,7 +26,7 @@ interface Configuration {
 }
 
 /**
- * 瀛椾綋缂╂斁绠＄悊鍣?- 鍗曚緥
+ * 字体缩放管理器 - 单例
  */
 class FontScaleManager {
   private static instance: FontScaleManager;
@@ -49,17 +49,17 @@ class FontScaleManager {
   }
 
   /**
-   * 鍒濆�鍖?
+   * 初始化
    */
   async init(context: common.Context): Promise<void> {
     this.context = context;
     await this.loadConfig();
-    // 缂撳瓨绯荤粺瀛椾綋缂╂斁姣斾緥
+    // 缓存系统字体缩放比例
     this.cachedSystemScale = await this.getSystemFontScale();
   }
 
   /**
-   * 鍔犺浇閰嶇疆
+   * 加载配置
    */
   private async loadConfig(): Promise<void> {
     try {
@@ -86,7 +86,7 @@ class FontScaleManager {
   }
 
   /**
-   * 淇濆瓨閰嶇疆 (浣跨敤闃叉姈鍐欏叆)
+   * 保存配置 (使用防抖写入)
    */
   private async saveConfig(): Promise<void> {
     try {
@@ -99,7 +99,7 @@ class FontScaleManager {
   }
 
   /**
-   * 鑾峰彇绯荤粺瀛椾綋缂╂斁姣斾緥
+   * 获取系统字体缩放比例
    */
   async getSystemFontScale(): Promise<number> {
     try {
@@ -120,7 +120,7 @@ class FontScaleManager {
   }
 
   /**
-   * 鑾峰彇鏈€缁堝瓧浣撶缉鏀炬瘮渚?
+   * 获取最终字体缩放比例
    */
   async getFontScale(): Promise<number> {
     if (this.config.followSystem) {
@@ -132,19 +132,19 @@ class FontScaleManager {
   }
 
   /**
-   * 璁＄畻閫傞厤鍚庣殑瀛椾綋澶у皬锛堝悓姝ョ増鏈�紝浣跨敤缂撳瓨鐨勯厤缃�€硷級
+   * 计算适配后的字体大小（同步版本，使用缓存的配置值）
    */
   getScaledFontSize(baseSize: number): number {
-    // 浣跨敤缂撳瓨鐨勭郴缁熺缉鏀炬瘮渚嬫垨鑷�畾涔夌缉鏀炬瘮渚?
+    // 使用缓存的系统缩放比例或自定义缩放比例
     const scale = this.config.followSystem ? this.cachedSystemScale : this.config.scale;
     const scaled = baseSize * scale;
 
-    // 闄愬埗鍦ㄦ渶灏忓拰鏈€澶ц寖鍥村唴
+    // 限制在最小和最大范围内
     return Math.max(this.config.minFontSize, Math.min(this.config.maxFontSize, scaled));
   }
 
   /**
-   * 璁剧疆鏄�惁璺熼殢绯荤粺
+   * 设置是否跟随系统
    */
   async setFollowSystem(follow: boolean): Promise<void> {
     this.config.followSystem = follow;
@@ -152,7 +152,7 @@ class FontScaleManager {
   }
 
   /**
-   * 璁剧疆鑷�畾涔夌缉鏀炬瘮渚?
+   * 设置自定义缩放比例
    */
   async setCustomScale(scale: number): Promise<void> {
     this.config.followSystem = false;
@@ -161,7 +161,7 @@ class FontScaleManager {
   }
 
   /**
-   * 璁剧疆鏈€灏忓瓧浣?
+   * 设置最小字体
    */
   async setMinFontSize(size: number): Promise<void> {
     this.config.minFontSize = Math.max(8, size);
@@ -169,7 +169,7 @@ class FontScaleManager {
   }
 
   /**
-   * 璁剧疆鏈€澶у瓧浣?
+   * 设置最大字体
    */
   async setMaxFontSize(size: number): Promise<void> {
     this.config.maxFontSize = Math.min(32, size);
@@ -177,14 +177,14 @@ class FontScaleManager {
   }
 
   /**
-   * 鑾峰彇绯荤粺瀛椾綋缂╂斁姣斾緥锛堝悓姝ョ増鏈�紝浣跨敤缂撳瓨鍊硷級
+   * 获取系统字体缩放比例（同步版本，使用缓存值）
    */
   getFontScaleSync(): number {
     return this.cachedSystemScale;
   }
 
   /**
-   * 鑾峰彇褰撳墠閰嶇疆
+   * 获取当前配置
    */
   getConfig(): FontScaleConfig {
     return {

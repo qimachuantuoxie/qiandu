@@ -61,33 +61,54 @@ struct DictionaryPage {
       promptAction.showToast({ message: '请输入要查询的单词', duration: 1500 });
       return;
     }
-
-    this.isSearching = true;
     
-    // 模拟搜索 - 实际应调用词典API
-    setTimeout(() => {
+    this.isSearching = true;
+    this.searchResult = null;
+    
+    // Call actual dictionary API
+    this.fetchDictionary(this.searchText.trim());
+  }
+
+  private async fetchDictionary(word: string): Promise<void> {
+    try {
+      // Use free dictionary API
+      const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
       this.isSearching = false;
-      this.searchResult = {
-        word: this.searchText,
-        phonetic: '/ˈdɪkʃənəri/',
-        meanings: [
-          {
-            partOfSpeech: 'n.',
-            definitions: [
-              '词典，字典',
-              '（某学科的）工具书'
-            ]
-          },
-          {
-            partOfSpeech: 'adj.',
-            definitions: [
-              '词典的',
-              '字面的'
-            ]
+      
+      if (!response.ok) {
+        promptAction.showToast({ message: '未找到该单词', duration: 2000 });
+        return;
+      }
+      
+      const data = await response.json();
+      if (data && data.length > 0) {
+        const entry = data[0];
+        const meanings: MeaningItem[] = [];
+        
+        if (entry.meanings) {
+          for (let i = 0; i < entry.meanings.length; i++) {
+            const m = entry.meanings[i];
+            meanings.push({
+              partOfSpeech: m.partOfSpeech || 'n.',
+              definitions: m.definitions ? m.definitions.map((d: any) => d.definition).slice(0, 5) : []
+            });
           }
-        ]
-      };
-    }, 800);
+        }
+        
+        this.searchResult = {
+          word: entry.word || word,
+          phonetic: entry.phonetics && entry.phonetics[0] ? entry.phonetics[0].text || '' : '',
+          meanings: meanings
+        };
+      } else {
+        promptAction.showToast({ message: '未找到该单词', duration: 2000 });
+      }
+    } catch (error) {
+      this.isSearching = false;
+      const err = error as Error;
+      logger.error('[DictionaryPage] Search failed:', err.message);
+      promptAction.showToast({ message: '查询失败，请检查网络', duration: 2000 });
+    }
   }
 
   build() {

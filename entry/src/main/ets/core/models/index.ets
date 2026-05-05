@@ -1,8 +1,9 @@
-﻿/**
- * 鏁版嵁妯″瀷缁熶竴瀵煎嚭
- * V3 鏋舵瀯 - 鏁版嵁妯″瀷灞? */
+/**
+ * 数据模型统一导出
+ * V3 架构 - 数据模型层
+ */
 
-// 鏍稿績涔︾睄妯″瀷
+// 核心书籍模型
 export {
   BookInfo,
   BookFormat,
@@ -18,7 +19,7 @@ export {
   generateBookId
 } from './CoreBookModel';
 
-// 鍦ㄧ嚎涔︾睄妯″瀷
+// 在线书籍模型
 export {
   OnlineBook,
   OnlineSearchResult,
@@ -26,7 +27,7 @@ export {
   BookSourceConfig
 } from './OnlineBookModel';
 
-// 闃呰缁熻妯″瀷
+// 阅读统计模型
 export {
   ReadingStatistics,
   ReadingAchievement,
@@ -38,17 +39,17 @@ export {
   ReadingInsight
 } from './reading/AdvancedReading';
 
-// 璁よ瘉妯″瀷
+// 认证模型
 export * from './auth';
 
-// 涔︾睄鐩稿叧
+// 书籍相关
 export * from './book';
 
-// 鏉ユ簮鐩稿叧
+// 来源相关
 export * from './source';
 
-// Todo 妯″瀷
+// Todo 模型
 export * from './todo';
 
-// Ebook 绫诲瀷
+// Ebook 类型
 export { EbookType, EbookMetadata } from './EbookTypes';

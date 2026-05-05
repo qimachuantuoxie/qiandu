@@ -285,7 +285,7 @@ class HarmonySkillServiceClass {
     return {
       success: true,
       data: {
-        searchResults: [`${keyword}鎼滅储缁撴灉1`, `${keyword}鎼滅储缁撴灉2`]
+        searchResults: [`${keyword}搜索结果1`, `${keyword}搜索结果2`]
       }
     };
   }

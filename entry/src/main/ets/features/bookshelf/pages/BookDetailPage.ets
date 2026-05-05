@@ -12,6 +12,7 @@ import { common } from '@kit.AbilityKit';
 import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
 import { layoutHelper, ScreenInfo } from '../../common/utils/LayoutHelper';
 import { ThemeTokens } from '../../common/utils/ThemeTokens';
+import { EbookParserUtils } from '../../../core/parsers/EbookParserUtils';
 
 interface BookDetailParams {
   bookId: string;
@@ -94,13 +95,6 @@ struct BookDetailPage {
     }
   }
 
-  private formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  }
 
   private onReadClick(): void {
     if (this.book) {

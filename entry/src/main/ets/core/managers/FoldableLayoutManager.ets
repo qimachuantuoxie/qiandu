@@ -1,10 +1,12 @@
 import { logger } from '../../utils/Logger';
 /**
- * 鎶樺彔灞忚嚜閫傚簲甯冨眬绠＄悊鍣?- Foldable Adaptive Layout Manager
+ * 折叠屏自适应布局管理器 - Foldable Adaptive Layout Manager
  * 
- * 缁熶竴绠＄悊鎶樺彔灞忚�澶囩殑甯冨眬閫傞厤:
- * - 鐩戝惉鎶樺彔鐘舵€佸彉鍖? * - 鑷�姩鍒囨崲甯冨眬妯″紡
- * - 鎻愪緵鍝嶅簲寮忔柇鐐圭郴缁? * - 鏀�寔澶氱獥鍙ｅ垎灞忛€傞厤
+ * 统一管理折叠屏设备的布局适配:
+ * - 监听折叠状态变化
+ * - 自动切换布局模式
+ * - 提供响应式断点系统
+ * - 支持多窗口分屏适配
  * 
  * @since 4.0.0
  */
@@ -14,24 +16,25 @@ import { window, display } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 
 /**
- * 甯冨眬妯″紡鏋氫妇
+ * 布局模式枚举
  */
 export enum LayoutMode {
-  SINGLE = 'single',      // 鍗曟爮 (鎵嬫満/鎶樺彔鎬?
-  DUAL = 'dual',          // 鍙屾爮 (骞虫澘/鍗婃姌鍙?
-  TRIPLE = 'triple'       // 涓夋爮 (澶у睆骞虫澘/灞曞紑鎬?
+  SINGLE = 'single',      // 单栏 (手机/折叠态)
+  DUAL = 'dual',          // 双栏 (平板/半折叠)
+  TRIPLE = 'triple'       // 三栏 (大屏平板/展开态)
 }
 
 /**
- * 鏂�偣閰嶇疆
+ * 断点配置
  */
 export interface BreakpointConfig {
-  sm: number;  // < 600vp  鎵嬫満绔栧睆
-  md: number;  // < 840vp  鎵嬫満妯�睆/灏忓钩鏉?  lg: number;  // >= 840vp 澶у钩鏉?鎶樺彔灞忓睍寮€
+  sm: number;  // < 600vp  手机竖屏
+  md: number;  // < 840vp  手机横屏/小平板
+  lg: number;  // >= 840vp 大平板/折叠屏展开
 }
 
 /**
- * 榛樿�鏂�偣
+ * 默认断点
  */
 const DEFAULT_BREAKPOINTS: BreakpointConfig = {
   sm: 600,
@@ -40,20 +43,20 @@ const DEFAULT_BREAKPOINTS: BreakpointConfig = {
 };
 
 /**
- * 甯冨眬閰嶇疆
+ * 布局配置
  */
 export interface AdaptiveLayoutConfig {
-  /** 褰撳墠鏂�偣 */
+  /** 当前断点 */
   breakpoint: 'sm' | 'md' | 'lg';
-  /** 甯冨眬妯″紡 */
+  /** 布局模式 */
   layoutMode: LayoutMode;
-  /** 鍒楁暟 */
+  /** 列数 */
   columns: number;
-  /** 闂磋窛 */
+  /** 间距 */
   gutter: number;
-  /** 鏄�惁鏄剧ず渚ц竟鏍?*/
+  /** 是否显示侧边栏 */
   showSidebar: boolean;
-  /** 鏄�惁鏄剧ず璇︽儏闈㈡澘 */
+  /** 是否显示详情面板 */
   showDetail: boolean;
 }
 
@@ -63,10 +66,11 @@ class FoldableLayoutManagerClass {
   private currentConfig: AdaptiveLayoutConfig | null = null;
   private breakpoints: BreakpointConfig = DEFAULT_BREAKPOINTS;
   
-  // 鐩戝惉鍣?  private layoutListeners: Array<(config: AdaptiveLayoutConfig) => void> = [];
+  // 监听器
+  private layoutListeners: Array<(config: AdaptiveLayoutConfig) => void> = [];
   private foldListeners: Array<(status: FoldStatus) => void> = [];
   
-  // 绐楀彛瀹炰緥
+  // 窗口实例
   private mainWindow: window.Window | null = null;
   
   private constructor() {}
@@ -79,17 +83,20 @@ class FoldableLayoutManagerClass {
   }
 
   /**
-   * 鍒濆�鍖栫�鐞嗗櫒
+   * 初始化管理器
    */
   async init(context: common.Context): Promise<void> {
     this.context = context;
     
     try {
-      // 鑾峰彇涓荤獥鍙?      this.mainWindow = await window.getLastWindow(context);
+      // 获取主窗口
+      this.mainWindow = await window.getLastWindow(context);
       
-      // 娉ㄥ唽鐩戝惉鍣?      this.registerListeners();
+      // 注册监听器
+      this.registerListeners();
       
-      // 鍒濆�鍖栭厤缃?      this.updateLayoutConfig();
+      // 初始化配置
+      this.updateLayoutConfig();
       
       logger.info('[FoldableLayoutManager] Initialized');
     } catch (error) {
@@ -99,18 +106,18 @@ class FoldableLayoutManagerClass {
   }
 
   /**
-   * 娉ㄥ唽鎵€鏈夌洃鍚�櫒
+   * 注册所有监听器
    */
   private registerListeners() {
     if (!this.mainWindow) return;
     
-    // 鐩戝惉绐楀彛澶у皬鍙樺寲
+    // 监听窗口大小变化
     this.mainWindow.on('windowSizeChange', (size: window.Size) => {
       logger.info('[FoldableLayoutManager] Window size changed:', size.width, 'x', size.height);
       this.updateLayoutConfig();
     });
     
-    // 鐩戝惉鏄剧ず鍙樺寲(鎶樺彔/灞曞紑)
+    // 监听显示变化(折叠/展开)
     display.on('change', (id: number) => {
       logger.info('[FoldableLayoutManager] Display changed:', id);
       this.updateLayoutConfig();
@@ -118,7 +125,7 @@ class FoldableLayoutManagerClass {
   }
 
   /**
-   * 鏇存柊甯冨眬閰嶇疆
+   * 更新布局配置
    */
   private updateLayoutConfig() {
     const widthVp = this.getWidthVp();
@@ -135,14 +142,15 @@ class FoldableLayoutManagerClass {
       showDetail: layoutMode === LayoutMode.TRIPLE
     };
     
-    // 閫氱煡鐩戝惉鍣?    this.notifyLayoutListeners();
+    // 通知监听器
+    this.notifyLayoutListeners();
     this.notifyFoldListeners(foldStatus);
     
     logger.info('[FoldableLayoutManager] Layout updated:', JSON.stringify(this.currentConfig));
   }
 
   /**
-   * 鑾峰彇瀹藉害(vp)
+   * 获取宽度(vp)
    */
   private getWidthVp(): number {
     const displayInfo = displayHelper.getDisplay();
@@ -152,7 +160,7 @@ class FoldableLayoutManagerClass {
   }
 
   /**
-   * 璁＄畻鏂�偣
+   * 计算断点
    */
   private calculateBreakpoint(widthVp: number): 'sm' | 'md' | 'lg' {
     if (widthVp < this.breakpoints.sm) {
@@ -164,12 +172,13 @@ class FoldableLayoutManagerClass {
   }
 
   /**
-   * 璁＄畻甯冨眬妯″紡
+   * 计算布局模式
    */
   private calculateLayoutMode(breakpoint: 'sm' | 'md' | 'lg'): LayoutMode {
     const foldStatus = displayHelper.getFoldStatus();
     
-    // 鎶樺彔灞忕壒娈婂�鐞?    if (displayHelper.isFoldable()) {
+    // 折叠屏特殊处理
+    if (displayHelper.isFoldable()) {
       if (foldStatus === FoldStatus.FOLDED) {
         return LayoutMode.SINGLE;
       } else if (foldStatus === FoldStatus.HALF_FOLDED) {
@@ -179,7 +188,8 @@ class FoldableLayoutManagerClass {
       }
     }
     
-    // 鏅�€氳�澶?    switch (breakpoint) {
+    // 普通设备
+    switch (breakpoint) {
       case 'sm':
         return LayoutMode.SINGLE;
       case 'md':
@@ -190,7 +200,7 @@ class FoldableLayoutManagerClass {
   }
 
   /**
-   * 鑾峰彇鍒楁暟
+   * 获取列数
    */
   private getColumns(mode: LayoutMode): number {
     switch (mode) {
@@ -204,7 +214,7 @@ class FoldableLayoutManagerClass {
   }
 
   /**
-   * 鑾峰彇闂磋窛
+   * 获取间距
    */
   private getGutter(breakpoint: 'sm' | 'md' | 'lg'): number {
     switch (breakpoint) {
@@ -218,46 +228,49 @@ class FoldableLayoutManagerClass {
   }
 
   /**
-   * 鑾峰彇褰撳墠閰嶇疆
+   * 获取当前配置
    */
   getConfig(): AdaptiveLayoutConfig | null {
     return this.currentConfig;
   }
 
   /**
-   * 鑾峰彇褰撳墠鏂�偣
+   * 获取当前断点
    */
   getCurrentBreakpoint(): 'sm' | 'md' | 'lg' {
     return this.currentConfig?.breakpoint || 'sm';
   }
 
   /**
-   * 鑾峰彇褰撳墠甯冨眬妯″紡
+   * 获取当前布局模式
    */
   getCurrentLayoutMode(): LayoutMode {
     return this.currentConfig?.layoutMode || LayoutMode.SINGLE;
   }
 
   /**
-   * 鏄�惁涓哄崟鏍忔ā寮?   */
+   * 是否为单栏模式
+   */
   isSingleColumn(): boolean {
     return this.getCurrentLayoutMode() === LayoutMode.SINGLE;
   }
 
   /**
-   * 鏄�惁涓哄弻鏍忔ā寮?   */
+   * 是否为双栏模式
+   */
   isDualColumn(): boolean {
     return this.getCurrentLayoutMode() === LayoutMode.DUAL;
   }
 
   /**
-   * 鏄�惁涓轰笁鏍忔ā寮?   */
+   * 是否为三栏模式
+   */
   isTripleColumn(): boolean {
     return this.getCurrentLayoutMode() === LayoutMode.TRIPLE;
   }
 
   /**
-   * 鏄�惁搴旇�鏄剧ず骞宠�瑙嗙晫
+   * 是否应该显示平行视界
    */
   shouldShowParallelView(): boolean {
     const mode = this.getCurrentLayoutMode();
@@ -265,7 +278,7 @@ class FoldableLayoutManagerClass {
   }
 
   /**
-   * 鑾峰彇缃戞牸鍒楁暟妯℃澘
+   * 获取网格列数模板
    */
   getGridColumnsTemplate(): string {
     const columns = this.currentConfig?.columns || 1;
@@ -273,15 +286,17 @@ class FoldableLayoutManagerClass {
   }
 
   /**
-   * 娉ㄥ唽甯冨眬鍙樺寲鐩戝惉鍣?   */
+   * 注册布局变化监听器
+   */
   onLayoutChange(callback: (config: AdaptiveLayoutConfig) => void): () => void {
     this.layoutListeners.push(callback);
     
-    // 绔嬪嵆璋冪敤涓€娆?    if (this.currentConfig) {
+    // 立即调用一次
+    if (this.currentConfig) {
       callback(this.currentConfig);
     }
     
-    // 杩斿洖鍙栨秷璁㈤槄鍑芥暟
+    // 返回取消订阅函数
     return () => {
       const index = this.layoutListeners.indexOf(callback);
       if (index > -1) {
@@ -291,15 +306,16 @@ class FoldableLayoutManagerClass {
   }
 
   /**
-   * 娉ㄥ唽鎶樺彔鐘舵€佺洃鍚�櫒
+   * 注册折叠状态监听器
    */
   onFoldStatusChange(callback: (status: FoldStatus) => void): () => void {
     this.foldListeners.push(callback);
     
-    // 绔嬪嵆璋冪敤涓€娆?    const currentStatus = displayHelper.getFoldStatus();
+    // 立即调用一次
+    const currentStatus = displayHelper.getFoldStatus();
     callback(currentStatus);
     
-    // 杩斿洖鍙栨秷璁㈤槄鍑芥暟
+    // 返回取消订阅函数
     return () => {
       const index = this.foldListeners.indexOf(callback);
       if (index > -1) {
@@ -309,7 +325,8 @@ class FoldableLayoutManagerClass {
   }
 
   /**
-   * 閫氱煡甯冨眬鐩戝惉鍣?   */
+   * 通知布局监听器
+   */
   private notifyLayoutListeners() {
     if (!this.currentConfig) return;
     
@@ -324,7 +341,8 @@ class FoldableLayoutManagerClass {
   }
 
   /**
-   * 閫氱煡鎶樺彔鐩戝惉鍣?   */
+   * 通知折叠监听器
+   */
   private notifyFoldListeners(status: FoldStatus) {
     for (let i = 0; i < this.foldListeners.length; i++) {
       try {
@@ -337,14 +355,15 @@ class FoldableLayoutManagerClass {
   }
 
   /**
-   * 璁剧疆鑷�畾涔夋柇鐐?   */
+   * 设置自定义断点
+   */
   setBreakpoints(breakpoints: BreakpointConfig) {
     this.breakpoints = breakpoints;
     this.updateLayoutConfig();
   }
 
   /**
-   * 娓呯悊璧勬簮
+   * 清理资源
    */
   cleanup() {
     if (this.mainWindow) {
@@ -359,19 +378,19 @@ class FoldableLayoutManagerClass {
 
 export const foldableLayoutManager = FoldableLayoutManagerClass.getInstance();
 
-// ==================== 渚挎嵎Hook鍑芥暟 ====================
+// ==================== 便捷Hook函数 ====================
 
 /**
- * 鍦ㄧ粍浠朵腑浣跨敤鐨凥ook - 鑾峰彇甯冨眬閰嶇疆
+ * 在组件中使用的Hook - 获取布局配置
  * 
  * @example
  * const config = useAdaptiveLayout();
  * if (config.layoutMode === LayoutMode.DUAL) {
- *   // 鍙屾爮甯冨眬閫昏緫
+ *   // 双栏布局逻辑
  * }
  */
 export function useAdaptiveLayout(): AdaptiveLayoutConfig {
-  // 娉ㄦ剰: 杩欓渶瑕佸湪@Entry缁勪欢鐨刟boutToAppear涓�皟鐢╥nit
+  // 注意: 这需要在@Entry组件的aboutToAppear中调用init
   return foldableLayoutManager.getConfig() || {
     breakpoint: 'sm',
     layoutMode: LayoutMode.SINGLE,
@@ -383,14 +402,14 @@ export function useAdaptiveLayout(): AdaptiveLayoutConfig {
 }
 
 /**
- * 鍒ゆ柇鏄�惁搴旇�浣跨敤骞宠�瑙嗙晫
+ * 判断是否应该使用平行视界
  */
 export function useParallelView(): boolean {
   return foldableLayoutManager.shouldShowParallelView();
 }
 
 /**
- * 鑾峰彇褰撳墠鏂�偣
+ * 获取当前断点
  */
 export function useBreakpoint(): 'sm' | 'md' | 'lg' {
   return foldableLayoutManager.getCurrentBreakpoint();

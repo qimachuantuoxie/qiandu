@@ -23,8 +23,9 @@ export struct AppAvatar {
   @Param isDarkMode: boolean = false;
 
   /**
-   * 鏍规嵁灏哄鑾峰彇澶村儚澶у皬
-   * @returns 澶村儚瀹介珮锛坴p锛?   */
+   * 根据尺寸获取头像大小
+   * @returns 头像宽高（vp）
+   */
   private getSize(): number {
     switch (this.size) {
       case 'xs': return 24;
@@ -37,8 +38,9 @@ export struct AppAvatar {
   }
 
   /**
-   * 鏍规嵁灏哄鑾峰彇瀛椾綋澶у皬
-   * @returns 瀛椾綋澶у皬锛坒p锛?   */
+   * 根据尺寸获取字体大小
+   * @returns 字体大小（fp）
+   */
   private getFontSize(): number {
     switch (this.size) {
       case 'xs': return 12;

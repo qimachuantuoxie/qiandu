@@ -829,7 +829,7 @@ class ImageKitService {
   }
 
   /**
-   * 鑾峰彇甯︾紦瀛樼殑鍥剧墖
+   * 获取带缓存的图片
    */
   async getImageWithCache(filePath: string, options?: ImageScaleOptions): Promise<string | null> {
     try {
@@ -837,7 +837,7 @@ class ImageKitService {
       if (cachedPath) {
         return cachedPath;
       }
-      // 濡傛灉娌℃湁缂撳瓨锛屽垯澶勭悊鍥剧墖骞剁紦瀛?
+      // 如果没有缓存，则处理图片并缓存
       const processedPath = await this.processImageWithCache(filePath, options);
       return processedPath;
     } catch (error) {
@@ -847,7 +847,7 @@ class ImageKitService {
   }
 
   /**
-   * 澶勭悊鍥剧墖骞剁紦瀛?
+   * 处理图片并缓存
    */
   private async processImageWithCache(filePath: string, options?: ImageScaleOptions): Promise<string | null> {
     // 涓存椂瀹炵幇锛氳繑鍥炲師璺�緞
@@ -856,7 +856,7 @@ class ImageKitService {
   }
 
   /**
-   * 缂撳瓨鍥剧墖鏂囦欢
+   * 缓存图片文件
    */
   async cacheImageFile(sourcePath: string, processedPath: string, options?: ImageScaleOptions): Promise<void> {
     try {

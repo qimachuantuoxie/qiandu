@@ -1,8 +1,8 @@
 import { logger } from '../../utils/Logger';
 /**
- * BookSourceImporter - 涔︽簮瀵煎叆宸ュ叿
+ * BookSourceImporter - 书源导入工具
  *
- * 鏀�寔浠庣綉缁淯RL瀵煎叆闃呰�APP涔︽簮 (Legado鏍煎紡)
+ * 支持从网络URL导入阅读APP书源 (Legado格式)
  *
  * @since 6.0.0
  */
@@ -11,7 +11,7 @@ import { http } from '@kit.NetworkKit';
 import { BookSource, BookSourceType, ReplaceRule, generateSourceId, SearchRule, BookInfoRule, ContentRule, TocRule } from '../models/CoreSourceModel';
 
 /**
- * Legado 鍘熷�涔︽簮鏍煎紡 (闃呰�APP鐨凧SON鏍煎紡)
+ * Legado 原始书源格式 (阅读APP的JSON格式)
  */
 export interface LegadoBookSource {
   bookSourceComment?: string;
@@ -115,11 +115,11 @@ export interface OnlineSourceInfo {
   description?: string;
 }
 
-// 棰勮�涔︽簮URL鍒楄〃 - 宸茬Щ闄わ紝鐢ㄦ埛闇€鎵嬪姩娣诲姞涔︽簮
+// 预设书源URL列表 - 已移除，用户需手动添加书源
 export const PRESET_SOURCE_URLS: OnlineSourceInfo[] = [];
 
 /**
- * 涔︽簮瀵煎叆绠＄悊鍣?- 鍗曚緥妯″紡
+ * 书源导入管理器 - 单例模式
  */
 export class BookSourceImporter {
   private static instance: BookSourceImporter;
@@ -134,7 +134,7 @@ export class BookSourceImporter {
   }
 
   /**
-   * 浠嶶RL瀵煎叆涔︽簮
+   * 从URL导入书源
    */
   async importFromUrl(url: string): Promise<ImportResult> {
     const httpRequest = http.createHttp();
@@ -156,7 +156,7 @@ export class BookSourceImporter {
           success: 0,
           fail: 0,
           total: 0,
-          message: '璇锋眰澶辫触: HTTP ' + response.responseCode
+          message: '请求失败: HTTP ' + response.responseCode
         };
       }
     } catch (error) {
@@ -167,7 +167,7 @@ export class BookSourceImporter {
         success: 0,
         fail: 0,
         total: 0,
-        message: '瀵煎叆澶辫触: ' + errorMsg
+        message: '导入失败: ' + errorMsg
       };
     } finally {
       httpRequest.destroy();
@@ -175,7 +175,8 @@ export class BookSourceImporter {
   }
 
   /**
-   * 瑙ｆ瀽骞跺�鍏ヤ功婧?   */
+   * 解析并导入书源
+   */
   parseAndImport(jsonContent: string): ImportResult {
     try {
       let sources: LegadoBookSource[] = [];
@@ -201,7 +202,7 @@ export class BookSourceImporter {
           success: 0,
           fail: 0,
           total: 0,
-          message: '鏈�壘鍒版湁鏁堜功婧?
+          message: '未找到有效书源'
         };
       }
 
@@ -218,7 +219,7 @@ export class BookSourceImporter {
         success: successCount,
         fail: convertedSources.length - successCount,
         total: convertedSources.length,
-        message: '鎴愬姛瀵煎叆' + successCount + '涓�功婧?
+        message: '成功导入' + successCount + '个书源'
       };
     } catch (error) {
       const err = error as Error;
@@ -226,26 +227,26 @@ export class BookSourceImporter {
         success: 0,
         fail: 0,
         total: 0,
-        message: '涔︽簮鏍煎紡瑙ｆ瀽澶辫触'
+        message: '书源格式解析失败'
       };
     }
   }
 
   /**
-   * 楠岃瘉涔︽簮鏄�惁鏈夋晥
+   * 验证书源是否有效
    */
   private isValidSource(source: BookSource): boolean {
     return !!(source.name && source.url && source.enabled);
   }
 
   /**
-   * Legado鏍煎紡杞�崲涓哄唴閮˙ookSource鏍煎紡
+   * Legado格式转换为内部BookSource格式
    */
   convertLegadoToBookSource(legadoSource: LegadoBookSource): BookSource {
     const sourceType: number = legadoSource.bookSourceType !== undefined ? legadoSource.bookSourceType : 0;
     return {
       id: generateSourceId(),
-      name: legadoSource.bookSourceName || '鏈�懡鍚嶄功婧?,
+      name: legadoSource.bookSourceName || '未命名书源',
       url: legadoSource.bookSourceUrl || '',
       enabled: legadoSource.enabled !== false,
       priority: 1,
@@ -264,7 +265,7 @@ export class BookSourceImporter {
   }
 
   /**
-   * 杞�崲鎼滅储瑙勫垯
+   * 转换搜索规则
    */
   private convertSearchRule(rule?: LegadoSearchRule): SearchRule | undefined {
     if (!rule) return undefined;
@@ -279,7 +280,7 @@ export class BookSourceImporter {
   }
 
   /**
-   * 杞�崲涔︾睄淇℃伅瑙勫垯
+   * 转换书籍信息规则
    */
   private convertBookInfoRule(rule?: LegadoBookInfoRule): BookInfoRule | undefined {
     if (!rule) return undefined;
@@ -293,7 +294,7 @@ export class BookSourceImporter {
   }
 
   /**
-   * 杞�崲鍐呭�瑙勫垯
+   * 转换内容规则
    */
   private convertContentRule(rule?: LegadoContentRule): ContentRule | undefined {
     if (!rule) return undefined;
@@ -305,7 +306,7 @@ export class BookSourceImporter {
   }
 
   /**
-   * 杞�崲鐩�綍瑙勫垯
+   * 转换目录规则
    */
   private convertTocRule(rule?: LegadoTocRule): TocRule | undefined {
     if (!rule) return undefined;
@@ -319,7 +320,7 @@ export class BookSourceImporter {
   }
 
   /**
-   * 鎵归噺杞�崲涔︽簮 - 浣跨敤for寰�幆绗﹀悎ArkTS瑙勮寖
+   * 批量转换书源 - 使用for循环符合ArkTS规范
    */
   convertLegadoSources(legadoSources: LegadoBookSource[]): BookSource[] {
     const result: BookSource[] = [];
@@ -330,7 +331,7 @@ export class BookSourceImporter {
   }
 
   /**
-   * 瑙ｆ瀽鏇挎崲瑙勫垯 - 浣跨敤for寰�幆绗﹀悎ArkTS瑙勮寖
+   * 解析替换规则 - 使用for循环符合ArkTS规范
    */
   parseReplaceRules(jsonContent: string): ReplaceRule[] {
     try {
@@ -341,7 +342,7 @@ export class BookSourceImporter {
         const rule = legadoRules[i];
         result.push({
           id: 'replace_' + Date.now() + '_' + i,
-          name: rule.name || '瑙勫垯' + (i + 1),
+          name: rule.name || '规则' + (i + 1),
           sourceId: rule.group || '',
           pattern: rule.pattern,
           replacement: rule.replacement,
@@ -362,7 +363,7 @@ export class BookSourceImporter {
   }
 
   /**
-   * 杞�崲浣滅敤鑼冨洿
+   * 转换作用范围
    */
   private convertScope(scope?: string): 'title' | 'content' | 'all' {
     if (scope === 'title') return 'title';
@@ -372,5 +373,6 @@ export class BookSourceImporter {
 }
 
 /**
- * 涔︽簮瀵煎叆鍣ㄥ崟渚嬪疄渚? */
+ * 书源导入器单例实例
+ */
 export const bookSourceImporter = BookSourceImporter.getInstance();

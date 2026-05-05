@@ -1,24 +1,26 @@
-﻿/**
- * 缁熶竴椤甸潰鏍峰紡宸ュ叿绫?- 鏁村悎鎵€鏈夐〉闈㈡牱寮忚鑼? * Unified Page Style Utils - Provide global style constants and helper methods
+/**
+ * 统一页面样式工具类 - 整合所有页面样式规范
+ * Unified Page Style Utils - Provide global style constants and helper methods
  *
- * 鏁村悎鑷細PageStyleHelper.ets, PageStyleMixin.ets, PageStyles.ets
+ * 整合自：PageStyleHelper.ets, PageStyleMixin.ets, PageStyles.ets
  *
- * 鎻愪緵锛? * - 棰滆壊绠＄悊锛堟枃瀛椼€佽儗鏅€佷富棰樿壊銆侀€忔槑搴︼級
- * - 闂磋窛瑙勮寖
- * - 鍦嗚瑙勮寖
- * - 瀛椾綋瑙勮寖
- * - 闃村奖瑙勮寖
- * - 鍔ㄧ敾瑙勮寖
- * - 蹇嵎鏂规硶
+ * 提供：
+ * - 颜色管理（文字、背景、主题色、透明度）
+ * - 间距规范
+ * - 圆角规范
+ * - 字体规范
+ * - 阴影规范
+ * - 动画规范
+ * - 快捷方法
  */
 
 import { curves } from '@kit.ArkUI';
 import { appTheme, COMMON_COLORS, AppColors, LIGHT_COLORS, DARK_COLORS } from '../../common/constants/AppTheme';
 
-// ==================== 绫诲瀷瀹氫箟 ====================
+// ==================== 类型定义 ====================
 
 /**
- * 闃村奖閰嶇疆鎺ュ彛
+ * 阴影配置接口
  */
 export interface ElevationConfig {
   radius: number;
@@ -28,7 +30,7 @@ export interface ElevationConfig {
 }
 
 /**
- * 鍔ㄧ敾閰嶇疆鎺ュ彛
+ * 动画配置接口
  */
 export interface AnimationConfig {
   duration: number;
@@ -36,7 +38,7 @@ export interface AnimationConfig {
 }
 
 /**
- * 鎸夊帇鐘舵€佹牱寮忛泦鍚?- 瀵瑰簲 ArkUI stateStyles API
+ * 按压状态样式集合 - 对应 ArkUI stateStyles API
  */
 export interface ScaleOption {
   x: number;
@@ -55,12 +57,14 @@ export interface PressedStyleSet {
 }
 
 /**
- * 椤甸潰鏍峰紡宸ュ叿绫?- 涓诲叆鍙? */
+ * 页面样式工具类 - 主入口
+ */
 export class PageStyles {
-  // ==================== 棰滆壊绠＄悊 ====================
+  // ==================== 颜色管理 ====================
 
   /**
-   * 鑾峰彇鏂囧瓧棰滆壊锛堟繁鑹叉ā寮忛€傞厤锛?   */
+   * 获取文字颜色（深色模式适配）
+   */
   static textColor(isDarkMode: boolean, level: 'primary' | 'secondary' | 'tertiary' = 'primary'): string {
     const colors = isDarkMode ? DARK_COLORS : LIGHT_COLORS;
     switch (level) {
@@ -76,7 +80,7 @@ export class PageStyles {
   }
 
   /**
-   * 鑾峰彇鑳屾櫙棰滆壊
+   * 获取背景颜色
    */
   static bgColor(isDarkMode: boolean, level: 'page' | 'card' | 'input' | 'surface' = 'page'): string {
     const colors = isDarkMode ? DARK_COLORS : LIGHT_COLORS;
@@ -95,7 +99,7 @@ export class PageStyles {
   }
 
   /**
-   * 鑾峰彇涓婚棰滆壊
+   * 获取主题颜色
    */
   static themeColor(name: 'primary' | 'success' | 'warning' | 'error'): string {
     switch (name) {
@@ -113,7 +117,8 @@ export class PageStyles {
   }
 
   /**
-   * 鑾峰彇閫忔槑搴﹂鑹?   */
+   * 获取透明度颜色
+   */
   static opacityColor(isDarkMode: boolean, type: 'light' | 'medium' | 'dark'): string {
     switch (type) {
       case 'light':
@@ -127,37 +132,41 @@ export class PageStyles {
     }
   }
 
-  // ==================== 蹇嵎鏂规硶 ====================
+  // ==================== 快捷方法 ====================
 
   /**
-   * 鑾峰彇涓昏壊璋冭儗鏅紙鍚€忔槑搴︼級
+   * 获取主色调背景（含透明度）
    */
   static primaryBg(isDarkMode: boolean): string {
     return isDarkMode ? 'rgba(0,125,255,0.15)' : 'rgba(0,125,255,0.05)';
   }
 
   /**
-   * 鑾峰彇鎴愬姛鑹茶儗鏅?   */
+   * 获取成功色背景
+   */
   static successBg(isDarkMode: boolean): string {
     return isDarkMode ? 'rgba(52,199,89,0.15)' : 'rgba(52,199,89,0.05)';
   }
 
   /**
-   * 鑾峰彇璀﹀憡鑹茶儗鏅?   */
+   * 获取警告色背景
+   */
   static warningBg(isDarkMode: boolean): string {
     return isDarkMode ? 'rgba(250,140,22,0.15)' : 'rgba(250,140,22,0.05)';
   }
 
   /**
-   * 鑾峰彇閿欒鑹茶儗鏅?   */
+   * 获取错误色背景
+   */
   static errorBg(isDarkMode: boolean): string {
     return isDarkMode ? 'rgba(255,59,48,0.15)' : 'rgba(255,59,48,0.05)';
   }
 
-  // ==================== 闂磋窛瑙勮寖 ====================
+  // ==================== 间距规范 ====================
 
   /**
-   * 鑾峰彇闂磋窛鍊?   */
+   * 获取间距值
+   */
   static spacing(size: 'xs' | 'sm' | 'md' | 'lg' | 'xl'): number {
     switch (size) {
       case 'xs':
@@ -175,10 +184,11 @@ export class PageStyles {
     }
   }
 
-  // ==================== 鍦嗚瑙勮寖 ====================
+  // ==================== 圆角规范 ====================
 
   /**
-   * 鑾峰彇鍦嗚鍊?   */
+   * 获取圆角值
+   */
   static radius(size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full' = 'md'): number {
     switch (size) {
       case 'xs':
@@ -198,10 +208,10 @@ export class PageStyles {
     }
   }
 
-  // ==================== 瀛椾綋瑙勮寖 ====================
+  // ==================== 字体规范 ====================
 
   /**
-   * 鑾峰彇瀛椾綋澶у皬
+   * 获取字体大小
    */
   static fontSize(size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl'): number {
     switch (size) {
@@ -222,10 +232,10 @@ export class PageStyles {
     }
   }
 
-  // ==================== 闃村奖瑙勮寖 ====================
+  // ==================== 阴影规范 ====================
 
   /**
-   * 鑾峰彇闃村奖閰嶇疆
+   * 获取阴影配置
    */
   static elevation(level: 'none' | 'sm' | 'md' | 'lg' | 'xl', isDarkMode: boolean = false): ElevationConfig | undefined {
     switch (level) {
@@ -244,10 +254,10 @@ export class PageStyles {
     }
   }
 
-  // ==================== 鍔ㄧ敾瑙勮寖 ====================
+  // ==================== 动画规范 ====================
 
   /**
-   * 鑾峰彇鏍囧噯鍔ㄧ敾閰嶇疆
+   * 获取标准动画配置
    */
   static animation(duration: 'fast' | 'normal' | 'slow' = 'normal'): AnimationConfig {
     switch (duration) {
@@ -263,7 +273,8 @@ export class PageStyles {
   }
 
   /**
-   * 鑾峰彇鎸夊帇鎬佹牱寮?   */
+   * 获取按压态样式
+   */
   static pressedStyle(scale: number = 0.96, opacity: number = 0.8): PressedStyleSet {
     return {
       pressed: {
@@ -279,29 +290,31 @@ export class PageStyles {
 }
 
 /**
- * 椤甸潰鏍峰紡 Mixin - 鎻愪緵 tc/bg 蹇嵎鏂规硶
- * 浣跨敤鏂规硶锛? * 1. 鍦ㄩ〉闈腑瀹氫箟: @State isDarkMode: boolean = false;
- * 2. 鍦?aboutToAppear 涓? this.isDarkMode = appTheme.isDarkMode();
- * 3. 缁ф壙璇ョ被鎴栧鍒舵柟娉曞埌缁勪欢涓? */
+ * 页面样式 Mixin - 提供 tc/bg 快捷方法
+ * 使用方法：
+ * 1. 在页面中定义: @State isDarkMode: boolean = false;
+ * 2. 在 aboutToAppear 中: this.isDarkMode = appTheme.isDarkMode();
+ * 3. 继承该类或复制方法到组件中
+ */
 export class PageStyleMixin {
   isDarkMode: boolean = false;
 
   /**
-   * 鏂囧瓧棰滆壊蹇嵎鏂规硶 (light: 娴呰壊妯″紡鍊? dark: 娣辫壊妯″紡鍊?
+   * 文字颜色快捷方法 (light: 浅色模式值, dark: 深色模式值)
    */
   tc(light: string, dark: string): string {
     return this.isDarkMode ? dark : light;
   }
 
   /**
-   * 鑳屾櫙棰滆壊蹇嵎鏂规硶 (light: 娴呰壊妯″紡鍊? dark: 娣辫壊妯″紡鍊?
+   * 背景颜色快捷方法 (light: 浅色模式值, dark: 深色模式值)
    */
   bg(light: string, dark: string): string {
     return this.isDarkMode ? dark : light;
   }
 
   /**
-   * 鎸夊帇鏁堟灉锛堟坊鍔犲埌鍙偣鍑诲厓绱狅級
+   * 按压效果（添加到可点击元素）
    */
   getPressedStyle(): PressedStyleSet {
     return {

@@ -1,8 +1,11 @@
 import { logger } from '../../../utils/Logger';
 /**
- * Accessibility Service - 鏃犻殰纰嶆湇鍔? * Accessibility Service - Digital Accessibility Service
+ * Accessibility Service - 无障碍服务
+ * Accessibility Service - Digital Accessibility Service
  * 
- * 纭�繚浠讳綍浜哄湪浠讳綍鐜��涓�兘鑳藉钩绛夈€佹柟渚垮湴鑾峰彇鍜屼娇鐢ㄤ俊鎭? * 鐩�爣锛氱缉灏忔暟瀛楅缚娌燂紝璁╂墍鏈変汉閮借兘澶熸棤闅滅�鍦拌瀺鍏ョぞ浼? * 
+ * 确保任何人在任何环境中都能平等、方便地获取和使用信息
+ * 目标：缩小数字鸿沟，让所有人都能够无障碍地融入社会
+ * 
  * @since 2.0.0
  */
 
@@ -10,188 +13,196 @@ import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 
 /**
- * 鏃犻殰纰嶅姛鑳界被鍨? */
+ * 无障碍功能类型
+ */
 export enum AccessibilityFeature {
-  /** 灞忓箷闃呰�鍣?*/
+  /** 屏幕阅读器*/
   SCREEN_READER = 'screen_reader',
-  /** 楂樺�姣斿害妯″紡 */
+  /** 高对比度模式 */
   HIGH_CONTRAST = 'high_contrast',
-  /** 澶у瓧浣撴ā寮?*/
+  /** 大字体模式*/
   LARGE_FONT = 'large_font',
-  /** 璇�煶鎺у埗 */
+  /** 语音控制 */
   VOICE_CONTROL = 'voice_control',
-  /** 寮€鍏宠�闂?*/
+  /** 开关访问*/
   SWITCH_ACCESS = 'switch_access',
-  /** 瑙︽帶璋冭妭 */
+  /** 触控调节 */
   TOUCH_ADJUSTMENT = 'touch_adjustment',
-  /** 棰滆壊鍙嶈浆 */
+  /** 颜色反转 */
   COLOR_INVERSION = 'color_inversion',
-  /** 棰滆壊鏍℃� */
+  /** 颜色校正 */
   COLOR_CORRECTION = 'color_correction',
-  /** 鍑忓皯鍔ㄧ敾 */
+  /** 减少动画 */
   REDUCE_MOTION = 'reduce_motion',
-  /** 瀛楀箷鏄剧ず */
+  /** 字幕显示 */
   CAPTIONS = 'captions',
-  /** 鍔╁惉鍣?*/
+  /** 助听器*/
   HEARING_AID = 'hearing_aid'
 }
 
 /**
- * 鏃犻殰纰嶇姸鎬? */
+ * 无障碍状态
+ */
 export interface AccessibilityStatus {
-  /** 宸插惎鐢ㄧ殑鍔熻兘鍒楄〃 */
+  /** 已启用的功能列表 */
   enabledFeatures: AccessibilityFeature[];
-  /** 瀛椾綋缂╂斁姣斾緥 */
+  /** 字体缩放比例 */
   fontScale: number;
-  /** 瀵规瘮搴︾骇鍒?*/
+  /** 对比度级别*/
   contrastLevel: number;
-  /** 鏄�惁鍚�敤灞忓箷闃呰�鍣?*/
+  /** 是否启用屏幕阅读器*/
   screenReaderEnabled: boolean;
-  /** 鏄�惁鍚�敤楂樺�姣斿害 */
+  /** 是否启用高对比度 */
   highContrastEnabled: boolean;
-  /** 鏄�惁鍚�敤澶у瓧浣?*/
+  /** 是否启用大字体*/
   largeFontEnabled: boolean;
-  /** 鏄�惁鍑忓皯鍔ㄧ敾 */
+  /** 是否减少动画 */
   reduceMotionEnabled: boolean;
-  /** 鏃犻殰纰嶈瘎鍒?*/
+  /** 无障碍评分*/
   accessibilityScore: number;
 }
 
 /**
- * 棰滆壊鏍℃�绫诲瀷
+ * 颜色校正类型
  */
 export enum ColorCorrectionType {
-  /** 鏃犳牎姝?*/
+  /** 无校正*/
   NONE = 'none',
-  /** 鐏板害 */
+  /** 灰度 */
   GRAYSCALE = 'grayscale',
-  /** 绾㈣壊寮?*/
+  /** 红色弱*/
   DEUTERANOMALY = 'deuteranomaly',
-  /** 缁胯壊寮?*/
+  /** 绿色弱*/
   PROTANOMALY = 'protanomaly',
-  /** 钃濊壊寮?*/
+  /** 蓝色弱*/
   TRITANOMALY = 'tritanomaly'
 }
 
 /**
- * 瀵规瘮搴︾骇鍒? */
+ * 对比度级别
+ */
 export enum ContrastLevel {
-  /** 鏍囧噯 */
+  /** 标准 */
   STANDARD = 1,
-  /** 澧炲己 */
+  /** 增强 */
   ENHANCED = 2,
-  /** 楂樺�姣斿害 */
+  /** 高对比度 */
   HIGH = 3,
-  /** 鏋侀珮瀵规瘮搴?*/
+  /** 极高对比度*/
   EXTRA_HIGH = 4
 }
 
 /**
- * 瀛椾綋澶у皬绾у埆
+ * 字体大小级别
  */
 export enum FontSizeLevel {
-  /** 灏?*/
+  /** 小*/
   SMALL = 0.8,
-  /** 鏍囧噯 */
+  /** 标准 */
   NORMAL = 1.0,
-  /** 澶?*/
+  /** 大*/
   LARGE = 1.2,
-  /** 鐗瑰ぇ */
+  /** 特大 */
   EXTRA_LARGE = 1.5,
-  /** 鐗瑰ぇ */
+  /** 特大 */
   EXTRA_EXTRA_LARGE = 2.0
 }
 
 /**
- * 鏃犻殰纰嶉厤缃? */
+ * 无障碍配置
+ */
 export interface AccessibilityConfig {
-  /** 瀛椾綋缂╂斁姣斾緥 */
+  /** 字体缩放比例 */
   fontScale: number;
-  /** 瀵规瘮搴︾骇鍒?*/
+  /** 对比度级别*/
   contrastLevel: ContrastLevel;
-  /** 棰滆壊鏍℃�绫诲瀷 */
+  /** 颜色校正类型 */
   colorCorrection: ColorCorrectionType;
-  /** 鏄�惁鍑忓皯鍔ㄧ敾 */
+  /** 是否减少动画 */
   reduceMotion: boolean;
-  /** 鏄�惁鍚�敤瀛楀箷 */
+  /** 是否启用字幕 */
   captionsEnabled: boolean;
-  /** 瀛楀箷璇�█ */
+  /** 字幕语言 */
   captionLanguage?: string;
-  /** 瑙︽帶寤惰繜锛堟�绉掞級 */
+  /** 触控延迟（毫秒） */
   touchDelay: number;
-  /** 鏈€灏忚Е鎺у尯鍩熷ぇ灏忥紙vp锛?*/
+  /** 最小触控区域大小（vp）*/
   minTouchTargetSize: number;
 }
 
 /**
- * 灞忓箷闃呰�鍣ㄤ簨浠? */
+ * 屏幕阅读器事件
+ */
 export interface ScreenReaderEvent {
-  /** 浜嬩欢绫诲瀷 */
+  /** 事件类型 */
   type: 'focus' | 'click' | 'scroll' | 'page_change';
-  /** 鐩�爣鍏冪礌鎻忚堪 */
+  /** 目标元素描述 */
   targetDescription: string;
-  /** 鐩�爣鍏冪礌瑙掕壊 */
+  /** 目标元素角色 */
   targetRole: string;
-  /** 棰濆�淇℃伅 */
+  /** 额外信息 */
   extraInfo?: Record<string, object>;
 }
 
 /**
- * 璇�煶鎺у埗鍛戒护
+ * 语音控制命令
  */
 export interface VoiceCommand {
-  /** 鍛戒护绫诲瀷 */
+  /** 命令类型 */
   command: 'scroll_up' | 'scroll_down' | 'page_up' | 'page_down' | 'select' | 'back' | 'home';
-  /** 鍛戒护鍙傛暟 */
+  /** 命令参数 */
   params?: Record<string, object>;
-  /** 鏃堕棿鎴?*/
+  /** 时间戳*/
   timestamp: number;
 }
 
 /**
- * 鏃犻殰纰嶅�璁＄粨鏋? */
+ * 无障碍审计结果
+ */
 export interface AccessibilityAuditResult {
-  /** 鎬讳綋璇勫垎 */
+  /** 总体评分 */
   overallScore: number;
-  /** 閫氳繃鐨勯」鐩�暟 */
+  /** 通过的项目数 */
   passedCount: number;
-  /** 澶辫触鐨勯」鐩�暟 */
+  /** 失败的项目数 */
   failedCount: number;
-  /** 璀﹀憡椤圭洰鏁?*/
+  /** 警告项目数*/
   warningCount: number;
-  /** 璇︾粏缁撴灉 */
+  /** 详细结果 */
   details: AccessibilityAuditItem[];
 }
 
 /**
- * 鏃犻殰纰嶅�璁￠」鐩? */
+ * 无障碍审计项目
+ */
 export interface AccessibilityAuditItem {
-  /** 椤圭洰鍚嶇О */
+  /** 项目名称 */
   name: string;
-  /** 鏄�惁閫氳繃 */
+  /** 是否通过 */
   passed: boolean;
-  /** 涓ラ噸绋嬪害 */
+  /** 严重程度 */
   severity: 'critical' | 'major' | 'minor' | 'warning';
-  /** 鎻忚堪 */
+  /** 描述 */
   description: string;
-  /** 寤鸿� */
+  /** 建议 */
   suggestion: string;
 }
 
 /**
- * 鏃犻殰纰嶇洃鍚�櫒
+ * 无障碍监听器
  */
 export interface AccessibilityListener {
-  /** 閰嶇疆鍙樻洿 */
+  /** 配置变更 */
   onConfigChange?: (config: AccessibilityConfig) => void;
-  /** 灞忓箷闃呰�鍣ㄤ簨浠?*/
+  /** 屏幕阅读器事件*/
   onScreenReaderEvent?: (event: ScreenReaderEvent) => void;
-  /** 璇�煶鎺у埗鍛戒护 */
+  /** 语音控制命令 */
   onVoiceCommand?: (command: VoiceCommand) => void;
 }
 
 /**
- * Accessibility 鏈嶅姟绫? */
+ * Accessibility 服务类
+ */
 class AccessibilityServiceClass {
   private static instance: AccessibilityServiceClass;
   private context: common.Context | null = null;
@@ -271,12 +282,12 @@ class AccessibilityServiceClass {
     totalPages: number,
     percentage: number
   ): Promise<boolean> {
-    const text = `銆?{bookTitle}銆嬬� ${currentPage} 椤碉紝鍏?${totalPages} 椤碉紝杩涘害 ${percentage}%`;
+    const text = `《${bookTitle}》第 ${currentPage} 页，共${totalPages} 页，进度 ${percentage}%`;
     return await this.speakText(text, 'normal');
   }
 
   async announceChapterTitle(bookTitle: string, chapterTitle: string): Promise<boolean> {
-    const text = `绔犺妭锛?{chapterTitle} - 銆?{bookTitle}銆媊;
+    const text = `章节：${chapterTitle} - 《${bookTitle}》`;
     return await this.speakText(text, 'high');
   }
 

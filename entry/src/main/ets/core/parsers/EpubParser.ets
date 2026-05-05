@@ -1,12 +1,12 @@
 import { logger } from '../../utils/Logger';
 /**
- * EPUB Parser - EPUB 鐢靛瓙涔﹁В鏋愬櫒
+ * EPUB Parser - EPUB 电子书解析器
  *
- * 鎻愪緵 EPUB 鏍煎紡鐢靛瓙涔︾殑瑙ｆ瀽鍔熻兘锛屽寘鎷�細
- * - ZIP 瀹瑰櫒瑙ｅ帇
- * - OPF 鍏冩暟鎹�彁鍙?
- * - NCX/NAV 鐩�綍瑙ｆ瀽
- * - XHTML 鍐呭�鏂囨湰鎻愬彇
+ * 提供 EPUB 格式电子书的解析功能，包括：
+ * - ZIP 容器解压
+ * - OPF 元数据提取
+ * - NCX/NAV 目录解析
+ * - XHTML 内容文本提取
  *
  * @since 6.0.0
  */
@@ -25,14 +25,14 @@ import {
 } from '../models/EbookTypes';
 
 /**
- * EPUB 瑙ｆ瀽鍣ㄧ被
+ * EPUB 解析器类
  */
 export class EpubParser {
 
   /**
-   * 瑙ｆ瀽 EPUB 鏂囦欢
-   * @param filePath EPUB 鏂囦欢璺�緞
-   * @returns 瑙ｆ瀽缁撴灉
+   * 解析 EPUB 文件
+   * @param filePath EPUB 文件路径
+   * @returns 解析结果
    */
   static async parse(filePath: string): Promise<ParseResult> {
     logger.info('[EpubParser] Parsing EPUB file:', filePath);
@@ -59,9 +59,9 @@ export class EpubParser {
   }
 
   /**
-   * 瑙ｅ帇 EPUB 鏂囦欢锛圗PUB 鏈�川鏄?ZIP锛?
-   * @param filePath EPUB 鏂囦欢璺�緞
-   * @returns 鏂囦欢璺�緞鍒板唴瀹圭殑鏄犲皠
+   * 解压 EPUB 文件（EPUB 本质是 ZIP）
+   * @param filePath EPUB 文件路径
+   * @returns 文件路径到内容的映射
    */
   private static async unzipEpub(filePath: string): Promise<Record<string, string>> {
     logger.info('[EpubParser] Unzipping EPUB:', filePath);
@@ -99,10 +99,10 @@ export class EpubParser {
   }
 
   /**
-   * 瑙ｆ瀽 OPF 鍏冩暟鎹?
-   * @param contentMap 鏂囦欢鍐呭�鏄犲皠
-   * @param filePath 鍘熷�鏂囦欢璺�緞
-   * @returns 涔︾睄鍏冩暟鎹?
+   * 解析 OPF 元数据
+   * @param contentMap 文件内容映射
+   * @param filePath 原始文件路径
+   * @returns 书籍元数据
    */
   private static async parseOpfMetadata(contentMap: Record<string, string>, filePath: string): Promise<BookMetadata> {
     const fileName = EpubParser.extractFileName(filePath);
@@ -182,10 +182,10 @@ export class EpubParser {
   }
 
   /**
-   * 鎻愬彇 Dublin Core 鍏冩暟鎹�瓧娈?
-   * @param content OPF 鍐呭�
-   * @param tag 鏍囩�鍚?
-   * @returns 瀛楁�鍊?
+   * 提取 Dublin Core 元数据字段
+   * @param content OPF 内容
+   * @param tag 标签名
+   * @returns 字段值
    */
   private static extractDublinCore(content: string, tag: string): string | undefined {
     const patterns = [
@@ -204,11 +204,11 @@ export class EpubParser {
   }
 
   /**
-   * 鎻愬彇 meta 鏍囩�灞炴€?
-   * @param content OPF 鍐呭�
-   * @param name meta 鍚嶇О
-   * @param attr 灞炴€у悕
-   * @returns 灞炴€у€?
+   * 提取 meta 标签属性
+   * @param content OPF 内容
+   * @param name meta 名称
+   * @param attr 属性名
+   * @returns 属性值
    */
   private static extractMetaAttribute(content: string, name: string, attr: string): string | undefined {
     const pattern = new RegExp('<meta[^>]+content="([^"]+)"[^>]+name="' + name + '"', 'i');
@@ -217,9 +217,9 @@ export class EpubParser {
   }
 
   /**
-   * 瑙ｆ瀽 NCX 瀵艰埅鏂囦欢
-   * @param contentMap 鏂囦欢鍐呭�鏄犲皠
-   * @returns 绔犺妭鍒楄〃
+   * 解析 NCX 导航文件
+   * @param contentMap 文件内容映射
+   * @returns 章节列表
    */
   private static async parseNcxNavigation(contentMap: Record<string, string>): Promise<LocalChapterInfo[]> {
     const chapters: LocalChapterInfo[] = [];
@@ -277,7 +277,7 @@ export class EpubParser {
       if (chapters.length === 0) {
         chapters.push({
           id: 'epub_nav_0',
-          title: '鍐呭�',
+          title: '内容',
           startOffset: 0,
           endOffset: 1,
           level: 1
@@ -294,9 +294,9 @@ export class EpubParser {
   }
 
   /**
-   * 浠?NCX 鍐呭�涓�彁鍙栧�鑸�偣
-   * @param ncxContent NCX XML 鍐呭�
-   * @returns 瀵艰埅鐐瑰垪琛?
+   * 从 NCX 内容中提取导航点
+   * @param ncxContent NCX XML 内容
+   * @returns 导航点列表
    */
   private static extractNavPoints(ncxContent: string): NavPoint[] {
     const navPoints: NavPoint[] = [];
@@ -341,9 +341,9 @@ export class EpubParser {
   }
 
   /**
-   * 浠庡�鑸?HTML 涓�彁鍙栧�鑸�」
-   * @param navContent 瀵艰埅 HTML 鍐呭�
-   * @returns 瀵艰埅椤瑰垪琛?
+   * 从导航 HTML 中提取导航项
+   * @param navContent 导航 HTML 内容
+   * @returns 导航项列表
    */
   private static extractNavItems(navContent: string): NavItem[] {
     const items: NavItem[] = [];
@@ -381,9 +381,9 @@ export class EpubParser {
   }
 
   /**
-   * 浠?EPUB 涓�彁鍙栧叏閮ㄦ枃鏈�唴瀹?
-   * @param contentMap 鏂囦欢鍐呭�鏄犲皠
-   * @returns 绾�枃鏈�唴瀹?
+   * 从 EPUB 中提取全部文本内容
+   * @param contentMap 文件内容映射
+   * @returns 纯文本内容
    */
   private static async extractEpubText(contentMap: Record<string, string>): Promise<string> {
     let fullText = '';
@@ -435,28 +435,28 @@ export class EpubParser {
   }
 
   /**
-   * 浠?XHTML/HTML 涓�彁鍙栫函鏂囨湰
-   * @param html HTML 鍐呭�
-   * @returns 绾�枃鏈?
+   * 从 XHTML/HTML 中提取纯文本
+   * @param html HTML 内容
+   * @returns 纯文本
    */
   private static extractTextFromXhtml(html: string): string {
     let text = html;
 
-    // 绉婚櫎 style 鍜?script 鏍囩�
+    // 移除 style 和 script 标签
     text = text.replace(new RegExp('<style[^>]*>[\s\S]*?<\/style>', 'gi'), '');
     text = text.replace(new RegExp('<script[^>]*>[\s\S]*?<\/script>', 'gi'), '');
 
-    // 灏嗗潡绾у厓绱犵粨鏉熸爣绛炬浛鎹�负鎹㈣�
+    // 将块级元素结束标签替换为换行
     text = text.replace(new RegExp('<br\s*\/>?>', 'gi'), '\n');
     text = text.replace(new RegExp('<\/p>', 'gi'), '\n');
     text = text.replace(new RegExp('<\/div>', 'gi'), '\n');
     text = text.replace(new RegExp('<\/h[1-6]>', 'gi'), '\n');
     text = text.replace(new RegExp('<\/li>', 'gi'), '\n');
 
-    // 绉婚櫎鎵€鏈?HTML 鏍囩�
+    // 移除所有 HTML 标签
     text = text.replace(new RegExp('<[^>]+>', 'g'), ' ');
 
-    // 瑙ｇ爜 HTML 瀹炰綋
+    // 解码 HTML 实体
     text = text.replace(new RegExp('&nbsp;', 'gi'), ' ');
     text = text.replace(new RegExp('&amp;', 'gi'), '&');
     text = text.replace(new RegExp('&lt;', 'gi'), '<');
@@ -467,25 +467,20 @@ export class EpubParser {
     text = text.replace(new RegExp('&#(\d+);', 'gi'), (_p1: string, num: string): string => String.fromCharCode(parseInt(num)));
     text = text.replace(new RegExp('&#x([0-9a-fA-F]+);', 'gi'), (_p1: string, hex: string): string => String.fromCharCode(parseInt(hex, 16)));
 
-    // 娓呯悊绌虹櫧
+    // 清理空白
     text = text.replace(new RegExp('[\r\n]+', 'g'), '\n');
     text = text.replace(new RegExp('[ \t]+', 'g'), ' ');
 
 
-    // 灏嗗潡绾у厓绱犵粨鏉熸爣绛炬浛鎹�负鎹㈣�
+    // 将块级元素结束标签替换为换行
 
 
 
 
+    // 移除所有 HTML 标签
 
 
-    // 绉婚櫎鎵€鏈?HTML 鏍囩�
-
-
-    // 瑙ｇ爜 HTML 瀹炰綋
-
-
-
+    // 解码 HTML 实体
 
 
 
@@ -493,7 +488,10 @@ export class EpubParser {
 
 
 
-    // 娓呯悊绌虹櫧
+
+
+
+    // 清理空白
 
 
     text = text.trim();
@@ -502,9 +500,9 @@ export class EpubParser {
   }
 
   /**
-   * 浠庢枃浠惰矾寰勬彁鍙栨枃浠跺悕
-   * @param filePath 鏂囦欢璺�緞
-   * @returns 鏂囦欢鍚?
+   * 从文件路径提取文件名
+   * @param filePath 文件路径
+   * @returns 文件名
    */
   private static extractFileName(filePath: string): string {
     const parts = filePath.split('/');
@@ -517,5 +515,5 @@ export class EpubParser {
   }
 }
 
-/** EPUB 瑙ｆ瀽鍣ㄥ崟渚嬪疄渚?*/
+/** EPUB 解析器单例实例 */
 export const epubParser = EpubParser;

@@ -1,13 +1,14 @@
-﻿/**
- * 鏂囨。鏍煎紡杞崲鏈嶅姟
+/**
+ * 文档格式转换服务
  * 
- * 鏀寔灏嗕笉鏀寔鐨勬牸寮忚浆鎹负 Reader Kit/PDF Kit 鏀寔鐨勬牸寮忥細
- * - CHM 鈫?HTML/EPUB (闇€瑕侀泦鎴?libchm)
- * - DJVU 鈫?PDF (闇€瑕侀泦鎴?libdjvulibre)
- * - DOCX 鈫?HTML/PDF (浣跨敤 mammoth.js)
- * - RTF 鈫?TXT (绠€鍗曟枃鏈彁鍙?
+ * 支持将不支持的格式转换为 Reader Kit/PDF Kit 支持的格式：
+ * - CHM → HTML/EPUB (需要集成 libchm)
+ * - DJVU → PDF (需要集成 libdjvulibre)
+ * - DOCX → HTML/PDF (使用 mammoth.js)
+ * - RTF → TXT (简单文本提取)
  * 
- * 娉ㄦ剰锛欳HM/DJVU 鐨勫畬鏁村疄鐜伴渶瑕佺紪璇戠涓夋柟搴? * 褰撳墠鐗堟湰鎻愪緵鍩虹妗嗘灦鍜?RTF 杞崲鍔熻兘
+ * 注意：CHM/DJVU 的完整实现需要编译第三方库
+ * 当前版本提供基础框架和 RTF 转换功能
  */
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -21,7 +22,7 @@ const LOG_TAG = 'FormatConverter';
 const LOG_DOMAIN = 0x0020;
 
 /**
- * 杞崲缁撴灉
+ * 转换结果
  */
 export interface ConvertResult {
   success: boolean;
@@ -31,37 +32,39 @@ export interface ConvertResult {
 }
 
 /**
- * 杞崲杩涘害鍥炶皟
+ * 转换进度回调
  */
 export type ProgressCallback = (progress: number, message: string) => void;
 
 /**
- * 鏂囨。鏍煎紡杞崲鏈嶅姟
+ * 文档格式转换服务
  */
 export class FormatConverterService {
   private context: common.UIAbilityContext | null = null;
   private convertDir: string = '';
 
   /**
-   * 鍒濆鍖栨湇鍔?   */
+   * 初始化服务
+   */
   async init(context: common.UIAbilityContext): Promise<void> {
     this.context = context;
     this.convertDir = `${context.cacheDir}/converted`;
     
-    // 鍒涘缓杞崲鐩綍
+    // 创建转换目录
     try {
       await fileIo.mkdir(this.convertDir);
     } catch (error) {
-      // 鐩綍鍙兘宸插瓨鍦?    }
+      // 目录可能已存在
+    }
     
     hilog.info(LOG_DOMAIN, LOG_TAG, 'FormatConverterService initialized');
   }
 
   /**
-   * 鏍规嵁鏍煎紡杞崲涓烘敮鎸佺殑鏍煎紡
-   * @param inputPath 杈撳叆鏂囦欢璺緞
-   * @param inputFormat 杈撳叆鏍煎紡
-   * @param onProgress 杩涘害鍥炶皟
+   * 根据格式转换为支持的格式
+   * @param inputPath 输入文件路径
+   * @param inputFormat 输入格式
+   * @param onProgress 进度回调
    */
   async convertToSupported(
     inputPath: string,
@@ -101,7 +104,7 @@ export class FormatConverterService {
         default:
           return {
             success: false,
-            error: `涓嶆敮鎸佺殑鏍煎紡: ${inputFormat}`
+            error: `不支持的格式: ${inputFormat}`
           };
       }
     } catch (error) {
@@ -116,44 +119,46 @@ export class FormatConverterService {
   }
 
   /**
-   * 杞崲 CHM 鍒?HTML
-   * 浣跨敤 Native CHM 瑙ｆ瀽鍣?   */
+   * 转换 CHM 到 HTML
+   * 使用 Native CHM 解析器
+   */
   private async convertChm(
     inputPath: string,
     onProgress?: ProgressCallback
   ): Promise<ConvertResult> {
     hilog.info(LOG_DOMAIN, LOG_TAG, 'Converting CHM to HTML: %{public}s', inputPath);
     
-    if (onProgress) onProgress(10, '姝ｅ湪瑙ｆ瀽 CHM 鏂囦欢...');
+    if (onProgress) onProgress(10, '正在解析 CHM 文件...');
     
     try {
-      // 璋冪敤 Native CHM 瑙ｆ瀽鍣?      const chmInfo = NativeFormatConverter.parseChmInfo(inputPath);
+      // 调用 Native CHM 解析器
+      const chmInfo = NativeFormatConverter.parseChmInfo(inputPath);
       
       if (!chmInfo) {
         return {
           success: false,
-          error: 'CHM 瑙ｆ瀽澶辫触'
+          error: 'CHM 解析失败'
         };
       }
       
-      if (onProgress) onProgress(50, '姝ｅ湪鎻愬彇鍐呭...');
+      if (onProgress) onProgress(50, '正在提取内容...');
       
-      // 鎻愬彇 HTML 鍐呭
+      // 提取 HTML 内容
       const htmlContent = NativeFormatConverter.extractChmHtml(inputPath);
       
       if (!htmlContent) {
         return {
           success: false,
-          error: 'HTML 鍐呭鎻愬彇澶辫触'
+          error: 'HTML 内容提取失败'
         };
       }
       
-      if (onProgress) onProgress(80, '姝ｅ湪鐢熸垚 EPUB...');
+      if (onProgress) onProgress(80, '正在生成 EPUB...');
       
-      // 杞崲涓?EPUB
+      // 转换为 EPUB
       const epubPath = await this.htmlToEpub(htmlContent, chmInfo.title, chmInfo.author);
       
-      if (onProgress) onProgress(100, '杞崲瀹屾垚');
+      if (onProgress) onProgress(100, '转换完成');
       
       return {
         success: true,
@@ -169,49 +174,52 @@ export class FormatConverterService {
   }
 
   /**
-   * 杞崲 DJVU 鍒?PDF
-   * 浣跨敤 Native DJVU 瑙ｆ瀽鍣?   */
+   * 转换 DJVU 到 PDF
+   * 使用 Native DJVU 解析器
+   */
   private async convertDjvu(
     inputPath: string,
     onProgress?: ProgressCallback
   ): Promise<ConvertResult> {
     hilog.info(LOG_DOMAIN, LOG_TAG, 'Converting DJVU to PDF: %{public}s', inputPath);
     
-    if (onProgress) onProgress(10, '姝ｅ湪瑙ｆ瀽 DJVU 鏂囦欢...');
+    if (onProgress) onProgress(10, '正在解析 DJVU 文件...');
     
     try {
-      // 璋冪敤 Native DJVU 瑙ｆ瀽鍣?      const djvuInfo = NativeFormatConverter.parseDjvuInfo(inputPath);
+      // 调用 Native DJVU 解析器
+      const djvuInfo = NativeFormatConverter.parseDjvuInfo(inputPath);
       
       if (!djvuInfo) {
         return {
           success: false,
-          error: 'DJVU 瑙ｆ瀽澶辫触'
+          error: 'DJVU 解析失败'
         };
       }
       
-      if (onProgress) onProgress(30, `鍏?${djvuInfo.pageCount} 椤碉紝姝ｅ湪娓叉煋...`);
+      if (onProgress) onProgress(30, `共 ${djvuInfo.pageCount} 页，正在渲染...`);
       
-      // 閫愰〉娓叉煋涓哄浘鐗?      const imagePaths: string[] = [];
+      // 逐页渲染为图片
+      const imagePaths: string[] = [];
       for (let i = 0; i < djvuInfo.pageCount; i++) {
         if (onProgress) {
           const progress = 30 + (i / djvuInfo.pageCount) * 50;
-          onProgress(progress, `姝ｅ湪娓叉煋绗?${i + 1}/${djvuInfo.pageCount} 椤?..`);
+          onProgress(progress, `正在渲染第 ${i + 1}/${djvuInfo.pageCount} 页...`);
         }
         
         const result = NativeFormatConverter.renderDjvuPage(inputPath, i, 1200, 1600);
         if (result) {
-          // TODO: 淇濆瓨 RGBA 鏁版嵁涓?PNG 鏂囦欢
+          // TODO: 保存 RGBA 数据为 PNG 文件
           const imagePath = `${this.convertDir}/djvu_page_${i}.png`;
           imagePaths.push(imagePath);
         }
       }
       
-      if (onProgress) onProgress(85, '姝ｅ湪鐢熸垚 PDF...');
+      if (onProgress) onProgress(85, '正在生成 PDF...');
       
-      // 灏嗗浘鐗囧悎骞朵负 PDF
+      // 将图片合并为 PDF
       const pdfPath = await this.imagesToPdf(imagePaths);
       
-      if (onProgress) onProgress(100, '杞崲瀹屾垚');
+      if (onProgress) onProgress(100, '转换完成');
       
       return {
         success: true,
@@ -227,24 +235,25 @@ export class FormatConverterService {
   }
 
   /**
-   * 杞崲 DOCX 鍒?HTML/EPUB
-   * 浣跨敤 mammoth.js锛堢函 JS 瀹炵幇锛?   */
+   * 转换 DOCX 到 HTML/EPUB
+   * 使用 mammoth.js（纯 JS 实现）
+   */
   private async convertDocx(
     inputPath: string,
     onProgress?: ProgressCallback
   ): Promise<ConvertResult> {
     hilog.info(LOG_DOMAIN, LOG_TAG, 'Converting DOCX to EPUB: %{public}s', inputPath);
     
-    if (onProgress) onProgress(20, '姝ｅ湪瑙ｆ瀽 DOCX...');
+    if (onProgress) onProgress(20, '正在解析 DOCX...');
     
     try {
-      // 鐢熸垚杈撳嚭璺緞
+      // 生成输出路径
       const fileName = this.extractFileName(inputPath);
       const epubPath = `${this.convertDir}/${fileName}.epub`;
       
-      if (onProgress) onProgress(50, '姝ｅ湪杞崲涓?EPUB...');
+      if (onProgress) onProgress(50, '正在转换为 EPUB...');
       
-      // 浣跨敤 docxParser 杞崲
+      // 使用 docxParser 转换
       const result = await docxParser.convertToEpub(
         inputPath,
         epubPath,
@@ -255,11 +264,11 @@ export class FormatConverterService {
       if (!result.success) {
         return {
           success: false,
-          error: result.error || 'DOCX 杞崲澶辫触'
+          error: result.error || 'DOCX 转换失败'
         };
       }
       
-      if (onProgress) onProgress(100, '杞崲瀹屾垚');
+      if (onProgress) onProgress(100, '转换完成');
       
       return {
         success: true,
@@ -275,21 +284,22 @@ export class FormatConverterService {
   }
 
   /**
-   * 杞崲 DOC 鍒?HTML
-   * 闇€瑕佽皟鐢ㄥ閮ㄥ伐鍏凤紙LibreOffice锛?   */
+   * 转换 DOC 到 HTML
+   * 需要调用外部工具（LibreOffice）
+   */
   private async convertDoc(
     inputPath: string,
     onProgress?: ProgressCallback
   ): Promise<ConvertResult> {
-    // DOC 鏍煎紡杈冭€侊紝寤鸿鐢ㄦ埛杞崲涓?DOCX
+    // DOC 格式较老，建议用户转换为 DOCX
     return {
       success: false,
-      error: 'DOC 鏍煎紡寤鸿浣跨敤 LibreOffice 杞崲涓?DOCX 鍚庡啀瀵煎叆'
+      error: 'DOC 格式建议使用 LibreOffice 转换为 DOCX 后再导入'
     };
   }
 
   /**
-   * 杞崲 RTF 鍒?HTML
+   * 转换 RTF 到 HTML
    */
   private async convertRtf(
     inputPath: string,
@@ -298,12 +308,13 @@ export class FormatConverterService {
     hilog.info(LOG_DOMAIN, LOG_TAG, 'Converting RTF to HTML: %{public}s', inputPath);
     
     try {
-      // 璇诲彇 RTF 鏂囦欢
+      // 读取 RTF 文件
       const rtfContent = await fileIo.readText(inputPath);
       
-      // 绠€鍗曠殑 RTF 鍒版枃鏈浆鎹紙鍘婚櫎鏍煎紡鏍囪锛?      const textContent = this.rtfToText(rtfContent);
+      // 简单的 RTF 到文本转换（去除格式标记）
+      const textContent = this.rtfToText(rtfContent);
       
-      // 淇濆瓨涓?TXT
+      // 保存为 TXT
       const txtPath = `${this.convertDir}/${this.extractFileName(inputPath)}.txt`;
       await fileIo.writeText(txtPath, textContent);
       
@@ -321,36 +332,37 @@ export class FormatConverterService {
   }
 
   /**
-   * 杞崲 ODT 鍒?HTML
+   * 转换 ODT 到 HTML
    */
   private async convertOdt(
     inputPath: string,
     onProgress?: ProgressCallback
   ): Promise<ConvertResult> {
-    // ODT 闇€瑕?LibreOffice 杞崲
+    // ODT 需要 LibreOffice 转换
     return {
       success: false,
-      error: 'ODT 鏍煎紡寤鸿浣跨敤 LibreOffice 杞崲涓?PDF/EPUB 鍚庡啀瀵煎叆'
+      error: 'ODT 格式建议使用 LibreOffice 转换为 PDF/EPUB 后再导入'
     };
   }
 
   /**
-   * 杞崲 FB2 鍒?EPUB
+   * 转换 FB2 到 EPUB
    */
   private async convertFb2(
     inputPath: string,
     onProgress?: ProgressCallback
   ): Promise<ConvertResult> {
-    // FB2 鏄?XML 鏍煎紡锛屽彲浠ヨВ鏋愬悗杞崲涓?EPUB
+    // FB2 是 XML 格式，可以解析后转换为 EPUB
     return {
       success: false,
-      error: 'FB2 鏍煎紡鏆備笉鏀寔锛屽缓璁浆鎹负 EPUB'
+      error: 'FB2 格式暂不支持，建议转换为 EPUB'
     };
   }
 
   /**
-   * 杞崲婕敾鏍煎紡锛圕BR/CBZ锛夊埌鍥剧墖鍒楄〃
-   * 浣跨敤 Native CBZ 瑙ｆ瀽鍣?   */
+   * 转换漫画格式（CBR/CBZ）到图片列表
+   * 使用 Native CBZ 解析器
+   */
   private async convertComic(
     inputPath: string,
     format: string,
@@ -358,46 +370,47 @@ export class FormatConverterService {
   ): Promise<ConvertResult> {
     hilog.info(LOG_DOMAIN, LOG_TAG, 'Converting %s: %{public}s', format, inputPath);
     
-    // CBZ 鏄?ZIP 鏍煎紡锛屼娇鐢?Native 瑙ｆ瀽鍣?    if (format === 'cbz') {
-      if (onProgress) onProgress(10, '姝ｅ湪瑙ｆ瀽 CBZ 鏂囦欢...');
+    // CBZ 是 ZIP 格式，使用 Native 解析器
+    if (format === 'cbz') {
+      if (onProgress) onProgress(10, '正在解析 CBZ 文件...');
       
       try {
-        // 鑾峰彇椤甸潰鏁伴噺
+        // 获取页面数量
         const pageCount = NativeCbzParser.getPageCount(inputPath);
         
         if (pageCount <= 0) {
           return {
             success: false,
-            error: 'CBZ 瑙ｆ瀽澶辫触鎴栨棤椤甸潰'
+            error: 'CBZ 解析失败或无页面'
           };
         }
         
-        if (onProgress) onProgress(30, `鍏?${pageCount} 椤碉紝姝ｅ湪鎻愬彇鍥剧墖...`);
+        if (onProgress) onProgress(30, `共 ${pageCount} 页，正在提取图片...`);
         
-        // 鍒涘缓杈撳嚭鐩綍
+        // 创建输出目录
         const outputDir = `${this.convertDir}/${this.extractFileName(inputPath)}`;
         await fileIo.mkdir(outputDir);
         
-        // 閫愰〉鎻愬彇鍥剧墖
+        // 逐页提取图片
         for (let i = 0; i < pageCount; i++) {
           if (onProgress) {
             const progress = 30 + (i / pageCount) * 60;
-            onProgress(progress, `姝ｅ湪鎻愬彇绗?${i + 1}/${pageCount} 椤?..`);
+            onProgress(progress, `正在提取第 ${i + 1}/${pageCount} 页...`);
           }
           
           const imageData = NativeCbzParser.getPageImage(inputPath, i);
           
           if (imageData) {
-            // 淇濆瓨鍥剧墖鏂囦欢
+            // 保存图片文件
             const fileName = NativeCbzParser.getPageFileNames(inputPath)?.[i] || `page_${i}.jpg`;
             const imagePath = `${outputDir}/${fileName}`;
             
-            // TODO: 浣跨敤 fileIo.write 淇濆瓨 Uint8Array
+            // TODO: 使用 fileIo.write 保存 Uint8Array
             // await fileIo.write(imagePath, imageData.buffer);
           }
         }
         
-        if (onProgress) onProgress(100, '杞崲瀹屾垚');
+        if (onProgress) onProgress(100, '转换完成');
         
         return {
           success: true,
@@ -411,18 +424,19 @@ export class FormatConverterService {
         };
       }
     } else {
-      // CBR 闇€瑕?unrar
+      // CBR 需要 unrar
       return {
         success: false,
-        error: 'CBR 鏍煎紡闇€瑕佸畨瑁?unrar 宸ュ叿'
+        error: 'CBR 格式需要安装 unrar 工具'
       };
     }
   }
 
-  // ==================== Native 鏂规硶澹版槑 ====================
+  // ==================== Native 方法声明 ====================
 
   /**
-   * 璋冪敤 Native CHM 瑙ｆ瀽鍣?   */
+   * 调用 Native CHM 解析器
+   */
   private async nativeParseChm(inputPath: string): Promise<{
     success: boolean;
     title: string;
@@ -462,7 +476,8 @@ export class FormatConverterService {
   }
 
   /**
-   * 璋冪敤 Native DJVU 瑙ｆ瀽鍣?   */
+   * 调用 Native DJVU 解析器
+   */
   private async nativeParseDjvu(inputPath: string): Promise<{
     success: boolean;
     title: string;
@@ -502,7 +517,8 @@ export class FormatConverterService {
   }
 
   /**
-   * 娓叉煋 DJVU 椤甸潰涓哄浘鐗?   */
+   * 渲染 DJVU 页面为图片
+   */
   private async renderDjvuPage(inputPath: string, pageIndex: number): Promise<string | null> {
     try {
       const result = NativeFormatConverter.renderDjvuPage(inputPath, pageIndex, 1200, 1600);
@@ -511,9 +527,9 @@ export class FormatConverterService {
         return null;
       }
       
-      // 淇濆瓨涓?PNG 鏂囦欢
+      // 保存为 PNG 文件
       const outputPath = `${this.convertDir}/djvu_page_${pageIndex}.png`;
-      // TODO: 浣跨敤 image.Packer 灏?RGBA 鏁版嵁淇濆瓨涓?PNG
+      // TODO: 使用 image.Packer 将 RGBA 数据保存为 PNG
       
       return outputPath;
     } catch (error) {
@@ -523,44 +539,46 @@ export class FormatConverterService {
     }
   }
 
-  // ==================== 杈呭姪鏂规硶 ====================
+  // ==================== 辅助方法 ====================
 
   /**
-   * HTML 杞?EPUB
+   * HTML 转 EPUB
    */
   private async htmlToEpub(htmlContent: string, title: string, author: string): Promise<string> {
-    // TODO: 瀹炵幇 HTML 鍒?EPUB 鐨勮浆鎹?    const epubPath = `${this.convertDir}/${title.replace(/[^\w]/g, '_')}.epub`;
+    // TODO: 实现 HTML 到 EPUB 的转换
+    const epubPath = `${this.convertDir}/${title.replace(/[^\w]/g, '_')}.epub`;
     
-    // 绠€鍖栧疄鐜帮細鍒涘缓涓€涓熀鏈殑 EPUB 缁撴瀯
-    // 瀹為檯闇€瑕佷娇鐢?JSZip 绛夊簱鎵撳寘
+    // 简化实现：创建一个基本的 EPUB 结构
+    // 实际需要使用 JSZip 等库打包
     
     return epubPath;
   }
 
   /**
-   * 鍥剧墖鍒楄〃鍚堝苟涓?PDF
+   * 图片列表合并为 PDF
    */
   private async imagesToPdf(imagePaths: string[]): Promise<string> {
-    // TODO: 瀹炵幇鍥剧墖鍒?PDF 鐨勫悎骞?    const pdfPath = `${this.convertDir}/converted_${Date.now()}.pdf`;
+    // TODO: 实现图片到 PDF 的合并
+    const pdfPath = `${this.convertDir}/converted_${Date.now()}.pdf`;
     
     return pdfPath;
   }
 
   /**
-   * 浣跨敤 mammoth.js 杞崲 DOCX
+   * 使用 mammoth.js 转换 DOCX
    */
   private async mammothConvert(fileData: ArrayBuffer): Promise<string> {
-    // TODO: 鍦?ArkTS 涓泦鎴?mammoth.js
-    // 鍙互閫氳繃 WebAssembly 鎴?HTTP 鏈嶅姟璋冪敤
+    // TODO: 在 ArkTS 中集成 mammoth.js
+    // 可以通过 WebAssembly 或 HTTP 服务调用
     
     return '<html><body><p>Converted from DOCX</p></body></html>';
   }
 
   /**
-   * RTF 鍒扮函鏂囨湰杞崲
+   * RTF 到纯文本转换
    */
   private rtfToText(rtf: string): string {
-    // 绠€鍗曠殑 RTF 瑙ｆ瀽锛氬幓闄ゆ帶鍒跺瓧
+    // 简单的 RTF 解析：去除控制字
     let text = rtf.replace(/\\[a-z]+[ ]?/g, '');
     text = text.replace(/[{}]/g, '');
     text = text.replace(/\\'/g, '');
@@ -568,14 +586,15 @@ export class FormatConverterService {
   }
 
   /**
-   * 瑙ｅ帇 ZIP 鏂囦欢
+   * 解压 ZIP 文件
    */
   private async extractZip(zipPath: string, outputDir: string): Promise<void> {
-    // TODO: 浣跨敤 JSZip 鎴?Native ZIP 搴撹В鍘?    await fileIo.mkdir(outputDir);
+    // TODO: 使用 JSZip 或 Native ZIP 库解压
+    await fileIo.mkdir(outputDir);
   }
 
   /**
-   * 浠庤矾寰勬彁鍙栨枃浠跺悕
+   * 从路径提取文件名
    */
   private extractFileName(filePath: string): string {
     const parts = filePath.split('/');
@@ -591,11 +610,12 @@ export class FormatConverterService {
   }
 
   /**
-   * 娓呯悊杞崲涓存椂鏂囦欢
+   * 清理转换临时文件
    */
   async cleanup(): Promise<void> {
     try {
-      // 鍒犻櫎杞崲鐩綍涓殑鎵€鏈夋枃浠?      const files = await fileIo.list(this.convertDir);
+      // 删除转换目录中的所有文件
+      const files = await fileIo.list(this.convertDir);
       for (const file of files) {
         const filePath = `${this.convertDir}/${file}`;
         await fileIo.unlink(filePath);
@@ -609,5 +629,5 @@ export class FormatConverterService {
   }
 }
 
-// 瀵煎嚭鍗曚緥
+// 导出单例
 export const formatConverter = new FormatConverterService();

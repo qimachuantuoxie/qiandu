@@ -1,5 +1,5 @@
 import { logger } from '../../../utils/Logger';
-// OCR 鏈嶅姟 - 浣跨敤 HarmonyOS ML Kit 瀹炵幇鐪熷疄鏂囧瓧璇嗗埆
+// OCR 服务 - 使用 HarmonyOS ML Kit 实现真实文字识别
 import { fileIo } from '@kit.CoreFileKit';
 import { mlVision, MLVisionTextRecognizer, MLVisionText, MLVisionTextBlock, MLVisionTextLine, MLVisionTextElement } from '@kit.MLKit';
 import { common } from '@kit.AbilityKit';
@@ -66,13 +66,13 @@ class OcrServiceImpl {
   }
 
   /**
-   * 鍒濆�鍖?OCR 鏈嶅姟
+   * 初始化 OCR 服务
    */
   async init(context: common.Context): Promise<boolean> {
     try {
       this.context = context;
       
-      // 鍒涘缓鏂囨湰璇嗗埆鍣?
+      // 创建文本识别器
       const setting = {
         language: this.language,
         scene: mlVision.MLVisionTextScene.DOCUMENT
@@ -90,25 +90,25 @@ class OcrServiceImpl {
   }
 
   /**
-   * 鐠囧棗鍩嗛崶鍓у�娑擃厾娈戦弬鍥х摟
+   * 识别图片中的文字
    */
   async recognizeText(imagePath: string, needPosition: boolean = false): Promise<OcrResult> {
     logger.info('[OcrService] Recognizing text from:', imagePath);
 
     if (!this.initialized || !this.context) {
-      // 濡傛灉鏈�垵濮嬪寲锛屽皾璇曚娇鐢ㄥ綋鍓峜ontext鍒濆�鍖?
+      // 如果未初始化，尝试使用当前context初始化
       logger.warn('[OcrService] Service not initialized');
       return this.createEmptyResult();
     }
 
     try {
-      // 璇诲彇鍥剧墖
+      // 读取图片
       const imageData = await this.readImageFile(imagePath);
       if (!imageData) {
         return this.createEmptyResult();
       }
 
-      // 浣跨敤 ML Kit 杩涜�鏂囧瓧璇嗗埆
+      // 使用 ML Kit 进行文字识别
       const mlResult = await this.recognizeWithMLKit(imageData);
       
       if (mlResult.success) {
@@ -119,7 +119,7 @@ class OcrServiceImpl {
           blocks: needPosition ? mlResult.blocks : undefined
         };
       } else {
-        // 闄嶇骇鏂规�锛氫娇鐢ㄥ熀鏈�瘑鍒?
+        // 降级方案：使用基本识别
         return this.basicRecognize(imageData, needPosition);
       }
     } catch (error) {
@@ -129,7 +129,7 @@ class OcrServiceImpl {
   }
 
   /**
-   * 浣跨敤 ML Kit 璇嗗埆鏂囧瓧
+   * 使用 ML Kit 识别文字
    */
   private async recognizeWithMLKit(imageData: Uint8Array): Promise<OcrResult> {
     if (!this.textRecognizer) {
@@ -137,15 +137,15 @@ class OcrServiceImpl {
     }
 
     try {
-      // 鍒涘缓 PixelMap
+      // 创建 PixelMap
       const buffer = imageData.buffer as ArrayBuffer;
       const imageSource = image.createImageSource(buffer);
       const pixelMap = await imageSource.createPixelMap();
       
-      // 璇嗗埆鏂囧瓧
+      // 识别文字
       const result: MLVisionText = await this.textRecognizer.detect(pixelMap);
       
-      // 瑙ｆ瀽缁撴灉
+      // 解析结果
       let fullText = '';
       const blocks: OcrTextBlock[] = [];
       let totalConfidence = 0;
@@ -168,7 +168,7 @@ class OcrServiceImpl {
             lines: []
           };
 
-          // 瑙ｆ瀽琛?
+          // 解析行
           if (block.lines) {
             for (const line of block.lines) {
               const ocrLine: OcrTextLine = {
@@ -181,7 +181,7 @@ class OcrServiceImpl {
                 words: []
               };
 
-              // 瑙ｆ瀽璇?
+              // 解析词
               if (line.elements) {
                 for (const element of line.elements) {
                   const word: OcrWord = {
@@ -239,22 +239,15 @@ class OcrServiceImpl {
   }
 
   /**
-   * 鍩烘湰璇嗗埆锛堥檷绾ф柟妗堬級
+   * 基本识别（降级方案）
    */
   private basicRecognize(imageData: Uint8Array, needPosition: boolean): OcrResult {
-    const header = this.getImageHeader(imageData);
-    let info = `[鍥剧墖鏍煎紡: ${header}]`;
-
-    return {
-      success: true,
-      text: info,
-      confidence: 0.5,
-      blocks: needPosition ? this.createMockBlocks(info) : undefined
-    };
+    logger.warn('[OcrService] ML Kit recognition not available, no fallback mock data');
+    return this.createEmptyResult();
   }
 
   /**
-   * 浠?Base64 璇嗗埆鏂囧瓧
+   * 从 Base64 识别文字
    */
   async recognizeTextFromBase64(imageBase64: string, needPosition: boolean = false): Promise<OcrResult> {
     logger.info('[OcrService] Recognizing text from base64 image');
@@ -284,7 +277,7 @@ class OcrServiceImpl {
   }
 
   /**
-   * 妫€娴嬫枃瀛楀尯鍩?
+   * 检测文字区域
    */
   async detectTextRegions(imagePath: string): Promise<RegionResult[]> {
     logger.info('[OcrService] Detecting text regions in:', imagePath);
@@ -321,7 +314,7 @@ class OcrServiceImpl {
   }
 
   /**
-   * 璇诲彇鍥剧墖鏂囦欢
+   * 读取图片文件
    */
   private async readImageFile(imagePath: string): Promise<Uint8Array | null> {
     try {
@@ -338,7 +331,7 @@ class OcrServiceImpl {
   }
 
   /**
-   * 閼惧嘲褰囬崶鍓у�婢剁繝淇婇幁?
+   * 获取图片头部信息
    */
   private getImageHeader(data: Uint8Array): string {
     if (data.length < 4) return 'unknown';
@@ -359,7 +352,7 @@ class OcrServiceImpl {
   }
 
   /**
-   * Base64 鏉烆兛绨╂潻娑樺煑鐎涙�顑佹稉?
+   * Base64 转换为二进制字符串
    */
   private base64ToBinaryString(base64: string): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -386,7 +379,7 @@ class OcrServiceImpl {
   }
 
   /**
-   * 閸掓稑缂撶粚铏圭波閺?
+   * 创建空结果
    */
   private createEmptyResult(): OcrResult {
     return {
@@ -396,38 +389,10 @@ class OcrServiceImpl {
     };
   }
 
-  /**
-   * 閸掓稑缂撳Ο鈩冨珯閺傚洦婀伴崸妤嬬礄閻€劋绨�ù瀣�槸閿?
-   */
-  private createMockBlocks(text: string): OcrTextBlock[] {
-    return [{
-      text: text,
-      confidence: 0.9,
-      x: 0,
-      y: 0,
-      width: 100,
-      height: 100,
-      lines: [{
-        text: text,
-        confidence: 0.9,
-        x: 0,
-        y: 0,
-        width: 100,
-        height: 20,
-        words: [{
-          text: text,
-          confidence: 0.9,
-          x: 0,
-          y: 0,
-          width: 50,
-          height: 20
-        }]
-      }]
-    }];
-  }
+  // createMockBlocks removed - no mock data allowed in production
 
   /**
-   * 鐠佸墽鐤嗙拠鍡楀焼鐠囶叀鈻?
+   * 设置语言
    */
   setLanguage(language: string): void {
     this.language = language;
@@ -435,7 +400,7 @@ class OcrServiceImpl {
   }
 
   /**
-   * 闁插﹥鏂佺挧鍕�爱
+   * 释放资源
    */
   release(): void {
     if (this.textRecognizer) {

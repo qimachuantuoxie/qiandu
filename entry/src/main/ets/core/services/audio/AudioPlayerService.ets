@@ -214,7 +214,7 @@ class AudioPlayerService {
           await this.audioPlayer!.seek(config.startPosition);
         }
 
-        // 寮€濮嬫挱鏀?
+        // 开始播放
         await this.audioPlayer!.play();
 
         logger.info('[AudioPlayer] Playing:', config.src);

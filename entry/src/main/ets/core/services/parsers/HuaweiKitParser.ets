@@ -1,12 +1,12 @@
 import { logger } from '../../../utils/Logger';
 /**
- * 鍧庝负 Kit 鏈濆姟瑙ｆ灊锟?- 浣跨敤 HarmonyOS Kit 鏈濆姟瑙ｆ灊鏂囨。
+ * 华为 Kit 服务解析器 - 使用 HarmonyOS Kit 服务解析文档
  * Huawei Kit Service Parser - Uses HarmonyOS Kit services for document parsing
  * 
- * 浣跨敤 Kit 鏈濆姟锟?
- * - @kit.MultimediaKit: 鍥剧墖瑙ｇ牆鍜屽�鐫嗭紙婕�敾锟?
- * - @kit.ArkGraphics: PDF 娓叉煋
- * - @kit.ArkData: 鏁版澁瀛樺偍
+ * 使用 Kit 服务：
+ * - @kit.MultimediaKit: 图片解码和渲染（漫画）
+ * - @kit.ArkGraphics: PDF 渲染
+ * - @kit.ArkData: 数据存储
  */
 
 import { fileIo } from '@kit.CoreFileKit';
@@ -16,7 +16,7 @@ import { DocumentFormat, ChapterInfo, ParseResult, ParserConfig, BookMetadata } 
 import { util } from '@kit.ArkTS';
 
 /**
- * 婕�敾鍥剧墖淇℃澂
+ * 漫画图片信息
  */
 export interface ComicImageInfo {
   path: string;
@@ -27,7 +27,7 @@ export interface ComicImageInfo {
 }
 
 /**
- * ODT 鏍峰紡淇℃伅锛堝悎骞剁増鏈�級
+ * ODT 样式信息（合并版本）
  */
 interface OdtStyleInfo {
   genre?: string;
@@ -37,7 +37,7 @@ interface OdtStyleInfo {
 }
 
 /**
- * ODT 鍏冩暟鎹?
+ * ODT 元数据
  */
 interface ODTMetadata {
   title: string | undefined;
@@ -47,7 +47,7 @@ interface ODTMetadata {
 }
 
 /**
- * ODT 鏍峰紡
+ * ODT 样式
  */
 interface ODTStyles {
   genre: string | undefined;
@@ -57,7 +57,7 @@ interface ODTStyles {
 }
 
 /**
- * 鍥剧墖灏哄�淇℃伅
+ * 图片尺寸信息
  */
 interface ImageSizeInfo {
   width: number;
@@ -65,14 +65,14 @@ interface ImageSizeInfo {
 }
 
 /**
- * 鍧庝负 Kit 鏈濆姟瑙ｆ灊锟?
+ * 华为 Kit 服务解析器
  */
 export class HuaweiKitParser {
 
-  // ==================== RTF 澧炲己瑙ｆ灊 ====================
+  // ==================== RTF 增强解析 ====================
 
   /**
-   * 澧炲己锟?RTF 瑙ｆ灊锛堜娇鐢ㄧ郴缁熺紪鐮濇敮鎸濓級
+   * 增强RTF 解析（使用系统编码支持）
    */
   static async parseRTFEnhanced(filePath: string, config: ParserConfig, buffer: ArrayBuffer): Promise<ParseResult> {
     logger.info('[KitParser] Enhanced RTF parsing:', filePath);
@@ -80,7 +80,7 @@ export class HuaweiKitParser {
     try {
       const uint8Array = new Uint8Array(buffer);
       
-      // 灏濊瘯澶氱�缂栫牆
+      // 尝试多种编码
       let rtfContent = '';
       const encodings = ['utf-8', 'gbk', 'gb2312', 'ascii'];
       
@@ -103,7 +103,7 @@ export class HuaweiKitParser {
         };
       }
 
-      // 澧炲己锟?RTF 瑙ｆ灊
+      // 增强RTF 解析
       rtfContent = HuaweiKitParser.decodeRTFUnicode(rtfContent);
       rtfContent = HuaweiKitParser.stripRTFTags(rtfContent);
       rtfContent = rtfContent
@@ -142,7 +142,7 @@ export class HuaweiKitParser {
   }
 
   /**
-   * 瑙ｇ牆 RTF Unicode 杞�箟
+   * 解码 RTF Unicode 转义
    */
   private static decodeRTFUnicode(content: string): string {
     return content.replace(new RegExp("\\\\'([0-9a-fA-F]{2})", 'g'), (match: string, hex: string): string => {
@@ -162,7 +162,7 @@ export class HuaweiKitParser {
   }
 
   /**
-   * 鍘婚櫎 RTF 鏍囩�
+   * 去除 RTF 标签
    */
   private static stripRTFTags(content: string): string {
     let result = '';
@@ -194,23 +194,23 @@ export class HuaweiKitParser {
   }
 
   /**
-   * 鏉濆潠 RTF 浣滐拷?
+   * 提取 RTF 作者
    */
   private static extractRTFAuthor(content: string): string {
     const authorMatch = content.match(new RegExp('\author([^\]*)', ''));
     return authorMatch ? authorMatch[1].trim().replace(new RegExp('[{}]', 'g'), '') : 'Unknown Author';
   }
 
-  // ==================== ODT 澧炲己瑙ｆ灊 ====================
+  // ==================== ODT 增强解析 ====================
 
   /**
-   * 澧炲己锟?ODT 瑙ｆ灊锛堜娇鐢ㄥ畬锟?XML 瑙ｆ灊锟?
+   * 增强ODT 解析（使用完整XML 解析器
    */
   static async parseODTEnhanced(filePath: string, config: ParserConfig, zipResult: ZipParseResult): Promise<ParseResult> {
     logger.info('[KitParser] Enhanced ODT parsing:', filePath);
 
     try {
-      // 鏌ユ壘 content.xml
+      // 查找 content.xml
       const contentEntry = zipResult.entries.find(e => e.path.endsWith('content.xml'));
       if (!contentEntry) {
         return { success: false, error: 'content.xml not found' };
@@ -219,17 +219,17 @@ export class HuaweiKitParser {
       const contentXml = HuaweiKitParser.decodeText(contentEntry.data);
       const textContent = HuaweiKitParser.extractODTContent(contentXml);
 
-      // 鏉濆潠鍏冩暟锟?
+      // 提取元数据
       const metaEntry = zipResult.entries.find(e => e.path.endsWith('meta.xml'));
       const defaultMetadata: ODTMetadata = { title: undefined, author: undefined, language: undefined, description: undefined };
       const metadata = metaEntry ? HuaweiKitParser.extractODTMetadataEnhanced(HuaweiKitParser.decodeText(metaEntry.data)) : defaultMetadata;
 
-      // 鏉濆潠鏍峰紳
+      // 提取样式
       const stylesEntry = zipResult.entries.find(e => e.path.endsWith('styles.xml'));
       const defaultStyles: ODTStyles = { genre: undefined, keywords: undefined, createdDate: undefined, modifiedDate: undefined };
       const styles = stylesEntry ? HuaweiKitParser.extractODTStyles(HuaweiKitParser.decodeText(stylesEntry.data)) : defaultStyles;
 
-      // 鏉濆潠绔犺妭
+      // 提取章节
       const chapters = config.extractChapters ? HuaweiKitParser.extractODTChapters(contentXml) : [];
       const pages = config.paginate ? BaseParserUtils.paginateContent(textContent, config.charsPerPage) : [];
 
@@ -263,17 +263,17 @@ export class HuaweiKitParser {
   }
 
   /**
-   * 鏉濆潠 ODT 鍐呭�
+   * 提取 ODT 内容
    */
   private static extractODTContent(xmlContent: string): string {
-    // 鏉濆潠 <text:p> 锟?<text:h> 鏍囩�涓�殑鏂囨湰
+    // 提取 <text:p> 或<text:h> 标签中的文本
     const textParts: string[] = [];
 
     const paragraphRegex = new RegExp('<(text:p|text:h)[^>]*>([\s\S]*?)<\\/\\1>', 'g');
     let match: RegExpExecArray | null;
 
     while ((match = paragraphRegex.exec(xmlContent)) !== null) {
-      // 绉婚櫎鍐呰潝鏍囩�
+      // 移除内部标签
       let text = match[2].replace(new RegExp('<[^>]+>', 'g'), ' ');
       text = text.replace(new RegExp('&nbsp;', 'g'), ' ');
       text = text.replace(new RegExp('&amp;', 'g'), '&');
@@ -290,7 +290,7 @@ export class HuaweiKitParser {
   }
 
   /**
-   * 鎻愬彇 ODT 鍏冩暟鎹�紙澧炲己鐗堬級
+   * 提取 ODT 元数据（增强版）
    */
   private static extractODTMetadataEnhanced(metaXml: string): ODTMetadata {
     const title = BaseParserUtils.extractXmlTag(metaXml, 'dc:title');
@@ -308,7 +308,7 @@ export class HuaweiKitParser {
   }
 
   /**
-   * 鎻愬彇 ODT 鏍峰紡淇℃伅
+   * 提取 ODT 样式信息
    */
   private static extractODTStyles(stylesXml: string): OdtStyleInfo {
     const genreMatch = stylesXml.match(new RegExp('<meta:keyword>([^<]+)<\/meta:keyword>', 'i'));
@@ -325,7 +325,7 @@ export class HuaweiKitParser {
   }
 
   /**
-   * 鏉濆潠 ODT 绔犺妭
+   * 提取 ODT 章节
    */
   private static extractODTChapters(contentXml: string): ChapterInfo[] {
     const chapters: ChapterInfo[] = [];
@@ -348,16 +348,16 @@ export class HuaweiKitParser {
     return chapters;
   }
 
-  // ==================== Comic (CBZ/CBR) 澧炲己瑙ｆ灊 ====================
+  // ==================== Comic (CBZ/CBR) 增强解析 ====================
 
   /**
-   * 澧炲己锟?CBZ 瑙ｆ灊锛堜娇锟?Image Kit 瑙ｇ牆鍥剧墖锟?
+   * 增强CBZ 解析（使用Image Kit 解码图片
    */
   static async parseCBZEnhanced(filePath: string, config: ParserConfig, zipResult: ZipParseResult): Promise<ParseResult> {
     logger.info('[KitParser] Enhanced CBZ parsing:', filePath);
 
     try {
-      // 鏌ユ壘鍥剧墖鏂囦欢
+      // 查找图片文件
       const imageEntries = zipResult.entries.filter(e =>
         e.path.toLowerCase().endsWith('.jpg') ||
         e.path.toLowerCase().endsWith('.jpeg') ||
@@ -367,14 +367,14 @@ export class HuaweiKitParser {
         e.path.toLowerCase().endsWith('.bmp')
       );
 
-      // 鎸夋枃浠跺潩鎺掑簭
+      // 按文件名排序
       const sortedImageEntries = imageEntries.slice().sort((a, b) => a.path.localeCompare(b.path));
 
       if (sortedImageEntries.length === 0) {
         return { success: false, error: 'No image files found in CBZ' };
       }
 
-      // 浣跨敤 Image Kit 鑾峰潠鍥剧墖淇℃澂
+      // 使用 Image Kit 获取图片信息
       const imageInfos: ComicImageInfo[] = [];
       for (const entry of sortedImageEntries) {
         try {
@@ -433,11 +433,11 @@ export class HuaweiKitParser {
   }
 
   /**
-   * 浣跨敤 Image Kit 鑾峰潠鍥剧墖淇℃澂
+   * 使用 Image Kit 获取图片信息
    */
   private static async getImageInfo(data: Uint8Array): Promise<ImageSizeInfo> {
     try {
-      // 浣跨敤 @kit.ImageKit 瑙ｇ牆鍥剧墖
+      // 使用 @kit.ImageKit 解码图片
       const imageSource = image.createImageSource(data.buffer);
       const info = await imageSource.getImageInfo();
       
@@ -453,10 +453,10 @@ export class HuaweiKitParser {
     }
   }
 
-  // ==================== AZW/AZW3 澧炲己瑙ｆ灊 ====================
+  // ==================== AZW/AZW3 增强解析 ====================
 
   /**
-   * 澧炲己锟?AZW/AZW3 瑙ｆ灊
+   * 增强AZW/AZW3 解析
    */
   static async parseAZWEnhanced(filePath: string, config: ParserConfig, buffer: ArrayBuffer, format: DocumentFormat): Promise<ParseResult> {
     logger.info('[KitParser] Enhanced AZW parsing:', filePath);
@@ -464,19 +464,19 @@ export class HuaweiKitParser {
     try {
       const uint8Array = new Uint8Array(buffer);
 
-      // 妫€锟?MOBI 鏂囦欢锟?
+      // 检查MOBI 文件
       if (uint8Array.length < 72) {
         return { success: false, error: 'Invalid MOBI/AZW file' };
       }
 
-      // 妫€锟?PalmDOC 锟?
+      // 检查PalmDOC 头
       const palmDocHeader = uint8Array.slice(0, 78);
       const isMobi = uint8Array.slice(60, 68);
       
       let content = '';
       let metadata: Partial<BookMetadata> = {};
 
-      // 灏濊瘯 UTF-8 瑙ｇ牆
+      // 尝试 UTF-8 解码
       try {
         const decoder = new util.TextDecoder('utf-8');
         content = decoder.decodeWithStream(uint8Array);
@@ -485,13 +485,13 @@ export class HuaweiKitParser {
         content = decoder.decodeWithStream(uint8Array);
       }
 
-      // 鏉濆潠鏂囨湰鍐呭�
+      // 提取文本内容
       const plainText = content
         .replace(new RegExp('<[^>]+>', 'g'), ' ')
         .replace(new RegExp('\s+', 'g'), ' ')
         .trim();
 
-      // 灏濊瘯鏉濆潠鍏冩暟锟?
+      // 尝试提取元数据
       const titleMatch = content.match(new RegExp('<dc:title>([^<]+)<\/dc:title>', 'i')) ||
                         content.match(new RegExp('<Title[^>]*>([^<]+)<\/Title>', 'i'));
       const authorMatch = content.match(new RegExp('<dc:creator>([^<]+)<\/dc:creator>', 'i')) ||
@@ -526,10 +526,10 @@ export class HuaweiKitParser {
     }
   }
 
-  // ==================== 宸ュ叿鏂规硶 ====================
+  // ==================== 工具方法 ====================
 
   /**
-   * 瑙ｇ牆鏂囨湰
+   * 解码文本
    */
   private static decodeText(data: Uint8Array): string {
     try {
@@ -539,6 +539,3 @@ export class HuaweiKitParser {
     }
   }
 }
-
-
-

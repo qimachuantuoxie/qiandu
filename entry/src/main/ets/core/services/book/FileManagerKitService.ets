@@ -205,7 +205,7 @@ class FileManagerKitService {
         try {
           const stat = await fileIo.stat(entryPath);
           
-          // 鐠哄疇绻冮惄顔肩秿
+          // 跳过文件夹
           if (stat.isDirectory()) {
             continue;
           }
@@ -215,7 +215,7 @@ class FileManagerKitService {
             continue;
           }
 
-          // 鎼存梻鏁ゆ潻鍥ㄦ姢閸?
+          // 应用过滤器
           if (filter && !this.matchFilter(fileInfo, filter)) {
             continue;
           }
@@ -226,7 +226,7 @@ class FileManagerKitService {
         }
       }
 
-      // 閹烘帒绨?
+      // 排序
       if (sort) {
         const sortedFiles = files.slice().sort((a, b) => this.compareFiles(a, b, sort!));
         return sortedFiles;
@@ -239,10 +239,10 @@ class FileManagerKitService {
     }
   }
 
-  // ==================== 閸ョ偞鏁圭粩娆忓�閼?====================
+  // ==================== 回收站功能 ====================
 
   /**
-   * 缁夎�濮╅弬鍥︽�閸掓澘娲栭弨鍓佺彲
+   * 将文件移动到回收站
    */
   async moveToTrash(filePath: string): Promise<FileOperationResult> {
     try {
@@ -252,56 +252,56 @@ class FileManagerKitService {
 
       const uri = filePath.startsWith('file://') ? filePath : 'file://' + filePath;
 
-      // 濡�偓閺屻儲鏋冩禒鑸垫Ц閸氾箑鐡ㄩ崷?
+      // 如果文件不存在则返回错误
       if (!(await this.fileExists(filePath))) {
         return {
           success: false,
-          message: '鏂囦欢涓嶅瓨鍦?
+          message: '文件不存在'
         };
       }
 
-      // 濡�偓閺屻儲妲搁崥锕€鍑￠崷銊ユ礀閺€鍓佺彲
+      // 如果文件已在回收站中则返回提示
       if (this.trashFiles.has(uri)) {
         return {
           success: false,
-          message: '閺傚洣娆㈠�鎻掓躬閸ョ偞鏁圭粩娆庤厬'
+          message: '文件已在回收站中'
         };
       }
 
-      // TODO: 闂嗗棙鍨?File Manager Kit 閻ㄥ嫬娲栭弨鍓佺彲閸旂喕鍏?
-      // 瑜版挸澧犳担璺ㄦ暏濡�剝瀚欑€圭偟骞?
+      // TODO: Implement actual File Manager Kit delete API call
+      // The following is a placeholder until real API is available
       const trashInfo: TrashFileInfo = {
         originalUri: uri,
         trashUri: `trash://${uri}`,
         name: this.extractFileName(filePath),
         deletedTime: Date.now(),
-        expireTime: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30婢垛晛鎮楁潻鍥ㄦ埂
+        expireTime: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30天后过期
         size: (await fileIo.stat(filePath)).size
       };
 
       this.trashFiles.set(uri, trashInfo);
       
-      // 娣囨繂鐡ㄩ崶鐐存暪缁旀瑥鍨�悰?
+      // 持久化回收站信息
       await this.saveTrashFiles();
 
       logger.info('[FileManagerKit] File moved to trash:', filePath);
       return {
         success: true,
-        message: '鏂囦欢宸茬Щ鍔ㄥ埌鍥炴敹绔?
+        message: '文件已移动到回收站'
       };
     } catch (error) {
       logger.error('[FileManagerKit] Move to trash failed:', error);
       const err = error as Error;
       return {
         success: false,
-        message: '缁夎�濮╂径杈�Е',
+        message: '移动失败',
         error: err.message
       };
     }
   }
 
   /**
-   * 娴犲骸娲栭弨鍓佺彲閹�垹顦查弬鍥︽�
+   * 从回收站恢复文件
    */
   async restoreFromTrash(fileUri: string): Promise<FileOperationResult> {
     try {
@@ -313,32 +313,32 @@ class FileManagerKitService {
       if (!trashInfo) {
         return {
           success: false,
-          message: '閺傚洣娆㈡稉宥呮躬閸ョ偞鏁圭粩娆庤厬'
+          message: '文件不在回收站中'
         };
       }
 
-      // TODO: 閹�垹顦查弬鍥︽�
+      // TODO: 恢复文件
       this.trashFiles.delete(fileUri);
       await this.saveTrashFiles();
 
       logger.info('[FileManagerKit] File restored from trash:', fileUri);
       return {
         success: true,
-        message: '鏂囦欢宸叉仮澶?
+        message: '文件已恢复'
       };
     } catch (error) {
       logger.error('[FileManagerKit] Restore from trash failed:', error);
       const err = error as Error;
       return {
         success: false,
-        message: '閹�垹顦叉径杈�Е',
+        message: '恢复失败',
         error: err.message
       };
     }
   }
 
   /**
-   * 濮橀晲绠欓崚鐘绘珟閺傚洣娆?
+   * 永久删除回收站中的文件
    */
   async permanentDelete(fileUri: string): Promise<FileOperationResult> {
     try {
@@ -350,32 +350,32 @@ class FileManagerKitService {
       if (!trashInfo) {
         return {
           success: false,
-          message: '閺傚洣娆㈡稉宥呮躬閸ョ偞鏁圭粩娆庤厬'
+          message: '文件不在回收站中'
         };
       }
 
-      // TODO: 鐎圭偤妾�崚鐘绘珟閺傚洣娆?
+      // TODO: 真正删除文件
       this.trashFiles.delete(fileUri);
       await this.saveTrashFiles();
 
       logger.info('[FileManagerKit] File permanently deleted:', fileUri);
       return {
         success: true,
-        message: '鏂囦欢宸叉案涔呭垹闄?
+        message: '文件已永久删除'
       };
     } catch (error) {
       logger.error('[FileManagerKit] Permanent delete failed:', error);
       const err = error as Error;
       return {
         success: false,
-        message: '鍒犻櫎澶辫触',
+        message: '删除失败',
         error: err.message
       };
     }
   }
 
   /**
-   * 濞撳懐鈹栭崶鐐存暪缁?
+   * 清空回收站
    */
   async emptyTrash(): Promise<FileOperationResult> {
     try {
@@ -383,28 +383,28 @@ class FileManagerKitService {
         throw new Error('FileManagerKit not initialized');
       }
 
-      // TODO: 濞撳懐鈹栭崶鐐存暪缁?
+      // TODO: 清空回收站
       this.trashFiles.clear();
       await this.saveTrashFiles();
 
       logger.info('[FileManagerKit] Trash emptied');
       return {
         success: true,
-        message: '閸ョ偞鏁圭粩娆忓嚒濞撳懐鈹?
+        message: '回收站已清空'
       };
     } catch (error) {
       logger.error('[FileManagerKit] Empty trash failed:', error);
       const err = error as Error;
       return {
         success: false,
-        message: '娓呯┖澶辫触',
+        message: '清空失败',
         error: err.message
       };
     }
   }
 
   /**
-   * 閼惧嘲褰囬崶鐐存暪缁旀瑦鏋冩禒璺哄灙鐞?
+   * 获取回收站中的文件列表
    */
   async getTrashFiles(): Promise<TrashFileInfo[]> {
     try {
@@ -412,7 +412,7 @@ class FileManagerKitService {
         throw new Error('FileManagerKit not initialized');
       }
 
-      // 濞撳懐鎮婃潻鍥ㄦ埂閺傚洣娆?
+      // 清理过期的回收站文件
       await this.cleanExpiredTrash();
 
       return Array.from(this.trashFiles.values());
@@ -422,10 +422,10 @@ class FileManagerKitService {
     }
   }
 
-  // ==================== 閺傚洣娆㈤崶鐐�垼 ====================
+  // ==================== 文件图标和缩略图 ====================
 
   /**
-   * 閼惧嘲褰囬弬鍥︽�閸ョ偓鐖?
+   * 获取文件图标
    */
   async getFileIcon(filePath: string): Promise<string> {
     try {
@@ -433,11 +433,11 @@ class FileManagerKitService {
         throw new Error('FileManagerKit not initialized');
       }
 
-      // TODO: 闂嗗棙鍨?File Manager Kit 閻ㄥ嫬娴橀弽鍥�箯閸欐牞鍏橀崝?
+      // TODO: 调用 File Manager Kit 获取文件图标
       // const fileManager = fileManager.FileManagerService.getInstance();
       // return await fileManager.getFileIcon(filePath);
       
-      // 瑜版挸澧犳潻鏂挎礀姒涙ǹ顓婚崶鐐�垼
+      // 暂时返回默认图标
       return this.getDefaultIconForFileType(this.detectFileType(filePath));
     } catch (error) {
       logger.error('[FileManagerKit] Get file icon failed:', error);
@@ -446,7 +446,7 @@ class FileManagerKitService {
   }
 
   /**
-   * 閼惧嘲褰囬弬鍥︽�缂傗晝鏆愰崶?
+   * 获取文件缩略图
    */
   async getFileThumbnail(
     filePath: string, 
@@ -458,7 +458,7 @@ class FileManagerKitService {
         throw new Error('FileManagerKit not initialized');
       }
 
-      // TODO: 闂嗗棙鍨?File Manager Kit 閻ㄥ嫮缂夐悾銉ユ禈閻㈢喐鍨?
+      // TODO: 调用 File Manager Kit 生成缩略图
       return '';
     } catch (error) {
       logger.error('[FileManagerKit] Get file thumbnail failed:', error);
@@ -466,10 +466,10 @@ class FileManagerKitService {
     }
   }
 
-  // ==================== 閺傚洣娆㈤幙宥勭稊 ====================
+  // ==================== 文件操作 ====================
 
   /**
-   * 婢跺秴鍩楅弬鍥︽�
+   * 复制文件
    */
   async copyFile(sourcePath: string, destPath: string): Promise<FileOperationResult> {
     try {
@@ -482,21 +482,21 @@ class FileManagerKitService {
       logger.info('[FileManagerKit] File copied:', sourcePath, '->', destPath);
       return {
         success: true,
-        message: '閺傚洣娆㈡径宥呭煑閹存劕濮?
+        message: '文件复制成功'
       };
     } catch (error) {
       logger.error('[FileManagerKit] Copy file failed:', error);
       const err = error as Error;
       return {
         success: false,
-        message: '鏂囦欢澶嶅埗澶辫触',
+        message: '文件复制失败',
         error: err.message
       };
     }
   }
 
   /**
-   * 缁夎�濮╅弬鍥︽�
+   * 移动文件
    */
   async moveFile(sourcePath: string, destPath: string): Promise<FileOperationResult> {
     try {
@@ -509,21 +509,21 @@ class FileManagerKitService {
       logger.info('[FileManagerKit] File moved:', sourcePath, '->', destPath);
       return {
         success: true,
-        message: '閺傚洣娆㈢粔璇插З閹存劕濮?
+        message: '文件移动成功'
       };
     } catch (error) {
       logger.error('[FileManagerKit] Move file failed:', error);
       const err = error as Error;
       return {
         success: false,
-        message: '鏂囦欢绉诲姩澶辫触',
+        message: '文件移动失败',
         error: err.message
       };
     }
   }
 
   /**
-   * 闁插秴鎳￠崥宥嗘瀮娴?
+   * 重命名文件
    */
   async renameFile(filePath: string, newName: string): Promise<FileOperationResult> {
     try {
@@ -539,21 +539,21 @@ class FileManagerKitService {
       logger.info('[FileManagerKit] File renamed:', filePath, '->', newPath);
       return {
         success: true,
-        message: '鏂囦欢閲嶅懡鍚嶆垚鍔?
+        message: '文件重命名成功'
       };
     } catch (error) {
       logger.error('[FileManagerKit] Rename file failed:', error);
       const err = error as Error;
       return {
         success: false,
-        message: '鏂囦欢閲嶅懡鍚嶅け璐?,
+        message: '文件重命名失败',
         error: err.message
       };
     }
   }
 
   /**
-   * 閸掔娀娅庨弬鍥︽�
+   * 删除文件
    */
   async deleteFile(filePath: string): Promise<FileOperationResult> {
     try {
@@ -566,23 +566,23 @@ class FileManagerKitService {
       logger.info('[FileManagerKit] File deleted:', filePath);
       return {
         success: true,
-        message: '閺傚洣娆㈤崚鐘绘珟閹存劕濮?
+        message: '文件删除成功'
       };
     } catch (error) {
       logger.error('[FileManagerKit] Delete file failed:', error);
       const err = error as Error;
       return {
         success: false,
-        message: '鏂囦欢鍒犻櫎澶辫触',
+        message: '文件删除失败',
         error: err.message
       };
     }
   }
 
-  // ==================== 鏉堝懎濮�弬瑙勭《 ====================
+  // ==================== 辅助方法 ====================
 
   /**
-   * 閸旂姾娴囬崶鐐存暪缁旀瑥鍨�悰?
+   * 加载回收站文件列表
    */
   private async loadTrashFiles(): Promise<void> {
     try {
@@ -604,7 +604,7 @@ class FileManagerKitService {
   }
 
   /**
-   * 娣囨繂鐡ㄩ崶鐐存暪缁旀瑥鍨�悰?
+   * 保存回收站文件列表
    */
   private async saveTrashFiles(): Promise<void> {
     try {
@@ -619,7 +619,7 @@ class FileManagerKitService {
   }
 
   /**
-   * 濞撳懐鎮婃潻鍥ㄦ埂閻ㄥ嫬娲栭弨鍓佺彲閺傚洣娆?
+   * 清理过期的回收站文件
    */
   private async cleanExpiredTrash(): Promise<void> {
     const now = Date.now();
@@ -636,7 +636,7 @@ class FileManagerKitService {
 
     for (const uri of expiredUris) {
       this.trashFiles.delete(uri);
-      // TODO: 鐎圭偤妾�崚鐘绘珟閺傚洣娆?
+      // TODO: 真正删除文件
     }
 
     if (expiredUris.length > 0) {
@@ -645,7 +645,7 @@ class FileManagerKitService {
   }
 
   /**
-   * 濡�偓濞村�鏋冩禒鍓佽�閸?
+   * 检测文件类型
    */
   private detectFileType(filePath: string): FileType {
     const ext = this.getFileExtension(filePath).toLowerCase();
@@ -688,7 +688,7 @@ class FileManagerKitService {
   }
 
   /**
-   * 閼惧嘲褰嘙IME缁��鐎?
+   * 获取MIME类型
    */
   private getMimeType(filePath: string): string {
     const ext = this.getFileExtension(filePath).toLowerCase();
@@ -713,7 +713,7 @@ class FileManagerKitService {
   }
 
   /**
-   * 閼惧嘲褰囨�妯款吇閸ョ偓鐖?
+   * 获取默认文件类型图标
    */
   private getDefaultIconForFileType(fileType: FileType): string {
     switch (fileType) {
@@ -742,17 +742,17 @@ class FileManagerKitService {
   }
 
   /**
-   * 閺傚洣娆㈤崠褰掑帳鏉╁洦鎶ら崳?
+   * 检查文件是否符合过滤条件
    */
   private matchFilter(fileInfo: ManagedFileInfo, filter: FileFilter): boolean {
-    // 閺傚洣娆㈢猾璇茬€锋潻鍥ㄦ姢
+    // 检查文件类型过滤
     if (filter.types && filter.types.length > 0) {
       if (!filter.types.includes(fileInfo.type)) {
         return false;
       }
     }
 
-    // 閺傚洣娆㈡径褍鐨�潻鍥ㄦ姢
+    // 检查文件大小过滤
     if (filter.minSize !== undefined && fileInfo.size < filter.minSize) {
       return false;
     }
@@ -760,7 +760,7 @@ class FileManagerKitService {
       return false;
     }
 
-    // 閸掓稑缂撻弮鍫曟？鏉╁洦鎶?
+    // 检查创建时间范围
     if (filter.createTimeRange) {
       if (fileInfo.createTime < filter.createTimeRange[0] || 
           fileInfo.createTime > filter.createTimeRange[1]) {
@@ -768,7 +768,7 @@ class FileManagerKitService {
       }
     }
 
-    // 娣囶喗鏁奸弮鍫曟？鏉╁洦鎶?
+    // 检查修改时间范围
     if (filter.modifyTimeRange) {
       if (fileInfo.modifyTime < filter.modifyTimeRange[0] || 
           fileInfo.modifyTime > filter.modifyTimeRange[1]) {
@@ -776,14 +776,14 @@ class FileManagerKitService {
       }
     }
 
-    // 閸忔娊鏁�€涙�绻冨⿰?
+    // 检查关键词搜索
     if (filter.keyword) {
       if (!fileInfo.name.toLowerCase().includes(filter.keyword.toLowerCase())) {
         return false;
       }
     }
 
-    // 閸ョ偞鏁圭粩娆掔箖濠?
+    // 检查回收站状态
     if (filter.inTrash !== undefined) {
       if (fileInfo.inTrash !== filter.inTrash) {
         return false;
@@ -794,7 +794,7 @@ class FileManagerKitService {
   }
 
   /**
-   * 閺傚洣娆㈠В鏃囩窛
+   * 比较文件用于排序
    */
   private compareFiles(
     a: ManagedFileInfo, 
@@ -825,7 +825,7 @@ class FileManagerKitService {
   }
 
   /**
-   * 閹绘劕褰囬弬鍥︽�閸?
+   * 提取文件名
    */
   private extractFileName(filePath: string): string {
     const parts = filePath.split('/');
@@ -835,7 +835,7 @@ class FileManagerKitService {
   }
 
   /**
-   * 閼惧嘲褰囬弬鍥︽�閹碘晛鐫嶉崥?
+   * 获取文件扩展名
    */
   private getFileExtension(filePath: string): string {
     const parts = filePath.split('.');
@@ -843,7 +843,7 @@ class FileManagerKitService {
   }
 
   /**
-   * 濡�偓閺屻儲鏋冩禒鑸垫Ц閸氾箑鐡ㄩ崷?
+   * 检查文件是否存在
    */
   private async fileExists(filePath: string): Promise<boolean> {
     try {
@@ -855,11 +855,11 @@ class FileManagerKitService {
   }
 
   /**
-   * 濡�偓閺屻儲鏋冩禒鑸垫Ц閸氾箑褰查崘?
+   * 检查文件是否可写
    */
   private async isWritable(filePath: string): Promise<boolean> {
     try {
-      // 鐏忔繆鐦�懢宄板絿閺傚洣娆㈤悩鑸碘偓?
+      // 尝试获取文件状态
       await fileIo.stat(filePath);
       return true;
     } catch {
@@ -868,7 +868,7 @@ class FileManagerKitService {
   }
 
   /**
-   * 濡�偓閺屻儲鏋冩禒鑸垫Ц閸氾箓娈ｉ挊?
+   * 检查文件是否隐藏
    */
   private isHidden(filePath: string): boolean {
     const fileName = this.extractFileName(filePath);
@@ -891,7 +891,7 @@ class FileManagerKitService {
   }
 
   /**
-   * 闁插﹥鏂佺挧鍕�爱
+   * 释放资源
    */
   release(): void {
     this.isInitialized = false;
@@ -901,6 +901,6 @@ class FileManagerKitService {
   }
 }
 
-// 鐎电厧鍤�崡鏇氱伐
+// 导出单例
 export const fileManagerKitService = FileManagerKitService.getInstance();
 export default fileManagerKitService;
