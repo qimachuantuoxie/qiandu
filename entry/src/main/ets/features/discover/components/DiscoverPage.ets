@@ -1,8 +1,8 @@
 // 发现页组件 - 功能发现入口
 
-import { navigateTo } from '../../../../common/utils/NavigationHelper';
-import { Spacing, Size, BorderRadius } from '../../../../core/utils/LayoutConstants';
-import { layoutHelper } from '../../../../core/utils/LayoutHelper';
+import { navigateTo } from '../../../common/utils/NavigationHelper';
+import { Spacing, Size, BorderRadius } from '../../../core/utils/LayoutConstants';
+import { layoutHelper } from '../../../core/utils/LayoutHelper';
 
 interface DiscoverItem {
   icon: string;

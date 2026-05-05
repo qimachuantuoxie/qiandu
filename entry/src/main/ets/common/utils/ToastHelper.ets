@@ -5,6 +5,7 @@
 // API 22+: promptAction.showToast is deprecated
 // Use custom toast component or system notification
 import { UIContext } from '@kit.ArkUI';
+import { logger } from '../../core/utils/Logger';
 
 export interface ToastOptions {
   message: string;
@@ -25,12 +26,12 @@ export class ToastHelper {
   show(options: ToastOptions): void {
     try {
       // API 22+ replacement for deprecated showToast
-      console.info('[Toast] ' + options.message);
+      logger.info('[Toast] ' + options.message);
       // TODO: Implement proper custom toast UI component
       // For now, use system log as fallback
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
-      console.error('[ToastHelper] Show failed:', message);
+      logger.error('[ToastHelper] Show failed:', message);
     }
   }
 
@@ -44,7 +45,7 @@ export class ToastHelper {
 
   // API 22+: Use custom dialog component instead of CommonDialog
   showDialog(options: ToastOptions): void {
-    console.info('[ToastDialog] ' + options.message);
+    logger.info('[ToastDialog] ' + options.message);
     // Fallback to simple show
     this.show(options);
   }

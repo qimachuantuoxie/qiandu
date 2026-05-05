@@ -4,6 +4,7 @@
  */
 
 import { goBack } from '../utils/NavigationHelper';
+import { logger } from '../../../core/utils/Logger';
 
 @ComponentV2
 export struct BackButton {
@@ -42,7 +43,7 @@ export struct BackButton {
         try {
           goBack();
         } catch (e) {
-          console.error('BackButton: goBack() failed:', e instanceof Error ? e.message : String(e));
+          logger.error('BackButton: goBack() failed:', e instanceof Error ? e.message : String(e));
         }
       }
     })

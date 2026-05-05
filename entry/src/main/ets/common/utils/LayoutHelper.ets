@@ -8,6 +8,7 @@
 import { Breakpoints, Spacing, Size } from '../constants/LayoutConstants';
 import { window } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
+import { logger } from '../../core/utils/Logger';
 
 export interface ScreenInfo {
   width: number;
@@ -56,7 +57,7 @@ class LayoutHelper {
         breakpoint: this.getBreakpoint(width)
       };
     } catch (error) {
-      console.error('Failed to update screen info:', error instanceof Error ? error.message : String(error));
+      logger.error('Failed to update screen info:', error instanceof Error ? error.message : String(error));
     }
   }
 

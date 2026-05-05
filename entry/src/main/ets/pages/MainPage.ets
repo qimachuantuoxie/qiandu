@@ -1,4 +1,4 @@
-﻿import { toast, navigateTo, goBack, navHelper } from '../common';
+import { toast, navigateTo, goBack, navHelper } from '../common';
 import { NavPathStack } from '@kit.ArkUI';
 import { picker } from '@kit.CoreFileKit';
 import { BookInfo, BookFormat, ReadStatus, generateBookId } from '../core/models/CoreBookModel';
@@ -17,6 +17,7 @@ import { Spacing, Size, BorderRadius, getShadow } from '../common/constants/Layo
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../common/constants/AppTheme';
 import { fontScaleManager } from '../core/utils/FontScaleManager';
+import { logger } from '../core/utils/Logger';
 
 type ImportResult = 'success' | 'failed' | 'skipped';
 
@@ -94,7 +95,7 @@ struct MainPage {
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error('文件选择失败: ' + message);
+      logger.error('文件选择失败: ' + message);
       toast('文件选择失败，请重试');
     }
   }
@@ -174,7 +175,7 @@ struct MainPage {
       return 'success';
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error('导入失败: ' + message);
+      logger.error('导入失败: ' + message);
       return 'failed';
     }
   }
@@ -230,7 +231,7 @@ struct MainPage {
       SearchBar({
         placeholder: '搜索书籍、作者...',
         onSearch: (keyword: string) => {
-          console.log('搜索:', keyword);
+          logger.info('搜索:', keyword);
         },
         onCancel: () => {
           this.showSearch = false;

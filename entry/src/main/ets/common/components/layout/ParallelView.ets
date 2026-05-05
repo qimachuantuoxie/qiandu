@@ -16,6 +16,7 @@ import { BookInfo } from '../../core/models/CoreBookModel';
 import { window } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { tr } from '../../core/utils/LocalizationUtil';
+import { logger } from '../../../core/utils/Logger';
 
 /**
  * 平行视界配置
