@@ -9,6 +9,8 @@
 
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { fileIo } from '@kit.CoreFileKit';
+import { MammothWrapper } from './MammothWrapper';
+import { common } from '@kit.AbilityKit';
 
 const LOG_TAG = 'DocxParser';
 const LOG_DOMAIN = 0x0040;
@@ -47,6 +49,19 @@ export interface DocxConvertResult {
  * DOCX 解析器
  */
 export class DocxParser {
+  private mammothWrapper: MammothWrapper | null = null;
+  
+  /**
+   * 初始化 DOCX 解析器
+   * @param context 应用上下文
+   */
+  async init(context: common.Context): Promise<void> {
+    if (!this.mammothWrapper) {
+      this.mammothWrapper = new MammothWrapper();
+      await this.mammothWrapper.init(context);
+      hilog.info(LOG_DOMAIN, LOG_TAG, 'DocxParser initialized with MammothWrapper');
+    }
+  }
   
   /**
    * 将 DOCX 文件转换为 HTML
@@ -145,40 +160,21 @@ export class DocxParser {
     options?: DocxConvertOptions
   ): Promise<DocxConvertResult> {
     try {
-      // 注意：这里需要在项目中集成 mammoth.js
-      // 有两种方式：
-      // 1. 通过 npm/ohpm 安装（如果支持）
-      // 2. 下载 mammoth.browser.min.js 放到 rawfile，通过 Web 组件加载
+      if (!this.mammothWrapper) {
+        return {
+          success: false,
+          error: 'MammothWrapper not initialized. Call init() first.'
+        };
+      }
       
-      // 临时实现：返回提示
-      return {
-        success: false,
-        error: 'mammoth.js 尚未集成。请执行以下步骤：\n' +
-               '1. 下载 mammoth.browser.min.js\n' +
-               '2. 放到 entry/src/main/resources/rawfile/\n' +
-               '3. 在代码中加载并调用'
-      };
-      
-      // 完整实现示例（需要集成 mammoth.js 后启用）：
-      /*
-      // 加载 mammoth.js
-      const mammoth = await this.loadMammothJs();
-      
-      // 配置转换选项
-      const convertOptions: any = {
-        arrayBuffer: fileData,
-        styleMap: options?.styleMap || undefined
-      };
-      
-      // 执行转换
-      const result = await mammoth.convertToHtml(convertOptions);
+      // 使用 MammothWrapper 进行转换
+      const html = await this.mammothWrapper.convertDocxToHtml(fileData);
       
       return {
         success: true,
-        html: result.value,
-        warnings: result.messages.map((msg: any) => msg.message)
+        html: html,
+        warnings: []
       };
-      */
     } catch (error) {
       return {
         success: false,
@@ -187,18 +183,7 @@ export class DocxParser {
     }
   }
   
-  /**
-   * 加载 mammoth.js 库
-   */
-  private async loadMammothJs(): Promise<any> {
-    // TODO: 实现 mammoth.js 加载
-    // 可以通过以下方式之一：
-    // 1. 从 rawfile 加载 JS 文件
-    // 2. 使用 import 语句（如果 ohpm 支持）
-    // 3. 通过 Web 组件执行
-    
-    throw new Error('mammoth.js not loaded');
-  }
+
   
   /**
    * 将 HTML 包装为简单的 EPUB 格式
