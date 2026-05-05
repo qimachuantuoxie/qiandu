@@ -6,8 +6,10 @@ import { BookInfo, formatDuration } from '../../../core/models/CoreBookModel';
 import { DeviceUtils } from '../../../core/utils/DeviceUtils';
 import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../../../core/utils/AppTheme';
 import { fontScaleManager } from '../../../core/utils/FontScaleManager';
-import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
-import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
+import { PageHeader, getPageBackgroundColor } from '../../../common/utils/PageLayoutHelper';
+import { HDSCard } from '../../../common/components/HDSCard';
+import { DialogHelper } from '../../../common/utils/DialogHelper';
+import { HDSColours, HDSSpacing, HDSBorderRadius, HDSTypography } from '../../../core/design/tokens/HDSDTokens';
 
 @Entry
 @ComponentV2
@@ -70,48 +72,21 @@ struct StatisticsPage {
   build() {
     Column() {
       // 顶部导航栏
-      Row() {
-        Row() {
-          SymbolGlyph($r('sys.symbol.chevron.left'))
-            .fontSize(Size.iconLG)
-            .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
-        }
-        .width(Size.buttonMD)
-        .height(Size.buttonMD)
-        .borderRadius(BorderRadius.full)
-        .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
-        .justifyContent(FlexAlign.Center)
-        .onClick(() => {
+      PageHeader({
+        title: '阅读统计',
+        showBack: true,
+        onBack: () => {
           try {
             goBack();
           } catch (error) {
             const msg = error instanceof Error ? error.message : String(error);
             logger.error('[StatisticsPage] back failed:', msg);
           }
-        })
-        .stateStyles({
-          pressed: { .scale({ x: 0.9, y: 0.9 }) },
-          normal: { .scale({ x: 1, y: 1 }) }
-        })
-
-        Text('阅读统计')
-          .fontSize(fontScaleManager.getScaledFontSize(18))
-          .fontWeight(FontWeight.SemiBold)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
-          .layoutWeight(1)
-          .textAlign(TextAlign.Center)
-
-        Blank()
-          .width(Size.buttonMD)
-      }
-      .width('100%')
-      .height(Size.buttonLG + Spacing.sm)
-      .padding({ left: Spacing.lg, right: Spacing.lg })
-      .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
-      .shadow(getShadow('sm', this.isDarkMode))
+        }
+      })
 
       Scroll() {
-        Column({ space: Spacing.lg }) {
+        Column({ space: HDSSpacing.lg }) {
           // 核心数据卡片
           this.CoreStats()
 
@@ -126,10 +101,10 @@ struct StatisticsPage {
         }
         .width('100%')
         .padding({ 
-          left: Spacing.lg, 
-          right: Spacing.lg,
-          top: Spacing.md,
-          bottom: Spacing.xxxl
+          left: HDSSpacing.lg, 
+          right: HDSSpacing.lg,
+          top: HDSSpacing.md,
+          bottom: HDSSpacing.xxxl
         })
       }
       .width('100%')
@@ -139,170 +114,170 @@ struct StatisticsPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
+    .backgroundColor(getPageBackgroundColor())
   }
 
   @Builder
   CoreStats() {
-    Column({ space: Spacing.md }) {
-      Text('核心数据')
-        .fontSize(fontScaleManager.getScaledFontSize(16))
-        .fontWeight(FontWeight.SemiBold)
-        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
-        .width('100%')
+    HDSCard({
+      padding: HDSSpacing.xl,
+      content: () => {
+        Column({ space: HDSSpacing.md }) {
+          Text('核心数据')
+            .fontSize(HDSTypography.sizes.xl)
+            .fontWeight(FontWeight.SemiBold)
+            .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
+            .width('100%')
 
-      Row({ space: Spacing.md }) {
-        // 总阅读时长
-        this.StatCard('总阅读时长', formatDuration(this.getTotalReadingTime()), 'clock.fill', this.currentColors.primary)
-        
-        // 已读书籍
-        this.StatCard('已读书籍', `${this.getTotalReadBooks()}本`, 'book.fill', '#4CAF50')
-      }
-      .width('100%')
+          Row({ space: HDSSpacing.md }) {
+            // 总阅读时长
+            this.StatCard('总阅读时长', formatDuration(this.getTotalReadingTime()), 'clock.fill', HDSColours.primary.blue)
+            
+            // 已读书籍
+            this.StatCard('已读书籍', `${this.getTotalReadBooks()}本`, 'book.fill', '#4CAF50')
+          }
+          .width('100%')
 
-      Row({ space: Spacing.md }) {
-        // 平均阅读时长
-        this.StatCard('平均每本', formatDuration(this.getAverageReadingTime()), 'chart.bar.xaxis', '#FF9800')
-        
-        // 藏书数量
-        this.StatCard('藏书总数', `${this.books.length}本`, 'folder.fill', '#9C27B0')
+          Row({ space: HDSSpacing.md }) {
+            // 平均阅读时长
+            this.StatCard('平均每本', formatDuration(this.getAverageReadingTime()), 'chart.bar.xaxis', '#FF9800')
+            
+            // 藏书数量
+            this.StatCard('藏书总数', `${this.books.length}本`, 'folder.fill', '#9C27B0')
+          }
+          .width('100%')
+        }
       }
-      .width('100%')
-    }
-    .width('100%')
-    .padding(Spacing.xl)
-    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-    .borderRadius(BorderRadius.xl)
-    .shadow(getShadow('md', this.isDarkMode))
+    })
   }
 
   @Builder
   StatCard(title: string, value: string, iconName: string, color: string) {
-    Column({ space: Spacing.sm }) {
+    Column({ space: HDSSpacing.sm }) {
       SymbolGlyph($r(`sys.symbol.${iconName}`))
-        .fontSize(this.screenInfo?.isTablet ? Size.iconXXL : Size.iconXL)
+        .fontSize(28)
         .fontColor([color])
 
       Text(value)
-        .fontSize(fontScaleManager.getScaledFontSize(this.screenInfo?.isTablet ? 20 : 18))
+        .fontSize(HDSTypography.sizes.xxl)
         .fontWeight(FontWeight.Bold)
-        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
 
       Text(title)
-        .fontSize(fontScaleManager.getScaledFontSize(12))
-        .fontColor(this.tc('#8E8E93', '#8E8E93'))
+        .fontSize(HDSTypography.sizes.sm)
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
     }
     .layoutWeight(1)
-    .padding(Spacing.md)
+    .padding(HDSPacing.md)
     .backgroundColor(color + '15')
-    .borderRadius(BorderRadius.lg)
+    .borderRadius(HDSBorderRadius.lg)
   }
 
   @Builder
   ReadingTrend() {
-    Column({ space: Spacing.md }) {
-      Row() {
-        SymbolGlyph($r("sys.symbol.chart.line.uptrend.xyaxis"))
-          .fontSize(Size.iconMD)
-          .fontColor([this.currentColors.primary])
-        
-        Text("阅读趋势")
-          .fontSize(fontScaleManager.getScaledFontSize(16))
-          .fontWeight(FontWeight.SemiBold)
-          .fontColor(this.tc("#1A1A1A", "#FFFFFF"))
-          .layoutWeight(1)
-          .margin({ left: Spacing.sm })
-      }
-      .width("100%")
+    HDSCard({
+      padding: HDSSpacing.xl,
+      content: () => {
+        Column({ space: HDSSpacing.md }) {
+          Row() {
+            SymbolGlyph($r("sys.symbol.chart.line.uptrend.xyaxis"))
+              .fontSize(20)
+              .fontColor([HDSColours.primary.blue])
+            
+            Text("阅读趋势")
+              .fontSize(HDSTypography.sizes.xl)
+              .fontWeight(FontWeight.SemiBold)
+              .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
+              .layoutWeight(1)
+              .margin({ left: HDSSpacing.sm })
+          }
+          .width("100%")
 
-      if (this.books.length === 0) {
-        Column() {
-          Text("暂无阅读数据")
-            .fontSize(14)
-            .fontColor(this.tc("#8E8E93", "#8E8E93"))
-            .width("100%")
-            .textAlign(TextAlign.Center)
-            .margin({ top: Spacing.xl })
-        }
-        .width("100%")
-        .height(150)
-        .padding({ top: Spacing.lg })
-      } else {
-        // Simple bar chart using real data
-        Row() {
-          ForEach(["周一", "周二", "周三", "周四", "周五", "周六", "周日"], (day: string, index: number) => {
+          if (this.books.length === 0) {
             Column() {
-              // Use real reading time from books
-              const book = this.books[index % this.books.length];
-              const height = Math.min(120, Math.max(30, (book.totalReadingTime || 0) / 60000));
-              Column()
+              Text("暂无阅读数据")
+                .fontSize(HDSTypography.sizes.md)
+                .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
                 .width("100%")
-                .height(height)
-                .linearGradient({
-                  direction: GradientDirection.Top,
-                  colors: [this.currentColors.primary, this.currentColors.primary + "CC"]
-                })
-                .borderRadius(BorderRadius.sm)
+                .textAlign(TextAlign.Center)
+                .margin({ top: HDSSpacing.xl })
             }
             .width("100%")
-            .alignItems(VerticalAlign.Bottom)
-            .margin({ bottom: Spacing.sm })
+            .height(150)
+            .padding({ top: HDSSpacing.lg })
+          } else {
+            // Simple bar chart using real data
+            Row() {
+              ForEach(["周一", "周二", "周三", "周四", "周五", "周六", "周日"], (day: string, index: number) => {
+                Column() {
+                  // Use real reading time from books
+                  const book = this.books[index % this.books.length];
+                  const height = Math.min(120, Math.max(30, (book.totalReadingTime || 0) / 60000));
+                  Column()
+                    .width("100%")
+                    .height(height)
+                    .linearGradient({
+                      direction: GradientDirection.Top,
+                      colors: [HDSColours.primary.blue, HDSColours.primary.blue + "CC"]
+                    })
+                    .borderRadius(HDSBorderRadius.sm)
+                }
+                .width("100%")
+                .alignItems(VerticalAlign.Bottom)
+                .margin({ bottom: HDSSpacing.sm })
 
-            Text("周" + day)
-              .fontSize(fontScaleManager.getScaledFontSize(11))
-              .fontColor(this.tc("#8E8E93", "#8E8E93"))
-              .margin({ top: Spacing.xs })
-          }, (day: string, index: number) => index.toString())
+                Text("周" + day)
+                  .fontSize(HDSTypography.sizes.xs)
+                  .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
+                  .margin({ top: HDSSpacing.xs })
+              }, (day: string, index: number) => index.toString())
+            }
+            .width("100%")
+            .height(150)
+            .padding({ top: HDSSpacing.lg })
+          }
         }
-        .width("100%")
-        .height(150)
-        .padding({ top: Spacing.lg })
       }
-    }
-    .width("100%")
-    .padding(Spacing.xl)
-    .backgroundColor(this.tc("#FFFFFF", "#1E1E2E"))
-    .borderRadius(BorderRadius.xl)
-    .shadow(getShadow("sm", this.isDarkMode))
+    })
   }
 
   @Builder
   ReadingPreference() {
-    Column({ space: Spacing.md }) {
-      Row() {
-        SymbolGlyph($r('sys.symbol.piechart'))
-          .fontSize(Size.iconMD)
-          .fontColor([this.currentColors.primary])
-        
-        Text('阅读偏好')
-          .fontSize(fontScaleManager.getScaledFontSize(16))
-          .fontWeight(FontWeight.SemiBold)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
-          .layoutWeight(1)
-          .margin({ left: Spacing.sm })
-      }
-      .width('100%')
-
-      // 格式分布
-      Column({ space: Spacing.md }) {
-        Text('书籍格式')
-          .fontSize(fontScaleManager.getScaledFontSize(14))
-          .fontWeight(FontWeight.Medium)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+    HDSCard({
+      padding: HDSSpacing.xl,
+      content: () => {
+        Column({ space: HDSSpacing.md }) {
+          Row() {
+            SymbolGlyph($r('sys.symbol.piechart'))
+              .fontSize(20)
+              .fontColor([HDSColours.primary.blue])
+            
+            Text('阅读偏好')
+              .fontSize(HDSTypography.sizes.xl)
+              .fontWeight(FontWeight.SemiBold)
+              .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
+              .layoutWeight(1)
+              .margin({ left: HDSSpacing.sm })
+          }
           .width('100%')
 
-        this.PreferenceBar('EPUB', this.getFormatCount('epub'), '#4CAF50')
-        this.PreferenceBar('PDF', this.getFormatCount('pdf'), '#F44336')
-        this.PreferenceBar('TXT', this.getFormatCount('txt'), '#2196F3')
-        this.PreferenceBar('其他', this.getFormatCount('other'), '#FF9800')
+          // 格式分布
+          Column({ space: HDSSpacing.md }) {
+            Text('书籍格式')
+              .fontSize(HDSTypography.sizes.md)
+              .fontWeight(FontWeight.Medium)
+              .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
+              .width('100%')
+
+            this.PreferenceBar('EPUB', this.getFormatCount('epub'), '#4CAF50')
+            this.PreferenceBar('PDF', this.getFormatCount('pdf'), '#F44336')
+            this.PreferenceBar('TXT', this.getFormatCount('txt'), '#2196F3')
+            this.PreferenceBar('其他', this.getFormatCount('other'), '#FF9800')
+          }
+          .width('100%')
+        }
       }
-      .width('100%')
-    }
-    .width('100%')
-    .padding(Spacing.xl)
-    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-    .borderRadius(BorderRadius.xl)
-    .shadow(getShadow('sm', this.isDarkMode))
+    })
   }
 
   @Builder
@@ -310,22 +285,22 @@ struct StatisticsPage {
     const total = this.books.length || 1;
     const percentage = Math.floor(count / total * 100);
 
-    Row({ space: Spacing.md }) {
+    Row({ space: HDSSpacing.md }) {
       Text(label)
-        .fontSize(fontScaleManager.getScaledFontSize(13))
-        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+        .fontSize(HDSTypography.sizes.sm)
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
         .width(50)
 
       Progress({ value: count, total: total, type: ProgressType.Linear })
         .layoutWeight(1)
         .height(8)
-        .borderRadius(BorderRadius.xl)
+        .borderRadius(HDSBorderRadius.xl)
         .color(color)
-        .backgroundColor(this.tc('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.1)'))
+        .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)')
 
       Text(`${count}本 (${percentage}%)`)
-        .fontSize(fontScaleManager.getScaledFontSize(12))
-        .fontColor(this.tc('#8E8E93', '#8E8E93'))
+        .fontSize(HDSTypography.sizes.sm)
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
         .width(80)
         .textAlign(TextAlign.End)
     }
@@ -345,53 +320,53 @@ struct StatisticsPage {
 
   @Builder
   Achievements() {
-    Column({ space: Spacing.md }) {
-      Row() {
-        SymbolGlyph($r('sys.symbol.trophy.fill'))
-          .fontSize(Size.iconMD)
-          .fontColor(['#FFD700'])
-        
-        Text('成就徽章')
-          .fontSize(fontScaleManager.getScaledFontSize(16))
-          .fontWeight(FontWeight.SemiBold)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
-          .layoutWeight(1)
-          .margin({ left: Spacing.sm })
-      }
-      .width('100%')
+    HDSCard({
+      padding: HDSSpacing.xl,
+      content: () => {
+        Column({ space: HDSSpacing.md }) {
+          Row() {
+            SymbolGlyph($r('sys.symbol.trophy.fill'))
+              .fontSize(20)
+              .fontColor(['#FFD700'])
+            
+            Text('成就徽章')
+              .fontSize(HDSTypography.sizes.xl)
+              .fontWeight(FontWeight.SemiBold)
+              .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
+              .layoutWeight(1)
+              .margin({ left: HDSSpacing.sm })
+          }
+          .width('100%')
 
-      Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
-        this.AchievementBadge('初次阅读', 'book.fill', '#4CAF50', true)
-        this.AchievementBadge('阅读达人', 'clock.fill', '#2196F3', this.getTotalReadingTime() > 3600000)
-        this.AchievementBadge('博览群书', 'books.vertical.fill', '#9C27B0', this.getTotalReadBooks() >= 10)
-        this.AchievementBadge('坚持阅读', 'calendar.badge.clock', '#FF9800', this.books.some(b => b.lastReadTime && Date.now() - b.lastReadTime < 86400000))
+          Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
+            this.AchievementBadge('初次阅读', 'book.fill', '#4CAF50', true)
+            this.AchievementBadge('阅读达人', 'clock.fill', '#2196F3', this.getTotalReadingTime() > 3600000)
+            this.AchievementBadge('博览群书', 'books.vertical.fill', '#9C27B0', this.getTotalReadBooks() >= 10)
+            this.AchievementBadge('坚持阅读', 'calendar.badge.clock', '#FF9800', this.books.some(b => b.lastReadTime && Date.now() - b.lastReadTime < 86400000))
+          }
+          .width('100%')
+        }
       }
-      .width('100%')
-    }
-    .width('100%')
-    .padding(Spacing.xl)
-    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-    .borderRadius(BorderRadius.xl)
-    .shadow(getShadow('sm', this.isDarkMode))
+    })
   }
 
   @Builder
   AchievementBadge(name: string, iconName: string, color: string, unlocked: boolean) {
-    Column({ space: Spacing.sm }) {
+    Column({ space: HDSSpacing.sm }) {
       SymbolGlyph($r(`sys.symbol.${iconName}`))
-        .fontSize(Size.iconXL)
-        .fontColor([unlocked ? color : this.tc('#D1D1D6', '#48484A')])
+        .fontSize(24)
+        .fontColor([unlocked ? color : (this.isDarkMode ? '#48484A' : '#D1D1D6')])
 
       Text(name)
-        .fontSize(fontScaleManager.getScaledFontSize(11))
-        .fontColor(unlocked ? color : this.tc('#8E8E93', '#8E8E93'))
+        .fontSize(HDSTypography.sizes.xs)
+        .fontColor(unlocked ? color : (this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600))
         .maxLines(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
     }
     .width('30%')
-    .padding(Spacing.md)
-    .backgroundColor(unlocked ? color + '15' : this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
-    .borderRadius(BorderRadius.lg)
+    .padding(HDSPacing.md)
+    .backgroundColor(unlocked ? color + '15' : (this.isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'))
+    .borderRadius(HDSBorderRadius.lg)
     .border({ 
       width: 1, 
       color: unlocked ? color + '40' : 'transparent' 

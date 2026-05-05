@@ -5,8 +5,10 @@ import { common } from '@kit.AbilityKit';
 import { preferenceManager } from '../../../core/utils/PreferenceManager';
 import { themeManager, AppColors } from '../../../core/utils/AppTheme';
 import { fontScaleManager } from '../../../core/utils/FontScaleManager';
-import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
-import { layoutHelper, ScreenInfo } from '../../common/utils/LayoutHelper';
+import { PageHeader, getPageBackgroundColor } from '../../../common/utils/PageLayoutHelper';
+import { HDSCard } from '../../../common/components/HDSCard';
+import { DialogHelper } from '../../../common/utils/DialogHelper';
+import { HDSColours, HDSSpacing, HDSBorderRadius, HDSTypography } from '../../../core/design/tokens/HDSDTokens';
 
 interface SettingItem {
   icon: string;
@@ -57,81 +59,54 @@ struct SettingsPage {
   build() {
     Column() {
       // 顶部导航栏
-      Row() {
-        Row() {
-          SymbolGlyph($r('sys.symbol.chevron.left'))
-            .fontSize(Size.iconLG)
-            .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
-        }
-        .width(Size.buttonMD)
-        .height(Size.buttonMD)
-        .borderRadius(BorderRadius.full)
-        .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
-        .justifyContent(FlexAlign.Center)
-        .onClick(() => {
+      PageHeader({
+        title: '设置',
+        showBack: true,
+        onBack: () => {
           try {
             goBack();
           } catch (error) {
             const msg = error instanceof Error ? error.message : String(error);
             logger.error('[SettingsPage] back failed:', msg);
           }
-        })
-        .stateStyles({
-          pressed: { .scale({ x: 0.9, y: 0.9 }) },
-          normal: { .scale({ x: 1, y: 1 }) }
-        })
-
-        Text('设置')
-          .fontSize(fontScaleManager.getScaledFontSize(18))
-          .fontWeight(FontWeight.SemiBold)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
-          .layoutWeight(1)
-          .textAlign(TextAlign.Center)
-
-        Blank()
-          .width(Size.buttonMD)
-      }
-      .width('100%')
-      .height(Size.buttonLG + Spacing.sm)
-      .padding({ left: Spacing.lg, right: Spacing.lg })
-      .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
-      .shadow(getShadow('sm', this.isDarkMode))
+        }
+      })
 
       // Tab切换
-      Row({ space: Spacing.sm }) {
+      Row({ space: HDSSpacing.sm }) {
         ForEach(this.tabNames, (tab: string, index: number) => {
-          Column({ space: Spacing.xs }) {
+          Column({ space: HDSSpacing.xs }) {
             Text(tab)
-              .fontSize(fontScaleManager.getScaledFontSize(14))
-              .fontColor(this.activeTab === index ? this.currentColors.primary : this.tc('#8E8E93', '#8E8E93'))
+              .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.md))
+              .fontColor(this.activeTab === index ? HDSColours.primary.blue : this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
               .fontWeight(this.activeTab === index ? FontWeight.SemiBold : FontWeight.Regular)
             
             Rectangle()
               .width(this.activeTab === index ? 24 : 0)
               .height(3)
-              .fill(this.currentColors.primary)
-              .borderRadius(BorderRadius.xl)
+              .fill(HDSColours.primary.blue)
+              .borderRadius(HDSBorderRadius.xl)
               .animation({ duration: 200, curve: Curve.EaseInOut })
           }
           .padding({ 
-            left: Spacing.md, 
-            right: Spacing.md, 
-            top: Spacing.sm, 
-            bottom: Spacing.sm 
+            left: HDSSpacing.md, 
+            right: HDSSpacing.md, 
+            top: HDSSpacing.sm, 
+            bottom: HDSSpacing.sm 
           })
-          .backgroundColor(this.activeTab === index ? this.currentColors.primary + '10' : 'transparent')
-          .borderRadius(BorderRadius.xl)
+          .backgroundColor(this.activeTab === index ? HDSColours.primary.blue + '10' : 'transparent')
+          .borderRadius(HDSBorderRadius.xl)
           .onClick(() => { this.activeTab = index; })
           .animation({ duration: 200, curve: Curve.EaseInOut })
         }, (tab: string, index: number) => tab)
       }
       .width('100%')
-      .padding({ left: Spacing.lg, right: Spacing.lg, top: Spacing.md })
-      .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
+      .padding({ left: HDSSpacing.lg, right: HDSSpacing.lg, top: HDSSpacing.md })
+      .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.surface : HDSColours.neutral.white)
 
       // 内容区域
       Scroll() {
-        Column({ space: Spacing.lg }) {
+        Column({ space: HDSSpacing.lg }) {
           if (this.activeTab === 0) {
             this.buildGeneralSettings()
           } else if (this.activeTab === 1) {
@@ -142,10 +117,10 @@ struct SettingsPage {
         }
         .width('100%')
         .padding({ 
-          left: Spacing.lg, 
-          right: Spacing.lg, 
-          top: Spacing.lg,
-          bottom: Spacing.xxxl
+          left: HDSSpacing.lg, 
+          right: HDSSpacing.lg, 
+          top: HDSSpacing.lg,
+          bottom: HDSSpacing.xxxl
         })
       }
       .layoutWeight(1)
@@ -155,71 +130,72 @@ struct SettingsPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
+    .backgroundColor(getPageBackgroundColor())
   }
 
   @Builder
   buildGeneralSettings() {
-    Column({ space: Spacing.lg }) {
+    Column({ space: HDSSpacing.lg }) {
       // 账号设置
-      Column() {
-        this.SettingItem('person.circle.fill', '账号管理', '查看和管理您的账号信息', 'link', () => {
-          navigateTo('pages/LoginPage');
-        })
-      }
-      .width('100%')
-      .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-      .borderRadius(BorderRadius.xl)
-      .shadow(getShadow('sm', this.isDarkMode))
+      HDSCard({
+        padding: 0,
+        content: () => {
+          this.SettingItem('person.circle.fill', '账号管理', '查看和管理您的账号信息', 'link', () => {
+            navigateTo('pages/LoginPage');
+          })
+        }
+      })
 
       // 数据与存储
-      Column() {
-        this.SettingItem('externaldrive.fill', '清除缓存', '释放存储空间', 'link', () => {
-          promptAction.showToast({ message: '缓存已清除', duration: 1500 });
-        })
-        
-        Divider()
-          .color(this.tc('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.06)'))
-          .strokeWidth(0.5)
-          .margin({ left: Size.avatarMD + Spacing.lg * 2 })
+      HDSCard({
+        padding: 0,
+        content: () => {
+          Column() {
+            this.SettingItem('externaldrive.fill', '清除缓存', '释放存储空间', 'link', () => {
+              DialogHelper.success('缓存已清除');
+            })
+            
+            Divider()
+              .color(this.isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')
+              .strokeWidth(0.5)
+              .margin({ left: 40 + HDSSpacing.lg * 2 })
 
-        this.SettingItem('icloud.fill', '备份与恢复', '同步阅读进度和数据', 'link', () => {
-          promptAction.showToast({ message: '功能开发中', duration: 1500 });
-        })
-      }
-      .width('100%')
-      .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-      .borderRadius(BorderRadius.xl)
-      .shadow(getShadow('sm', this.isDarkMode))
+            this.SettingItem('icloud.fill', '备份与恢复', '同步阅读进度和数据', 'link', () => {
+              DialogHelper.info('功能开发中');
+            })
+          }
+        }
+      })
 
       // 关于
-      Column() {
-        this.SettingItem('info.circle.fill', '关于我们', '千读阅界 v1.0.0', 'link', () => {
-          promptAction.showToast({ message: '千读阅界 - 专业阅读器', duration: 1500 });
-        })
-        
-        Divider()
-          .color(this.tc('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.06)'))
-          .strokeWidth(0.5)
-          .margin({ left: Size.avatarMD + Spacing.lg * 2 })
+      HDSCard({
+        padding: 0,
+        content: () => {
+          Column() {
+            this.SettingItem('info.circle.fill', '关于我们', '千读阅界 v1.0.0', 'link', () => {
+              DialogHelper.info('千读阅界 - 专业阅读器');
+            })
+            
+            Divider()
+              .color(this.isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')
+              .strokeWidth(0.5)
+              .margin({ left: 40 + HDSSpacing.lg * 2 })
 
-        this.SettingItem('doc.text', '用户协议', '', 'link', () => {
-          navigateTo('pages/UserAgreementPage');
-        })
-        
-        Divider()
-          .color(this.tc('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.06)'))
-          .strokeWidth(0.5)
-          .margin({ left: Size.avatarMD + Spacing.lg * 2 })
+            this.SettingItem('doc.text', '用户协议', '', 'link', () => {
+              navigateTo('pages/UserAgreementPage');
+            })
+            
+            Divider()
+              .color(this.isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')
+              .strokeWidth(0.5)
+              .margin({ left: 40 + HDSSpacing.lg * 2 })
 
-        this.SettingItem('shield.checkered', '隐私政策', '', 'link', () => {
-          navigateTo('pages/PrivacyPolicyPage');
-        })
-      }
-      .width('100%')
-      .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-      .borderRadius(BorderRadius.xl)
-      .shadow(getShadow('sm', this.isDarkMode))
+            this.SettingItem('shield.checkered', '隐私政策', '', 'link', () => {
+              navigateTo('pages/PrivacyPolicyPage');
+            })
+          }
+        }
+      })
     }
   }
 

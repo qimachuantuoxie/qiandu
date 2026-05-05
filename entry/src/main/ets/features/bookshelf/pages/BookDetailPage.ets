@@ -9,9 +9,10 @@ import { dynamicCoverService, BookCoverData } from '../../../core/services/image
 import { tr } from '../../../core/utils/LocalizationUtil';
 import { fontScaleManager } from '../../../core/utils/FontScaleManager';
 import { common } from '@kit.AbilityKit';
-import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
-import { layoutHelper, ScreenInfo } from '../../common/utils/LayoutHelper';
-import { ThemeTokens } from '../../common/utils/ThemeTokens';
+import { PageHeader, getPageBackgroundColor } from '../../../common/utils/PageLayoutHelper';
+import { HDSCard } from '../../../common/components/HDSCard';
+import { DialogHelper } from '../../../common/utils/DialogHelper';
+import { HDSColours, HDSSpacing, HDSBorderRadius, HDSTypography } from '../../../core/design/tokens/HDSDTokens';
 import { EbookParserUtils } from '../../../core/parsers/EbookParserUtils';
 
 interface BookDetailParams {
@@ -123,158 +124,172 @@ struct BookDetailPage {
   }
 
   build() {
-    Scroll() {
-      Column({ space: Spacing.lg }) {
-        if (this.book) {
-          // 封面和基本信息
-          this.BookHeader()
-
-          // 阅读进度卡片
-          this.ProgressCard()
-
-          // 书籍信息卡片
-          this.BookInfoCard()
-
-          // 操作按钮
-          this.ActionButtons()
-
-          // 分组管理
-          if (this.groups.length > 0) {
-            this.GroupManagement()
+    Column() {
+      // 顶部导航栏
+      PageHeader({
+        title: '书籍详情',
+        showBack: true,
+        onBack: () => {
+          try {
+            goBack();
+          } catch (e) {
+            logger.error('BookDetailPage back failed:', e instanceof Error ? e.message : String(e));
           }
-        } else {
-          // 空状态
-          Column({ space: Spacing.xl }) {
-            SymbolGlyph($r('sys.symbol.book.closed'))
-              .fontSize(Size.iconXXXL * 1.5)
-              .fontColor([ThemeTokens.textDisabled()])
-            
-            Text('书籍不存在')
-              .fontSize(fontScaleManager.getScaledFontSize(16))
-              .fontWeight(FontWeight.Medium)
-              .fontColor(ThemeTokens.textPrimary())
-          }
-          .width('100%')
-          .padding(Spacing.xxxl)
-          .justifyContent(FlexAlign.Center)
         }
-      }
-      .width('100%')
-      .padding({ 
-        left: Spacing.lg, 
-        right: Spacing.lg, 
-        top: Spacing.lg,
-        bottom: Spacing.xxxl
       })
+      
+      Scroll() {
+        Column({ space: HDSSpacing.lg }) {
+          if (this.book) {
+            // 封面和基本信息
+            this.BookHeader()
+
+            // 阅读进度卡片
+            this.ProgressCard()
+
+            // 书籍信息卡片
+            this.BookInfoCard()
+
+            // 操作按钮
+            this.ActionButtons()
+
+            // 分组管理
+            if (this.groups.length > 0) {
+              this.GroupManagement()
+            }
+          } else {
+            // 空状态
+            EmptyState({
+              title: '书籍不存在',
+              icon: $r('sys.symbol.book.closed'),
+              actionText: '返回',
+              onAction: () => {
+                try {
+                  goBack();
+                } catch (e) {
+                  logger.error('BookDetailPage back failed:', e instanceof Error ? e.message : String(e));
+                }
+              }
+            })
+          }
+        }
+        .width('100%')
+        .padding({ 
+          left: HDSSpacing.lg, 
+          right: HDSSpacing.lg, 
+          top: HDSSpacing.md,
+          bottom: HDSSpacing.xxxl
+        })
+      }
+      .layoutWeight(1)
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(ThemeTokens.bgPrimary())
+    .backgroundColor(getPageBackgroundColor())
   }
 
   @Builder
   BookHeader() {
-    Column({ space: Spacing.xl }) {
-      // 封面图
-      Stack() {
-        if (this.coverData) {
-          // 渐变背景封面
-          Column()
-            .width(this.isTablet ? 180 : 150)
-            .height(this.isTablet ? 240 : 200)
-            .linearGradient({
-              direction: GradientDirection.Top,
-              colors: [
-                this.coverData.primaryColor,
-                this.coverData.secondaryColor
-              ]
-            })
-            .borderRadius(BorderRadius.xl)
-            .shadow(getShadow('xl', this.isDarkMode))
+    HDSCard({
+      padding: HDSSpacing.xl,
+      content: () => {
+        Column({ space: HDSSpacing.xl }) {
+          // 封面图
+          Stack() {
+            if (this.coverData) {
+              // 渐变背景封面
+              Column()
+                .width(this.isTablet ? 180 : 150)
+                .height(this.isTablet ? 240 : 200)
+                .linearGradient({
+                  direction: GradientDirection.Top,
+                  colors: [
+                    this.coverData.primaryColor,
+                    this.coverData.secondaryColor
+                  ]
+                })
+                .borderRadius(HDSBorderRadius.xl)
 
-          // 书名和作者
-          Column({ space: Spacing.sm }) {
-            Text(this.book!.title)
-              .fontSize(fontScaleManager.getScaledFontSize(this.isTablet ? 20 : 18))
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#FFFFFF')
-              .maxLines(2)
-              .textOverflow({ overflow: TextOverflow.Ellipsis })
-              .textAlign(TextAlign.Center)
+              // 书名和作者
+              Column({ space: HDSSpacing.sm }) {
+                Text(this.book!.title)
+                  .fontSize(this.isTablet ? HDSTypography.sizes.xxl : HDSTypography.sizes.xl)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor(HDSColours.neutral.white)
+                  .maxLines(2)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
+                  .textAlign(TextAlign.Center)
 
-            Text(this.book!.author)
-              .fontSize(fontScaleManager.getScaledFontSize(14))
-              .fontColor('rgba(255,255,255,0.9)')
-              .maxLines(1)
-              .textOverflow({ overflow: TextOverflow.Ellipsis })
+                Text(this.book!.author)
+                  .fontSize(HDSTypography.sizes.md)
+                  .fontColor('rgba(255,255,255,0.9)')
+                  .maxLines(1)
+                  .textOverflow({ overflow: TextOverflow.Ellipsis })
+              }
+              .width('100%')
+              .padding(HDSPacing.lg)
+              .position({ bottom: 0 })
+              .linearGradient({
+                direction: GradientDirection.Top,
+                colors: ['rgba(0,0,0,0)', 'rgba(0,0,0,0.6)']
+              })
+              .borderRadius(HDSBorderRadius.xl)
+            } else {
+              // 默认封面
+              Column() {
+                SymbolGlyph($r('sys.symbol.book.fill'))
+                  .fontSize(40)
+                  .fontColor([HDSColours.primary.blue])
+              }
+              .width(this.isTablet ? 180 : 150)
+              .height(this.isTablet ? 240 : 200)
+              .borderRadius(HDSBorderRadius.xl)
+              .backgroundColor(HDSColours.primary.blue + '15')
+              .justifyContent(FlexAlign.Center)
+            }
+
+            // 收藏按钮
+            Row() {
+              SymbolGlyph($r(this.isFavorite ? 'sys.symbol.heart.fill' : 'sys.symbol.heart'))
+                .fontSize(24)
+                .fontColor([this.isFavorite ? '#FF4757' : HDSColours.neutral.white])
+            }
+            .width(40)
+            .height(40)
+            .borderRadius(HDSBorderRadius.full)
+            .backgroundColor('rgba(0,0,0,0.5)')
+            .justifyContent(FlexAlign.Center)
+            .position({ top: 10, right: 10 })
+            .onClick(() => this.onToggleFavorite())
           }
           .width('100%')
-          .padding(Spacing.lg)
-          .position({ bottom: 0 })
-          .linearGradient({
-            direction: GradientDirection.Top,
-            colors: ['rgba(0,0,0,0)', 'rgba(0,0,0,0.6)']
-          })
-          .borderRadius(BorderRadius.xl)
-        } else {
-          // 默认封面
-          Column() {
-            SymbolGlyph($r('sys.symbol.book.fill'))
-              .fontSize(Size.iconXXXL)
-              .fontColor([this.currentColors.primary])
-          }
-          .width(this.isTablet ? 180 : 150)
-          .height(this.isTablet ? 240 : 200)
-          .borderRadius(BorderRadius.xl)
-          .backgroundColor(this.currentColors.primary + '15')
+          .height(this.isTablet ? 260 : 220)
           .justifyContent(FlexAlign.Center)
-        }
 
-        // 收藏按钮
-        Row() {
-          SymbolGlyph($r(this.isFavorite ? 'sys.symbol.heart.fill' : 'sys.symbol.heart'))
-            .fontSize(Size.iconLG)
-            .fontColor([this.isFavorite ? '#FF4757' : '#FFFFFF'])
+          // 阅读状态标签
+          if (this.book!.readStatus !== undefined) {
+            Row({ space: HDSSpacing.sm }) {
+              SymbolGlyph($r('sys.symbol.checkmark.circle.fill'))
+                .fontSize(16)
+                .fontColor([this.book!.readStatus === ReadStatus.FINISHED ? '#52C41A' : HDSColours.primary.blue])
+              
+              Text(this.book!.readStatus === ReadStatus.FINISHED ? '已读完' : '阅读中')
+                .fontSize(HDSTypography.sizes.sm)
+                .fontWeight(FontWeight.Medium)
+                .fontColor(this.book!.readStatus === ReadStatus.FINISHED ? '#52C41A' : HDSColours.primary.blue)
+            }
+            .padding({ 
+              left: HDSSpacing.md, 
+              right: HDSSpacing.md, 
+              top: HDSSpacing.sm, 
+              bottom: HDSSpacing.sm 
+            })
+            .backgroundColor(this.book!.readStatus === ReadStatus.FINISHED ? '#52C41A15' : HDSColours.primary.blue + '15')
+            .borderRadius(HDSBorderRadius.xl)
+          }
         }
-        .width(Size.buttonLG)
-        .height(Size.buttonLG)
-        .borderRadius(BorderRadius.full)
-        .backgroundColor('rgba(0,0,0,0.5)')
-        .justifyContent(FlexAlign.Center)
-        .position({ top: 10, right: 10 })
-        .onClick(() => this.onToggleFavorite())
       }
-      .width('100%')
-      .height(this.isTablet ? 260 : 220)
-      .justifyContent(FlexAlign.Center)
-
-      // 阅读状态标签
-      if (this.book!.readStatus !== undefined) {
-        Row({ space: Spacing.sm }) {
-          SymbolGlyph($r('sys.symbol.checkmark.circle.fill'))
-            .fontSize(Size.iconSM)
-            .fontColor([this.book!.readStatus === ReadStatus.FINISHED ? '#52C41A' : COMMON_COLORS.PRIMARY_BLUE])
-          
-          Text(this.book!.readStatus === ReadStatus.FINISHED ? '已读完' : '阅读中')
-            .fontSize(fontScaleManager.getScaledFontSize(13))
-            .fontWeight(FontWeight.Medium)
-            .fontColor(this.book!.readStatus === ReadStatus.FINISHED ? '#52C41A' : COMMON_COLORS.PRIMARY_BLUE)
-        }
-        .padding({ 
-          left: Spacing.md, 
-          right: Spacing.md, 
-          top: Spacing.sm, 
-          bottom: Spacing.sm 
-        })
-        .backgroundColor(this.book!.readStatus === ReadStatus.FINISHED ? '#52C41A15' : COMMON_COLORS.PRIMARY_BLUE + '15')
-        .borderRadius(BorderRadius.xl)
-      }
-    }
-    .width('100%')
-    .padding(Spacing.xl)
-    .backgroundColor(ThemeTokens.bgSecondary())
-    .borderRadius(BorderRadius.xl)
-    .shadow(getShadow('md', this.isDarkMode))
+    })
   }
 
   @Builder

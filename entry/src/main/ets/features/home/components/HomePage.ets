@@ -11,21 +11,21 @@ interface ShortcutItem {
   url: string;
 }
 
-@Component
+@ComponentV2
 export struct HomeContent {
   @Prop recentBooks: BookInfo[] = [];
-  @Prop isDarkMode: boolean = false;
+  @Local isDarkMode: boolean = themeManager.isDarkMode();
   onBookClick?: (book: BookInfo) => void;
   onOpenFilePicker?: () => void;
 
   private readonly shortcuts: ShortcutItem[] = [
-    { icon: 'chart_bar_fill', title: '阅读统计', color: '#007DFF', url: 'features/StatisticsPage' },
-    { icon: 'pencil', title: '待办事项', color: '#FF6B6B', url: 'features/TodoPage' },
-    { icon: 'book_fill', title: '阅读记录', color: '#52C41A', url: 'features/ReadRecordPage' },
-    { icon: 'bookmark_fill', title: '书签', color: '#FA8C16', url: 'features/BookmarksPage' },
-    { icon: 'pencil', title: '笔记', color: '#722ED1', url: 'features/NotesPage' },
-    { icon: 'globe_asia_australia_fill', title: '在线书源', color: '#13C2C2', url: 'features/OnlineSourceMarketPage' },
-    { icon: 'gear', title: '阅读设置', color: '#EB2F96', url: 'features/SettingsPage' }
+    { icon: 'chart.bar.fill', title: '阅读统计', color: HDSColours.primary.blue, url: 'features/StatisticsPage' },
+    { icon: 'checkmark.circle.fill', title: '待办事项', color: '#FF6B6B', url: 'features/TodoPage' },
+    { icon: 'clock.fill', title: '阅读记录', color: '#52C41A', url: 'features/ReadRecordPage' },
+    { icon: 'bookmark.fill', title: '书签', color: '#FA8C16', url: 'features/BookmarksPage' },
+    { icon: 'note.text', title: '笔记', color: '#722ED1', url: 'features/NotesPage' },
+    { icon: 'globe.asia.australia.fill', title: '在线书源', color: '#13C2C2', url: 'features/OnlineSourceMarketPage' },
+    { icon: 'gearshape.fill', title: '阅读设置', color: '#EB2F96', url: 'features/SettingsPage' }
   ];
 
   private getFormatIcon(format: string): string {

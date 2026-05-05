@@ -10,8 +10,10 @@ import { DeviceUtils } from '../../../core/utils/DeviceUtils';
 import { tr } from '../../../core/utils/LocalizationUtil';
 import { fontScaleManager } from '../../../core/utils/FontScaleManager';
 import { LazyDataSource } from '../../common/datasource/LazyDataSource';
-import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
-import { layoutHelper, ScreenInfo } from '../../common/utils/LayoutHelper';
+import { PageHeader, getPageBackgroundColor } from '../../../common/utils/PageLayoutHelper';
+import { HDSCard } from '../../../common/components/HDSCard';
+import { DialogHelper } from '../../../common/utils/DialogHelper';
+import { HDSColours, HDSSpacing, HDSBorderRadius, HDSTypography } from '../../../core/design/tokens/HDSDTokens';
 
 interface NoteWithBook {
   note: Note;

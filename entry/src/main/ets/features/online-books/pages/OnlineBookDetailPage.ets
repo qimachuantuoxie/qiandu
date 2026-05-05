@@ -8,7 +8,10 @@ import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../../../core/
 import { bookViewModel } from '../../../core/viewmodels/BookViewModel';
 import { fontScaleManager } from '../../../core/utils/FontScaleManager';
 import { onlineBookService } from '../../../core/services/book/OnlineBookService';
-import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
+import { PageHeader, getPageBackgroundColor } from '../../../common/utils/PageLayoutHelper';
+import { HDSCard } from '../../../common/components/HDSCard';
+import { DialogHelper } from '../../../common/utils/DialogHelper';
+import { HDSColours, HDSSpacing, HDSBorderRadius, HDSTypography } from '../../../core/design/tokens/HDSDTokens';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
 @Entry

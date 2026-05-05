@@ -7,8 +7,10 @@ import { preferenceManager } from '../../../core/utils/PreferenceManager';
 import { themeManager, AppColors } from '../../../core/utils/AppTheme';
 import { fontScaleManager } from '../../../core/utils/FontScaleManager';
 import { readerSettingsViewModel } from '../viewmodels/ReaderSettingsViewModel';
-import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
-import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
+import { PageHeader, getPageBackgroundColor } from '../../../common/utils/PageLayoutHelper';
+import { HDSCard } from '../../../common/components/HDSCard';
+import { DialogHelper } from '../../../common/utils/DialogHelper';
+import { HDSColours, HDSSpacing, HDSBorderRadius, HDSTypography } from '../../../core/design/tokens/HDSDTokens';
 
 @Entry
 @ComponentV2
@@ -64,90 +66,61 @@ struct ReaderSettingsPage {
   build() {
     Column() {
       // 顶部导航栏
-      Row() {
-        // 返回按钮
-        Row() {
-          SymbolGlyph($r('sys.symbol.chevron.left'))
-            .fontSize(Size.iconLG)
-            .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
-        }
-        .width(Size.buttonMD)
-        .height(Size.buttonMD)
-        .borderRadius(BorderRadius.full)
-        .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
-        .justifyContent(FlexAlign.Center)
-        .onClick(() => {
+      PageHeader({
+        title: '阅读器设置',
+        showBack: true,
+        onBack: () => {
           try {
             goBack();
           } catch (error) {
             const msg = error instanceof Error ? error.message : String(error);
             logger.error('[ReaderSettingsPage] back failed:', msg);
           }
-        })
-        .stateStyles({
-          pressed: { .scale({ x: 0.9, y: 0.9 }) },
-          normal: { .scale({ x: 1, y: 1 }) }
-        })
-
-        Text('阅读器设置')
-          .fontSize(fontScaleManager.getScaledFontSize(18))
-          .fontWeight(FontWeight.SemiBold)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
-          .layoutWeight(1)
-          .textAlign(TextAlign.Center)
-
-        // 保存按钮
-        Row() {
-          SymbolGlyph($r('sys.symbol.checkmark'))
-            .fontSize(Size.iconSM)
-            .fontColor(['#FFFFFF'])
+        },
+        rightContent: () => {
+          Row() {
+            SymbolGlyph($r('sys.symbol.checkmark'))
+              .fontSize(16)
+              .fontColor([HDSColours.neutral.white])
+          }
+          .width(32)
+          .height(32)
+          .borderRadius(HDSBorderRadius.full)
+          .backgroundColor(HDSColours.primary.blue)
+          .justifyContent(FlexAlign.Center)
+          .onClick(() => { this.saveSettings(); })
         }
-        .width(Size.buttonSM)
-        .height(Size.buttonSM)
-        .borderRadius(BorderRadius.full)
-        .backgroundColor(this.currentColors.primary)
-        .justifyContent(FlexAlign.Center)
-        .onClick(() => { this.saveSettings(); })
-        .stateStyles({
-          pressed: { .scale({ x: 0.9, y: 0.9 }) },
-          normal: { .scale({ x: 1, y: 1 }) }
-        })
-      }
-      .width('100%')
-      .height(Size.buttonLG + Spacing.sm)
-      .padding({ left: Spacing.lg, right: Spacing.lg })
-      .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
-      .shadow(getShadow('sm', this.isDarkMode))
+      })
 
       // Tab切换栏
       Scroll() {
-        Row({ space: Spacing.sm }) {
+        Row({ space: HDSSpacing.sm }) {
           ForEach(this.tabNames, (tab: string, index: number) => {
-            Column({ space: Spacing.xs }) {
+            Column({ space: HDSSpacing.xs }) {
               Text(tab)
-                .fontSize(fontScaleManager.getScaledFontSize(14))
-                .fontColor(this.activeTab === index ? this.currentColors.primary : this.tc('#8E8E93', '#8E8E93'))
+                .fontSize(HDSTypography.sizes.md)
+                .fontColor(this.activeTab === index ? HDSColours.primary.blue : (this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600))
                 .fontWeight(this.activeTab === index ? FontWeight.SemiBold : FontWeight.Regular)
               
               // 下划线指示器
               Rectangle()
                 .width(this.activeTab === index ? 24 : 0)
                 .height(3)
-                .fill(this.currentColors.primary)
-                .borderRadius(BorderRadius.xl)
+                .fill(HDSColours.primary.blue)
+                .borderRadius(HDSBorderRadius.xl)
                 .animation({
                   duration: 200,
                   curve: Curve.EaseInOut
                 })
             }
             .padding({ 
-              left: Spacing.md, 
-              right: Spacing.md, 
-              top: Spacing.sm, 
-              bottom: Spacing.sm 
+              left: HDSSpacing.md, 
+              right: HDSSpacing.md, 
+              top: HDSSpacing.sm, 
+              bottom: HDSSpacing.sm 
             })
-            .backgroundColor(this.activeTab === index ? this.currentColors.primary + '10' : 'transparent')
-            .borderRadius(BorderRadius.xl)
+            .backgroundColor(this.activeTab === index ? HDSColours.primary.blue + '10' : Color.Transparent)
+            .borderRadius(HDSBorderRadius.xl)
             .onClick(() => { this.activeTab = index; })
             .animation({
               duration: 200,
@@ -155,16 +128,16 @@ struct ReaderSettingsPage {
             })
           }, (tab: string, index: number) => tab)
         }
-        .padding({ left: Spacing.lg, right: Spacing.lg })
+        .padding({ left: HDSSpacing.lg, right: HDSSpacing.lg })
       }
       .width('100%')
       .scrollable(ScrollDirection.Horizontal)
       .scrollBar(BarState.Off)
-      .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
+      .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.surface : HDSColours.neutral.white)
 
       // 内容区域
       Scroll() {
-        Column({ space: Spacing.lg }) {
+        Column({ space: HDSSpacing.lg }) {
           if (this.activeTab === 0) {
             this.buildDisplaySettings()
           } else if (this.activeTab === 1) {
@@ -177,10 +150,10 @@ struct ReaderSettingsPage {
         }
         .width('100%')
         .padding({ 
-          left: Spacing.lg, 
-          right: Spacing.lg, 
-          top: Spacing.lg,
-          bottom: Spacing.xxxl
+          left: HDSSpacing.lg, 
+          right: HDSSpacing.lg, 
+          top: HDSSpacing.lg,
+          bottom: HDSSpacing.xxxl
         })
       }
       .layoutWeight(1)
@@ -189,66 +162,57 @@ struct ReaderSettingsPage {
       .edgeEffect(EdgeEffect.Spring)
 
       // 底部操作栏
-      Row({ space: Spacing.md }) {
+      Row({ space: HDSSpacing.md }) {
         Button() {
-          Row({ space: Spacing.xs }) {
+          Row({ space: HDSSpacing.xs }) {
             SymbolGlyph($r('sys.symbol.arrow.counterclockwise'))
-              .fontSize(Size.iconSM)
-              .fontColor([this.tc('#8E8E93', '#8E8E93')])
+              .fontSize(16)
+              .fontColor([this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600])
             Text('重置')
-              .fontSize(fontScaleManager.getScaledFontSize(15))
-              .fontColor(this.tc('#8E8E93', '#8E8E93'))
+              .fontSize(HDSTypography.sizes.md)
+              .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
           }
         }
         .layoutWeight(1)
-        .height(Size.buttonLG)
-        .backgroundColor(this.bg('#F2F2F7', '#2C2C2E'))
-        .borderRadius(BorderRadius.xl)
+        .height(48)
+        .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.cardBackground : '#F2F2F7')
+        .borderRadius(HDSBorderRadius.xl)
         .onClick(() => {
           readerSettingsViewModel.resetToDefault();
-          promptAction.showToast({ message: '已重置为默认设置', duration: 1500 });
-        })
-        .stateStyles({
-          pressed: { .scale({ x: 0.98, y: 0.98 }) },
-          normal: { .scale({ x: 1, y: 1 }) }
+          DialogHelper.success('已重置为默认设置');
         })
 
         Button() {
-          Row({ space: Spacing.xs }) {
+          Row({ space: HDSSpacing.xs }) {
             SymbolGlyph($r('sys.symbol.checkmark.circle.fill'))
-              .fontSize(Size.iconSM)
-              .fontColor(['#FFFFFF'])
+              .fontSize(16)
+              .fontColor([HDSColours.neutral.white])
             Text('保存设置')
-              .fontSize(fontScaleManager.getScaledFontSize(15))
-              .fontColor('#FFFFFF')
+              .fontSize(HDSTypography.sizes.md)
+              .fontColor(HDSColours.neutral.white)
           }
         }
         .layoutWeight(1)
-        .height(Size.buttonLG)
+        .height(48)
         .linearGradient({
           direction: GradientDirection.Right,
-          colors: [this.currentColors.primary, this.currentColors.primary + 'CC']
+          colors: [HDSColours.primary.blue, HDSColours.primary.blue + 'CC']
         })
-        .borderRadius(BorderRadius.xl)
+        .borderRadius(HDSBorderRadius.xl)
         .shadow({
           radius: 8,
-          color: this.currentColors.primary + '40',
+          color: HDSColours.primary.blue + '40',
           offsetY: 4
         })
         .onClick(() => { this.saveSettings(); })
-        .stateStyles({
-          pressed: { .scale({ x: 0.98, y: 0.98 }) },
-          normal: { .scale({ x: 1, y: 1 }) }
-        })
       }
       .width('100%')
-      .padding(Spacing.lg)
-      .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
-      .shadow(getShadow('lg', this.isDarkMode))
+      .padding(HDSPacing.lg)
+      .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.surface : HDSColours.neutral.white)
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
+    .backgroundColor(getPageBackgroundColor())
   }
 
   @Builder

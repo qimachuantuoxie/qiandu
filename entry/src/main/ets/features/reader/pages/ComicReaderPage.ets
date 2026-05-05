@@ -8,7 +8,10 @@ import { DeviceUtils } from '../../../core/utils/DeviceUtils';
 import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../../../core/utils/AppTheme';
 import { fontScaleManager } from '../../../core/utils/FontScaleManager';
 import { tr } from '../../../core/utils/LocalizationUtil';
-import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
+import { PageHeader, getPageBackgroundColor } from '../../../common/utils/PageLayoutHelper';
+import { HDSCard } from '../../../common/components/HDSCard';
+import { DialogHelper } from '../../../common/utils/DialogHelper';
+import { HDSColours, HDSSpacing, HDSBorderRadius, HDSTypography } from '../../../core/design/tokens/HDSDTokens';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 
 @Entry

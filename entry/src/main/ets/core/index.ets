@@ -27,19 +27,5 @@ export * from './managers';
 // 工具函数
 export * from './utils';
 
-// 设计系统
-export { DesignSystem, designSystem } from './utils/DesignSystem';
+// 设计系统（使用新的HDS Tokens）
 export { LIGHT_THEME, DARK_THEME, ThemeColors } from './services/reader/UIDesignKitService';
-export {
-  IHarmonyColors,
-  HarmonyColors,
-  LightColors,
-  DarkColors,
-  getColors,
-  SpacingTokens,
-  FontSizeTokens,
-  IDarkModeColors,
-  getDarkModeColors,
-  IClassCardStyle,
-  createClassCardStyle
-} from './utils/HarmonyDesignTokens';

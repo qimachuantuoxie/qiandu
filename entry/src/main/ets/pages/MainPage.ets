@@ -13,7 +13,10 @@ import { GroupPanel, AddGroupDialog } from '../features/bookshelf/components/Gro
 import { SmartServicesPanel } from '../common/components/SmartServicesPanel';
 import { promptAction } from '@kit.ArkUI';
 import { Context } from '@kit.AbilityKit';
-import { Spacing, Size, BorderRadius, getShadow } from '../common/constants/LayoutConstants';
+import { PageHeader, getPageBackgroundColor } from '../common/utils/PageLayoutHelper';
+import { HDSCard } from '../common/components/HDSCard';
+import { DialogHelper } from '../common/utils/DialogHelper';
+import { HDSColours, HDSSpacing, HDSBorderRadius, HDSTypography } from '../core/design/tokens/HDSDTokens';
 import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
 import { appTheme, themeManager, COMMON_COLORS, AppColors } from '../common/constants/AppTheme';
 import { fontScaleManager } from '../core/utils/FontScaleManager';

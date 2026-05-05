@@ -1,8 +1,10 @@
 // 发现页组件 - 功能发现入口
 
 import { navigateTo } from '../../../common/utils/NavigationHelper';
-import { Spacing, Size, BorderRadius } from '../../../core/utils/LayoutConstants';
-import { layoutHelper } from '../../../core/utils/LayoutHelper';
+import { PageHeader, getPageBackgroundColor } from '../../../common/utils/PageLayoutHelper';
+import { HDSCard } from '../../../common/components/HDSCard';
+import { HDSColours, HDSSpacing, HDSBorderRadius, HDSTypography } from '../../../core/design/tokens/HDSDTokens';
+import { themeManager } from '../../../common/constants/AppTheme';
 
 interface DiscoverItem {
   icon: string;
@@ -14,7 +16,7 @@ interface DiscoverItem {
 
 @ComponentV2
 export struct DiscoverContent {
-  @Param isDarkMode: boolean = false;
+  @Local isDarkMode: boolean = themeManager.isDarkMode();
   onOpenFolderScanner?: () => void;
 
   private readonly discoverItems: DiscoverItem[] = [
@@ -35,94 +37,105 @@ export struct DiscoverContent {
   build() {
     Column() {
       // 顶部导航栏
-      this.HeaderBar()
+      PageHeader({
+        title: '发现',
+        showBack: false,
+        rightContent: () => {
+          SymbolGlyph($r('sys.symbol.magnifyingglass'))
+            .fontSize(20)
+            .fontColor([this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900])
+        }
+      })
 
       // 功能列表
       this.DiscoverList()
     }
     .width('100%')
-    .layoutWeight(1)
-  }
-
-  @Builder
-  HeaderBar() {
-    Row() {
-      Text('发现')
-        .fontSize(layoutHelper.getResponsiveFontSize(22))
-        .fontWeight(FontWeight.Bold)
-        .fontColor(this.isDarkMode ? '#FFFFFF' : '#1A1A1A')
-        .layoutWeight(1)
-
-      SymbolGlyph($r('sys.symbol.magnifyingglass'))
-        .fontSize(Size.iconMD)
-        .fontColor([this.isDarkMode ? '#FFFFFF' : '#1A1A1A'])
-        .padding(Spacing.sm)
-    }
-    .width('100%')
-    .height(60)
-    .padding({ left: Spacing.xl, right: Spacing.xl })
-    .backgroundColor(this.isDarkMode ? '#1C1C1E' : '#FFFFFF')
+    .height('100%')
+    .backgroundColor(getPageBackgroundColor())
   }
 
   @Builder
   DiscoverList() {
     Scroll() {
-      Column({ space: Spacing.lg }) {
+      Column({ space: HDSSpacing.lg }) {
         ForEach(this.discoverItems, (item: DiscoverItem) => {
-          this.DiscoverCard(item.icon, item.title, item.desc, () => {
-            if (item.url) {
-              this.navigateTo(item.url);
-            } else if (item.action) {
-              item.action();
+          HDSCard({
+            padding: HDSSpacing.lg,
+            onClick: () => {
+              if (item.url) {
+                this.navigateTo(item.url);
+              } else if (item.action) {
+                item.action();
+              }
+            },
+            content: () => {
+              Row({ space: HDSSpacing.lg }) {
+                SymbolGlyph($r(`sys.symbol.${item.icon}`))
+                  .fontSize(28)
+                  .fontColor([HDSColours.primary.blue])
+              
+                Column({ space: HDSSpacing.xs }) {
+                  Text(item.title)
+                    .fontSize(HDSTypography.sizes.lg)
+                    .fontWeight(FontWeight.Medium)
+                    .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
+              
+                  Text(item.desc)
+                    .fontSize(HDSTypography.sizes.sm)
+                    .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
+                }
+                .alignItems(HorizontalAlign.Start)
+                .layoutWeight(1)
+              
+                SymbolGlyph($r('sys.symbol.chevron.right'))
+                  .fontSize(20)
+                  .fontColor([this.isDarkMode ? '#555555' : '#CCCCCC'])
+              }
+              .width('100%')
             }
           })
         })
 
         // 扫描文件夹入口
-        this.DiscoverCard('folder.fill', '扫描文件夹', '批量导入本地书籍', () => {
-          navigateTo('pages/FolderScannerPage');
+        HDSCard({
+          padding: HDSSpacing.lg,
+          onClick: () => {
+            navigateTo('pages/FolderScannerPage');
+          },
+          content: () => {
+            Row({ space: HDSSpacing.lg }) {
+              SymbolGlyph($r('sys.symbol.folder.fill'))
+                .fontSize(28)
+                .fontColor([HDSColours.primary.blue])
+            
+              Column({ space: HDSSpacing.xs }) {
+                Text('扫描文件夹')
+                  .fontSize(HDSTypography.sizes.lg)
+                  .fontWeight(FontWeight.Medium)
+                  .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
+            
+                Text('批量导入本地书籍')
+                  .fontSize(HDSTypography.sizes.sm)
+                  .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
+              }
+              .alignItems(HorizontalAlign.Start)
+              .layoutWeight(1)
+            
+              SymbolGlyph($r('sys.symbol.chevron.right'))
+                .fontSize(20)
+                .fontColor([this.isDarkMode ? '#555555' : '#CCCCCC'])
+            }
+            .width('100%')
+          }
         })
       }
-      .width('100%')
-      .padding(Spacing.lg)
+      .padding(HDSPacing.lg)
     }
     .width('100%')
     .layoutWeight(1)
     .scrollable(ScrollDirection.Vertical)
     .scrollBar(BarState.Auto)
     .edgeEffect(EdgeEffect.Spring)
-  }
-
-  @Builder
-  DiscoverCard(icon: string, title: string, desc: string, action: () => void) {
-    Row({ space: Spacing.lg }) {
-      SymbolGlyph($r(`sys.symbol.${icon}`))
-        .fontSize(Size.iconXXL)
-        .fontColor([this.isDarkMode ? '#007DFF' : '#007DFF'])
-    
-      Column({ space: Spacing.xs }) {
-        Text(title)
-          .fontSize(layoutHelper.getResponsiveFontSize(16))
-          .fontWeight(FontWeight.Medium)
-          .fontColor(this.isDarkMode ? '#FFFFFF' : '#1A1A1A')
-    
-        Text(desc)
-          .fontSize(layoutHelper.getResponsiveFontSize(12))
-          .fontColor(this.isDarkMode ? '#888888' : '#999999')
-      }
-      .alignItems(HorizontalAlign.Start)
-      .layoutWeight(1)
-    
-      SymbolGlyph($r('sys.symbol.chevron.right'))
-        .fontSize(Size.iconMD)
-        .fontColor([this.isDarkMode ? '#555555' : '#CCCCCC'])
-    }
-    .width('100%')
-    .padding(Spacing.lg)
-    .backgroundColor(this.isDarkMode ? '#2C2C2E' : '#FFFFFF')
-    .borderRadius(BorderRadius.lg)
-    .onClick(() => {
-      action();
-    })
   }
 }

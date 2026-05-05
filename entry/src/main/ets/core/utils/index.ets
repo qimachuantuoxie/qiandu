@@ -19,11 +19,6 @@ export { FoldableAdapterManager } from './FoldableAdapterManager';
 // 国际化
 export { localizationUtil, tr } from './LocalizationUtil';
 
-// 设计系统
-export { DesignSystem, designSystem } from './DesignSystem';
-export { HarmonyDesignTokens, IHarmonyColors, HarmonyColors, LightColors, DarkColors, getColors, SpacingTokens, FontSizeTokens, IDarkModeColors, getDarkModeColors, IClassCardStyle, createClassCardStyle } from './HarmonyDesignTokens';
-export { PageStyles } from './PageStyles';
-
 // 解析器
 export { EbookParser, ParseResult } from './EbookParser';
 export { BookContentParser } from './BookContentParser';

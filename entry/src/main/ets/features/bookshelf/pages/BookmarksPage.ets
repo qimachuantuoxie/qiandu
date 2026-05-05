@@ -10,9 +10,10 @@ import { DeviceUtils } from '../../../core/utils/DeviceUtils';
 import { tr } from '../../../core/utils/LocalizationUtil';
 import { fontScaleManager } from '../../../core/utils/FontScaleManager';
 import { LazyDataSource } from '../../common/datasource/LazyDataSource';
-import { Spacing, Size, BorderRadius, getShadow } from '../../../core/utils/LayoutConstants';
-import { layoutHelper, ScreenInfo } from '../../common/utils/LayoutHelper';
-import { ThemeTokens } from '../../common/utils/ThemeTokens';
+import { PageHeader, getPageBackgroundColor } from '../../../common/utils/PageLayoutHelper';
+import { HDSCard } from '../../../common/components/HDSCard';
+import { DialogHelper } from '../../../common/utils/DialogHelper';
+import { HDSColours, HDSSpacing, HDSBorderRadius, HDSTypography } from '../../../core/design/tokens/HDSDTokens';
 
 interface BookmarkWithBook {
   bookmark: Bookmark;
@@ -181,7 +182,34 @@ struct BookmarksPage {
   build() {
     Column() {
       // 顶部导航栏
-      this.Header()
+      PageHeader({
+        title: tr('bookmarks_title'),
+        subtitle: this.bookmarks.length + ' 个书签',
+        showBack: true,
+        onBack: () => {
+          try {
+            goBack();
+          } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            logger.error('[BookmarksPage] back failed:', msg);
+          }
+        },
+        rightContent: () => {
+          Row() {
+            SymbolGlyph($r('sys.symbol.line.horizontal.3.decrease.circle'))
+              .fontSize(20)
+              .fontColor([this.selectedBookId ? HDSColours.primary.blue : this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600])
+          }
+          .width(40)
+          .height(40)
+          .borderRadius(HDSBorderRadius.full)
+          .backgroundColor(this.selectedBookId ? HDSColours.primary.blue + '15' : this.isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)')
+          .justifyContent(FlexAlign.Center)
+          .onClick(() => {
+            this.showBookFilterDialog();
+          })
+        }
+      })
 
       // 搜索栏
       this.SearchBar()
@@ -190,7 +218,7 @@ struct BookmarksPage {
       if (this.getFilteredBookmarks().length === 0) {
         this.EmptyState()
       } else {
-        List({ space: Spacing.md }) {
+        List({ space: HDSSpacing.md }) {
           ForEach(this.getFilteredBookmarks(), (bookmark: BookmarkWithBook) => {
             ListItem() {
               this.BookmarkItem(bookmark)
@@ -200,10 +228,10 @@ struct BookmarksPage {
         .width('100%')
         .layoutWeight(1)
         .padding({ 
-          left: Spacing.lg, 
-          right: Spacing.lg,
-          top: Spacing.sm,
-          bottom: Spacing.xxxl
+          left: HDSSpacing.lg, 
+          right: HDSSpacing.lg,
+          top: HDSSpacing.sm,
+          bottom: HDSSpacing.xxxl
         })
         .scrollBar(BarState.Auto)
         .edgeEffect(EdgeEffect.Spring)
@@ -211,87 +239,24 @@ struct BookmarksPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
-  }
-
-  @Builder
-  Header() {
-    Row() {
-      // 返回按钮
-      Row() {
-        SymbolGlyph($r('sys.symbol.chevron.left'))
-          .fontSize(Size.iconLG)
-          .fontColor([ThemeTokens.textPrimary()])
-      }
-      .width(Size.buttonMD)
-      .height(Size.buttonMD)
-      .borderRadius(BorderRadius.full)
-      .backgroundColor(ThemeTokens.bgHover())
-      .justifyContent(FlexAlign.Center)
-      .onClick(() => {
-        try {
-          goBack();
-        } catch (error) {
-          const msg = error instanceof Error ? error.message : String(error);
-          logger.error('[BookmarksPage] back failed:', msg);
-        }
-      })
-      .stateStyles({
-        pressed: { .scale({ x: 0.9, y: 0.9 }) },
-        normal: { .scale({ x: 1, y: 1 }) }
-      })
-
-      Column({ space: Spacing.xs }) {
-        Text(tr('bookmarks_title'))
-          .fontSize(fontScaleManager.getScaledFontSize(18))
-          .fontWeight(FontWeight.SemiBold)
-          .fontColor(ThemeTokens.textPrimary())
-
-        Text(this.bookmarks.length + ' 个书签')
-          .fontSize(fontScaleManager.getScaledFontSize(12))
-          .fontColor(ThemeTokens.textSecondary())
-      }
-      .layoutWeight(1)
-      .alignItems(HorizontalAlign.Start)
-      .margin({ left: Spacing.md })
-
-      // 筛选按钮
-      Row() {
-        SymbolGlyph($r('sys.symbol.line.horizontal.3.decrease.circle'))
-          .fontSize(Size.iconMD)
-          .fontColor([this.selectedBookId ? COMMON_COLORS.PRIMARY_BLUE : ThemeTokens.textSecondary()])
-      }
-      .width(Size.buttonMD)
-      .height(Size.buttonMD)
-      .borderRadius(BorderRadius.full)
-      .backgroundColor(this.selectedBookId ? COMMON_COLORS.PRIMARY_BLUE + '15' : ThemeTokens.bgHover())
-      .justifyContent(FlexAlign.Center)
-      .onClick(() => {
-        this.showBookFilterDialog();
-      })
-    }
-    .width('100%')
-    .height(Size.buttonLG + Spacing.sm)
-    .padding({ left: Spacing.lg, right: Spacing.lg })
-    .backgroundColor(ThemeTokens.bgSecondary())
-    .shadow(getShadow('sm', this.isDarkMode))
+    .backgroundColor(getPageBackgroundColor())
   }
 
   @Builder
   SearchBar() {
-    Column({ space: Spacing.sm }) {
-      Row({ space: Spacing.sm }) {
+    Column({ space: HDSSpacing.sm }) {
+      Row({ space: HDSSpacing.sm }) {
         // 搜索图标
         SymbolGlyph($r('sys.symbol.magnifyingglass'))
-          .fontSize(Size.iconSM)
-          .fontColor([ThemeTokens.textSecondary()])
-          .margin({ left: Spacing.md })
+          .fontSize(16)
+          .fontColor([this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600])
+          .margin({ left: HDSSpacing.md })
 
         // 搜索输入框
         TextInput({ placeholder: '搜索书签...', text: $$this.searchText })
-          .placeholderColor(ThemeTokens.textTertiary())
-          .fontSize(fontScaleManager.getScaledFontSize(14))
-          .height(Size.inputSM)
+          .placeholderColor(this.isDarkMode ? HDSColours.neutralDark.textHint : HDSColours.neutral.gray400)
+          .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.md))
+          .height(40)
           .backgroundColor(Color.Transparent)
           .layoutWeight(1)
           .onChange((value: string) => {
@@ -303,11 +268,11 @@ struct BookmarksPage {
         if (this.searchText) {
           Row() {
             SymbolGlyph($r('sys.symbol.xmark.circle.fill'))
-              .fontSize(Size.iconSM)
-              .fontColor([ThemeTokens.textSecondary()])
+              .fontSize(16)
+              .fontColor([this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600])
           }
-          .width(Size.buttonSM)
-          .height(Size.buttonSM)
+          .width(32)
+          .height(32)
           .justifyContent(FlexAlign.Center)
           .onClick(() => {
             this.searchText = '';
@@ -316,32 +281,32 @@ struct BookmarksPage {
         }
       }
       .width('100%')
-      .height(Size.inputSM)
-      .padding({ left: Spacing.sm, right: Spacing.sm })
-      .backgroundColor(ThemeTokens.bgTertiary())
-      .borderRadius(BorderRadius.xl)
+      .height(40)
+      .padding({ left: HDSSpacing.sm, right: HDSSpacing.sm })
+      .backgroundColor(this.isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)')
+      .borderRadius(HDSBorderRadius.xl)
 
       // 激活的筛选标签
       if (this.selectedBookId) {
-        Row({ space: Spacing.sm }) {
+        Row({ space: HDSSpacing.sm }) {
           SymbolGlyph($r('sys.symbol.book.fill'))
-            .fontSize(Size.iconSM)
-            .fontColor([COMMON_COLORS.PRIMARY_BLUE])
+            .fontSize(16)
+            .fontColor([HDSColours.primary.blue])
           
           Text(bookViewModel.getBookById(this.selectedBookId)?.title || '')
-            .fontSize(fontScaleManager.getScaledFontSize(12))
-            .fontColor(ThemeTokens.textPrimary())
+            .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.sm))
+            .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
             .maxLines(1)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
             .layoutWeight(1)
 
           Row() {
             SymbolGlyph($r('sys.symbol.xmark'))
-              .fontSize(Size.iconXS)
-              .fontColor([COMMON_COLORS.PRIMARY_BLUE])
+              .fontSize(12)
+              .fontColor([HDSColours.primary.blue])
           }
-          .width(Size.buttonSM)
-          .height(Size.buttonSM)
+          .width(32)
+          .height(32)
           .justifyContent(FlexAlign.Center)
           .onClick(() => { 
             this.selectedBookId = '';
@@ -350,21 +315,21 @@ struct BookmarksPage {
         }
         .width('100%')
         .padding({ 
-          left: Spacing.md, 
-          right: Spacing.md, 
-          top: Spacing.sm, 
-          bottom: Spacing.sm 
+          left: HDSSpacing.md, 
+          right: HDSSpacing.md, 
+          top: HDSSpacing.sm, 
+          bottom: HDSSpacing.sm 
         })
-        .backgroundColor(COMMON_COLORS.PRIMARY_BLUE + '10')
-        .borderRadius(BorderRadius.lg)
+        .backgroundColor(HDSColours.primary.blue + '10')
+        .borderRadius(HDSBorderRadius.lg)
       }
     }
     .width('100%')
     .padding({ 
-      left: Spacing.lg, 
-      right: Spacing.lg, 
-      top: Spacing.md, 
-      bottom: Spacing.sm 
+      left: HDSSpacing.lg, 
+      right: HDSSpacing.lg, 
+      top: HDSSpacing.md, 
+      bottom: HDSSpacing.sm 
     })
   }
 
