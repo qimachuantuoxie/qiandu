@@ -1,7 +1,7 @@
 {
   "src": [
     "features/profile/pages/LoginPage",
-    "features/home/pages/MainPage",
+    "pages/MainPage",
     "features/profile/pages/ProfilePage",
     "features/bookshelf/pages/BookDetailPage",
     "features/reader/pages/EnhancedReaderPage",

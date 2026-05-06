@@ -52,367 +52,1361 @@
             "name": "permission_approximately_location_reason",
             "value": "For eye tracking device calibration"
         },
-        { "name": "app_name", "value": "QianDu Reader" },
-        { "name": "bookshelf", "value": "Bookshelf" },
-        { "name": "discover", "value": "Discover" },
-        { "name": "settings", "value": "Settings" },
-        { "name": "profile", "value": "Profile" },
-        { "name": "reading", "value": "Reading" },
-        { "name": "finished", "value": "Finished" },
-        { "name": "unread", "value": "Unread" },
-        { "name": "favorite", "value": "Favorite" },
-        { "name": "add_book", "value": "Add Book" },
-        { "name": "import_local", "value": "Import Local" },
-        { "name": "scan_folder", "value": "Scan Folder" },
-        { "name": "search", "value": "Search" },
-        { "name": "sort", "value": "Sort" },
-        { "name": "filter", "value": "Filter" },
-        { "name": "continue_reading", "value": "Continue Reading" },
-        { "name": "recent_books", "value": "Recent" },
-        { "name": "total_books", "value": "Total Books" },
-        { "name": "today_reading", "value": "Today" },
-        { "name": "streak_days", "value": "Streak" },
-        { "name": "quick_actions", "value": "Quick Actions" },
-        { "name": "reading_stats", "value": "Statistics" },
-        { "name": "todo", "value": "Todo" },
-        { "name": "bookmarks", "value": "Bookmarks" },
-        { "name": "notes", "value": "Notes" },
-        { "name": "source_market", "value": "Source Market" },
-        { "name": "reading_settings", "value": "Reading Settings" },
-        { "name": "dark_mode", "value": "Dark Mode" },
-        { "name": "font_size", "value": "Font Size" },
-        { "name": "language", "value": "Language" },
-        { "name": "about", "value": "About" },
-        { "name": "help", "value": "Help" },
-        { "name": "feedback", "value": "Feedback" },
-        { "name": "privacy_policy", "value": "Privacy Policy" },
-        { "name": "user_agreement", "value": "User Agreement" },
-        { "name": "cancel", "value": "Cancel" },
-        { "name": "confirm", "value": "Confirm" },
-        { "name": "delete", "value": "Delete" },
-        { "name": "edit", "value": "Edit" },
-        { "name": "save", "value": "Save" },
-        { "name": "add", "value": "Add" },
-        { "name": "back", "value": "Back" },
-        { "name": "loading", "value": "Loading..." },
-        { "name": "no_data", "value": "No Data" },
-        { "name": "no_books", "value": "No Books" },
-        { "name": "add_first_book", "value": "Tap below to add your first book" },
-        { "name": "import_success", "value": "Imported %{count} books" },
-        { "name": "import_failed", "value": "Import Failed" },
-        { "name": "scan_complete", "value": "Scan complete, found %{count} docs" },
-        { "name": "no_supported_format", "value": "No supported formats found" },
-        { "name": "app_slogan", "value": "Read Limitless" },
-        { "name": "welcome", "value": "Welcome" },
-        { "name": "login", "value": "Login" },
-        { "name": "import_books", "value": "Import Books" },
-        { "name": "import", "value": "Import" },
-        { "name": "empty_shelf", "value": "Your bookshelf is empty" },
-        { "name": "book_format", "value": "Book Format" },
-        { "name": "author", "value": "Author" },
-        { "name": "unknown_author", "value": "Unknown Author" },
-        { "name": "reading_progress", "value": "Reading Progress" },
-        { "name": "read_settings", "value": "Reading Settings" },
-        { "name": "display_settings", "value": "Display Settings" },
-        { "name": "font_settings", "value": "Font Settings" },
-        { "name": "font", "value": "Font" },
-        { "name": "letter_spacing", "value": "Letter Spacing" },
-        { "name": "line_spacing", "value": "Line Spacing" },
-        { "name": "paragraph_spacing", "value": "Paragraph Spacing" },
-        { "name": "text_indent", "value": "Text Indent" },
-        { "name": "page_turn_settings", "value": "Page Turn Settings" },
-        { "name": "page_mode", "value": "Page Mode" },
-        { "name": "volume_key_turn", "value": "Volume Key Turn" },
-        { "name": "click_turn", "value": "Click to Turn" },
-        { "name": "reading_theme", "value": "Reading Theme" },
-        { "name": "text_convert", "value": "Text Conversion" },
-        { "name": "chinese_convert", "value": "Chinese Conversion" },
-        { "name": "tts_settings", "value": "TTS Settings" },
-        { "name": "tts_speed", "value": "TTS Speed" },
-        { "name": "tts_pitch", "value": "TTS Pitch" },
-        { "name": "close", "value": "Close" },
-        { "name": "done", "value": "Done" },
-        { "name": "system_default", "value": "System Default" },
-        { "name": "theme_light", "value": "Light" },
-        { "name": "theme_sepia", "value": "Sepia" },
-        { "name": "theme_dark", "value": "Dark" },
-        { "name": "theme_auto", "value": "Auto" },
-        { "name": "scroll", "value": "Scroll" },
-        { "name": "cover", "value": "Cover" },
-        { "name": "simulation", "value": "Simulation" },
-        { "name": "slide", "value": "Slide" },
-        { "name": "none", "value": "None" },
-        { "name": "off", "value": "Off" },
-        { "name": "to_traditional", "value": "To Traditional" },
-        { "name": "to_simplified", "value": "To Simplified" },
-        { "name": "screen_settings", "value": "Screen Settings" },
-        { "name": "auto_brightness", "value": "Auto Brightness" },
-        { "name": "keep_screen_on", "value": "Keep Screen On" },
-        { "name": "full_screen", "value": "Full Screen" },
-        { "name": "show_status_bar", "value": "Show Status Bar" },
-        { "name": "cache_settings", "value": "Cache Settings" },
-        { "name": "cache_size", "value": "Cache Size" },
-        { "name": "clear_cache", "value": "Clear Cache" },
-        { "name": "statistics", "value": "Statistics" },
-        { "name": "local_books", "value": "Local Books" },
-        { "name": "version", "value": "Version" },
-        { "name": "copyright", "value": "Copyright" },
-        { "name": "reader", "value": "Reader" },
-        { "name": "page_of", "value": "/" },
-        { "name": "slide_to_read", "value": "Slide down to read" },
-        { "name": "next_page", "value": "Next Page" },
-        { "name": "prev_page", "value": "Previous Page" },
-        { "name": "table_of_contents", "value": "Contents" },
-        { "name": "highlight", "value": "Highlight" },
-        { "name": "add_bookmark", "value": "Add Bookmark" },
-        { "name": "remove_bookmark", "value": "Remove Bookmark" },
-        { "name": "ocr_scan", "value": "OCR Scan" },
-        { "name": "ocr_scan_hint", "value": "Scan to recognize text" },
-        { "name": "recognizing", "value": "Recognizing..." },
-        { "name": "recognition_failed", "value": "Recognition Failed" },
-        { "name": "recognition_success", "value": "Recognition Success" },
-        { "name": "copy_text", "value": "Copy Text" },
-        { "name": "insert_to_book", "value": "Insert to Book" },
-        { "name": "file_picker", "value": "File Picker" },
-        { "name": "reading_days", "value": "Reading Days" },
-        { "name": "total_time", "value": "Total Time" },
-        { "name": "today", "value": "Today" },
-        { "name": "this_week", "value": "This Week" },
-        { "name": "total", "value": "Total" },
-        { "name": "hours", "value": "Hours" },
-        { "name": "minutes", "value": "Minutes" },
-        { "name": "books_count", "value": "Books" },
-        { "name": "days_count", "value": "Days" },
-        { "name": "achievements", "value": "Achievements" },
-        { "name": "no_achievements", "value": "No achievements yet, keep reading!" },
-        { "name": "features_showcase", "value": "Features" },
-        { "name": "core_features", "value": "Core Features" },
-        { "name": "pure_reading", "value": "Pure Reading Experience" },
-        { "name": "advanced_notes", "value": "Advanced Notes" },
-        { "name": "tts_feature", "value": "TTS Feature" },
-        { "name": "harmony_cards", "value": "HarmonyOS Cards" },
-        { "name": "ebook_formats", "value": "E-book Formats" },
-        { "name": "format_support", "value": "7 Formats Support" },
-        { "name": "pdf", "value": "PDF" },
-        { "name": "epub", "value": "EPUB" },
-        { "name": "mobi", "value": "MOBI" },
-        { "name": "txt", "value": "TXT" },
-        { "name": "docx", "value": "DOCX" },
-        { "name": "cbz", "value": "CBZ" },
-        { "name": "cbr", "value": "CBR" },
-        { "name": "read_now", "value": "Read Now" },
-        { "name": "view_details", "value": "View Details" },
-        { "name": "retry", "value": "Retry" },
-        { "name": "error", "value": "Error" },
-        { "name": "success", "value": "Success" },
-        { "name": "warning", "value": "Warning" },
-        { "name": "info", "value": "Info" },
-        { "name": "yes", "value": "Yes" },
-        { "name": "no", "value": "No" },
-        { "name": "ok", "value": "OK" },
-        { "name": "close_hint", "value": "Tap anywhere to close" },
-        { "name": "no_more", "value": "No more" },
-        { "name": "load_more", "value": "Pull to load more" },
-        { "name": "refreshing", "value": "Refreshing..." },
-        { "name": "no_result", "value": "No Results" },
-        { "name": "processing", "value": "Processing..." },
-        { "name": "computing", "value": "Computing..." },
-        { "name": "permission_denied", "value": "Permission Denied" },
-        { "name": "permission_required", "value": "Permission Required" },
-        { "name": "grant", "value": "Grant" },
-        { "name": "denied", "value": "Denied" },
-        { "name": "network_error", "value": "Network Error" },
-        { "name": "file_not_support", "value": "File Format Not Supported" },
-        { "name": "search_hint", "value": "Search books..." },
-        { "name": "all", "value": "All" },
-        { "name": "login_account", "value": "Account Login" },
-        { "name": "guest_mode", "value": "Guest Mode" },
-        { "name": "login_your_account", "value": "Login to your account" },
-        { "name": "i_agree", "value": "I have read and agree" },
-        { "name": "donation", "value": "Donation" },
-        { "name": "feedback", "value": "Feedback" },
-        { "name": "loading_resources", "value": "Loading resources..." },
-        { "name": "init_engine", "value": "Initializing engine..." },
-        { "name": "prepare_reading", "value": "Preparing reading experience..." },
-        { "name": "help_docs", "value": "Help Docs" },
-        { "name": "legal_support", "value": "Legal & Support" },
-        { "name": "donate", "value": "Donate" },
-        { "name": "select_language", "value": "Select Language" },
-        { "name": "current_language", "value": "Current Language" },
-        { "name": "language_settings", "value": "Language Settings" },
-        { "name": "home", "value": "Home" },
-        { "name": "my_bookshelf", "value": "My Bookshelf" },
-        { "name": "book_count", "value": "Book Count" },
-        { "name": "reading_notes", "value": "Reading Notes" },
-        { "name": "note_count", "value": "Note Count" },
-        { "name": "smart_services", "value": "Smart Services" },
-        { "name": "online_books", "value": "Online Books" },
-        { "name": "source_market", "value": "Source Market" },
-        { "name": "local_import", "value": "Local Import" },
-        { "name": "folder_scan", "value": "Folder Scan" },
-        { "name": "start_reading", "value": "Start Reading" },
-        { "name": "recent_read", "value": "Recent Read" },
-        { "name": "all_books", "value": "All Books" },
-        { "name": "favorites", "value": "Favorites" },
-        { "name": "finished_reading", "value": "Finished" },
-        { "name": "sort_by", "value": "Sort By" },
-        { "name": "sort_title", "value": "By Title" },
-        { "name": "sort_author", "value": "By Author" },
-        { "name": "sort_time", "value": "By Time" },
-        { "name": "sort_progress", "value": "By Progress" },
-        { "name": "group_manage", "value": "Group Manage" },
-        { "name": "add_group", "value": "Add Group" },
-        { "name": "edit_group", "value": "Edit Group" },
-        { "name": "delete_group", "value": "Delete Group" },
-        { "name": "group_name", "value": "Group Name" },
-        { "name": "input_group_name", "value": "Enter group name" },
-        { "name": "confirm_delete", "value": "Confirm Delete" },
-        { "name": "delete_confirm_hint", "value": "Are you sure? This action cannot be undone" },
-        { "name": "chapter_list", "value": "Chapters" },
-        { "name": "add_note", "value": "Add Note" },
-        { "name": "search_in_book", "value": "Search in Book" },
-        { "name": "tts_play", "value": "Play" },
-        { "name": "tts_pause", "value": "Pause" },
-        { "name": "tts_stop", "value": "Stop" },
-        { "name": "brightness", "value": "Brightness" },
-        { "name": "font_family", "value": "Font" },
-        { "name": "background_color", "value": "Background" },
-        { "name": "text_color", "value": "Text Color" },
-        { "name": "account_settings", "value": "Account" },
-        { "name": "general_settings", "value": "General" },
-        { "name": "theme_settings", "value": "Theme" },
-        { "name": "notification_settings", "value": "Notifications" },
-        { "name": "data_backup", "value": "Data Backup" },
-        { "name": "storage_settings", "value": "Storage" },
-        { "name": "about_app", "value": "About" },
-        { "name": "logout", "value": "Logout" },
-        { "name": "clear_confirm", "value": "Confirm Clear" },
-        { "name": "clear_success", "value": "Cleared" },
-        { "name": "backup_success", "value": "Backup Success" },
-        { "name": "restore_success", "value": "Restore Success" },
-        { "name": "personal_info", "value": "Personal Info" },
-        { "name": "vip_member", "value": "VIP Member" },
-        { "name": "reading_goal", "value": "Reading Goal" },
-        { "name": "daily_goal", "value": "Daily Goal" },
-        { "name": "continuous_days", "value": "Continuous Days" },
-        { "name": "weekly_stats", "value": "This Week" },
-        { "name": "monthly_stats", "value": "This Month" },
-        { "name": "yearly_stats", "value": "This Year" },
-        { "name": "avg_speed", "value": "Avg Speed" },
-        { "name": "words_per_minute", "value": "words/min" },
-        { "name": "todo_page_title", "value": "Todo" },
-        { "name": "no_todo_items", "value": "No todo items" },
-        { "name": "tap_add_button_hint", "value": "Tap + button to add" },
-        { "name": "add_todo_item", "value": "Add Todo" },
-        { "name": "edit_todo_item", "value": "Edit Todo" },
-        { "name": "todo_title_placeholder", "value": "Title" },
-        { "name": "todo_description_placeholder", "value": "Description (optional)" },
-        { "name": "priority_label", "value": "Priority" },
-        { "name": "todo_due_date_placeholder", "value": "Due date (YYYY-MM-DD, optional)" },
-        { "name": "low_priority", "value": "Low" },
-        { "name": "medium_priority", "value": "Medium" },
-        { "name": "high_priority", "value": "High" },
-        { "name": "urgent_priority", "value": "Urgent" },
-        { "name": "sort_by_priority", "value": "By Priority" },
-        { "name": "sort_by_due_date", "value": "By Due Date" },
-        { "name": "sort_by_created_time", "value": "By Created Time" },
-        { "name": "sort_by_title", "value": "By Title" },
-        { "name": "filter_all", "value": "All" },
-        { "name": "filter_pending", "value": "Pending" },
-        { "name": "filter_completed", "value": "Completed" },
-        { "name": "todo_status_pending", "value": "Pending" },
-        { "name": "todo_status_completed", "value": "Completed" },
-        { "name": "overdue", "value": "Overdue" },
-        { "name": "due_today", "value": "Due Today" },
-        { "name": "select_group", "value": "Select Group" },
-        { "name": "create_group", "value": "Create Group" },
-        { "name": "shortcut_editor_title", "value": "Shortcut Editor" },
-        { "name": "enable_shortcut", "value": "Enable Shortcut" },
-        { "name": "book_detail", "value": "Book Detail" },
-        { "name": "group_manage", "value": "Group Manage" },
-        { "name": "delete_book", "value": "Delete Book" },
-        { "name": "continue_reading", "value": "Continue Reading" },
-        { "name": "start_reading", "value": "Start Reading" },
-        { "name": "quick_actions", "value": "Quick Actions" },
-        { "name": "weekly_overview", "value": "Weekly Overview" },
-        { "name": "click_top_right_add", "value": "Click + in top right to add books" },
-        { "name": "select_book_start", "value": "Select a book to start reading" },
-        { "name": "select_settings_category", "value": "Select a settings category" },
-        { "name": "click_view_details", "value": "Click to view details" },
-        { "name": "no_results_hint", "value": "Try other keywords" },
-        { "name": "search_history", "value": "Search History" },
-        { "name": "clear_history", "value": "Clear History" },
-        { "name": "import_export_menu", "value": "Import/Export" },
-        { "name": "replace_rules", "value": "Replace Rules" },
-        { "name": "weight", "value": "Weight" },
-        { "name": "enabled", "value": "Enabled" },
-        { "name": "manual_input_url", "value": "Manual Input URL" },
-        { "name": "preset_sources", "value": "Preset Sources" },
-        { "name": "import_result", "value": "Import Result" },
-        { "name": "search_source_hint", "value": "Search source name or URL" },
-        { "name": "reward_success", "value": "Reward Success" },
-        { "name": "thank_support", "value": "Thank you for your support" },
-        { "name": "got_it", "value": "Got it" },
-        { "name": "reading_record", "value": "Reading Record" },
-        { "name": "no_reading_record", "value": "No reading record" },
-        { "name": "start_reading_record_hint", "value": "Start reading books, records will appear here" },
-        { "name": "word_book", "value": "Word Book" },
-        { "name": "input_word_search", "value": "Input word to search..." },
-        { "name": "prev_page", "value": "Prev" },
-        { "name": "next_page", "value": "Next" },
-        { "name": "reading_settings", "value": "Reading Settings" },
-        { "name": "comic_reader", "value": "Comic Reader" },
-        { "name": "eye_tracking_calibration", "value": "Eye Tracking Calibration" },
-        { "name": "dictionary", "value": "Dictionary" },
-        { "name": "online_source_market", "value": "Online Source Market" },
-        { "name": "source_content", "value": "Source Content" },
-        { "name": "category_filter", "value": "Category Filter" },
-        { "name": "check_network_hint", "value": "Please check network settings and try again" },
-        { "name": "network_error", "value": "Network Connection Failed" },
-        { "name": "book_detail", "value": "Book Detail" },
-        { "name": "group_manage", "value": "Group Manage" },
-        { "name": "delete_book", "value": "Delete Book" },
-        { "name": "no_groups", "value": "No Groups" },
-        { "name": "done", "value": "Done" },
-        { "name": "favorited", "value": "Favorited" },
-        { "name": "favorite", "value": "Favorite" },
-        { "name": "last_read", "value": "Last Read" },
-        { "name": "page_info", "value": "Page %{current} / %{total}" },
-        { "name": "book_info", "value": "Book Info" },
-        { "name": "format", "value": "Format" },
-        { "name": "file_size", "value": "File Size" },
-        { "name": "total_pages", "value": "Total Pages" },
-        { "name": "description", "value": "Description" },
-        { "name": "no_data", "value": "No Data" },
-        { "name": "reading", "value": "Reading" },
-        { "name": "finished", "value": "Finished" },
-        { "name": "unread", "value": "Unread" },
-        { "name": "unknown", "value": "Unknown" },
-        { "name": "today", "value": "Today" },
-        { "name": "yesterday", "value": "Yesterday" },
-        { "name": "days_ago", "value": " days ago" },
-        { "name": "weeks_ago", "value": " weeks ago" },
-        { "name": "months_ago", "value": " months ago" },
-        { "name": "recommend_book", "value": "Recommend: 《" },
-        { "name": "author_label", "value": "Author: " },
-        { "name": "groups", "value": "Groups" },
-        { "name": "share", "value": "Share" },
-        { "name": "reading_progress", "value": "Reading Progress" },
-        { "name": "share_failed", "value": "Share Failed" },
-        { "name": "no_bookmarks", "value": "No Bookmarks" },
-        { "name": "book_management", "value": "Book Management" },
-        { "name": "light_mode", "value": "Light Mode" },
-        { "name": "dark_mode_label", "value": "Dark Mode" },
-        { "name": "notes_title", "value": "Notes" },
-        { "name": "no_notes", "value": "No Notes" },
-        { "name": "long_press_to_add_note", "value": "Long press to select text and add note" },
-        { "name": "filter_by_book", "value": "Filter by Book" },
-        { "name": "export", "value": "Export" },
-        { "name": "source_manage", "value": "Source Manage" },
-        { "name": "filter_by_book", "value": "Filter by Book" },
-        { "name": "all_books", "value": "All Books" },
-        { "name": "all_tags", "value": "All Tags" },
-        { "name": "filter_notes", "value": "Filter Notes" },
-        { "name": "unknown_book", "value": "Unknown Book" }
+        {
+            "name": "app_name",
+            "value": "QianDu Reader"
+        },
+        {
+            "name": "bookshelf",
+            "value": "Bookshelf"
+        },
+        {
+            "name": "discover",
+            "value": "Discover"
+        },
+        {
+            "name": "settings",
+            "value": "Settings"
+        },
+        {
+            "name": "profile",
+            "value": "Profile"
+        },
+        {
+            "name": "reading",
+            "value": "Reading"
+        },
+        {
+            "name": "finished",
+            "value": "Finished"
+        },
+        {
+            "name": "unread",
+            "value": "Unread"
+        },
+        {
+            "name": "favorite",
+            "value": "Favorite"
+        },
+        {
+            "name": "add_book",
+            "value": "Add Book"
+        },
+        {
+            "name": "import_local",
+            "value": "Import Local"
+        },
+        {
+            "name": "scan_folder",
+            "value": "Scan Folder"
+        },
+        {
+            "name": "search",
+            "value": "Search"
+        },
+        {
+            "name": "sort",
+            "value": "Sort"
+        },
+        {
+            "name": "filter",
+            "value": "Filter"
+        },
+        {
+            "name": "continue_reading",
+            "value": "Continue Reading"
+        },
+        {
+            "name": "recent_books",
+            "value": "Recent"
+        },
+        {
+            "name": "total_books",
+            "value": "Total Books"
+        },
+        {
+            "name": "today_reading",
+            "value": "Today"
+        },
+        {
+            "name": "streak_days",
+            "value": "Streak"
+        },
+        {
+            "name": "quick_actions",
+            "value": "Quick Actions"
+        },
+        {
+            "name": "reading_stats",
+            "value": "Statistics"
+        },
+        {
+            "name": "todo",
+            "value": "Todo"
+        },
+        {
+            "name": "bookmarks",
+            "value": "Bookmarks"
+        },
+        {
+            "name": "notes",
+            "value": "Notes"
+        },
+        {
+            "name": "source_market",
+            "value": "Source Market"
+        },
+        {
+            "name": "reading_settings",
+            "value": "Reading Settings"
+        },
+        {
+            "name": "dark_mode",
+            "value": "Dark Mode"
+        },
+        {
+            "name": "font_size",
+            "value": "Font Size"
+        },
+        {
+            "name": "language",
+            "value": "Language"
+        },
+        {
+            "name": "about",
+            "value": "About"
+        },
+        {
+            "name": "help",
+            "value": "Help"
+        },
+        {
+            "name": "feedback",
+            "value": "Feedback"
+        },
+        {
+            "name": "privacy_policy",
+            "value": "Privacy Policy"
+        },
+        {
+            "name": "user_agreement",
+            "value": "User Agreement"
+        },
+        {
+            "name": "cancel",
+            "value": "Cancel"
+        },
+        {
+            "name": "confirm",
+            "value": "Confirm"
+        },
+        {
+            "name": "delete",
+            "value": "Delete"
+        },
+        {
+            "name": "edit",
+            "value": "Edit"
+        },
+        {
+            "name": "save",
+            "value": "Save"
+        },
+        {
+            "name": "add",
+            "value": "Add"
+        },
+        {
+            "name": "back",
+            "value": "Back"
+        },
+        {
+            "name": "loading",
+            "value": "Loading..."
+        },
+        {
+            "name": "no_data",
+            "value": "No Data"
+        },
+        {
+            "name": "no_books",
+            "value": "No Books"
+        },
+        {
+            "name": "add_first_book",
+            "value": "Tap below to add your first book"
+        },
+        {
+            "name": "import_success",
+            "value": "Imported %{count} books"
+        },
+        {
+            "name": "import_failed",
+            "value": "Import Failed"
+        },
+        {
+            "name": "scan_complete",
+            "value": "Scan complete, found %{count} docs"
+        },
+        {
+            "name": "no_supported_format",
+            "value": "No supported formats found"
+        },
+        {
+            "name": "app_slogan",
+            "value": "Read Limitless"
+        },
+        {
+            "name": "welcome",
+            "value": "Welcome"
+        },
+        {
+            "name": "login",
+            "value": "Login"
+        },
+        {
+            "name": "import_books",
+            "value": "Import Books"
+        },
+        {
+            "name": "import",
+            "value": "Import"
+        },
+        {
+            "name": "empty_shelf",
+            "value": "Your bookshelf is empty"
+        },
+        {
+            "name": "book_format",
+            "value": "Book Format"
+        },
+        {
+            "name": "author",
+            "value": "Author"
+        },
+        {
+            "name": "unknown_author",
+            "value": "Unknown Author"
+        },
+        {
+            "name": "reading_progress",
+            "value": "Reading Progress"
+        },
+        {
+            "name": "read_settings",
+            "value": "Reading Settings"
+        },
+        {
+            "name": "display_settings",
+            "value": "Display Settings"
+        },
+        {
+            "name": "font_settings",
+            "value": "Font Settings"
+        },
+        {
+            "name": "font",
+            "value": "Font"
+        },
+        {
+            "name": "letter_spacing",
+            "value": "Letter Spacing"
+        },
+        {
+            "name": "line_spacing",
+            "value": "Line Spacing"
+        },
+        {
+            "name": "paragraph_spacing",
+            "value": "Paragraph Spacing"
+        },
+        {
+            "name": "text_indent",
+            "value": "Text Indent"
+        },
+        {
+            "name": "page_turn_settings",
+            "value": "Page Turn Settings"
+        },
+        {
+            "name": "page_mode",
+            "value": "Page Mode"
+        },
+        {
+            "name": "volume_key_turn",
+            "value": "Volume Key Turn"
+        },
+        {
+            "name": "click_turn",
+            "value": "Click to Turn"
+        },
+        {
+            "name": "reading_theme",
+            "value": "Reading Theme"
+        },
+        {
+            "name": "text_convert",
+            "value": "Text Conversion"
+        },
+        {
+            "name": "chinese_convert",
+            "value": "Chinese Conversion"
+        },
+        {
+            "name": "tts_settings",
+            "value": "TTS Settings"
+        },
+        {
+            "name": "tts_speed",
+            "value": "TTS Speed"
+        },
+        {
+            "name": "tts_pitch",
+            "value": "TTS Pitch"
+        },
+        {
+            "name": "close",
+            "value": "Close"
+        },
+        {
+            "name": "done",
+            "value": "Done"
+        },
+        {
+            "name": "system_default",
+            "value": "System Default"
+        },
+        {
+            "name": "theme_light",
+            "value": "Light"
+        },
+        {
+            "name": "theme_sepia",
+            "value": "Sepia"
+        },
+        {
+            "name": "theme_dark",
+            "value": "Dark"
+        },
+        {
+            "name": "theme_auto",
+            "value": "Auto"
+        },
+        {
+            "name": "scroll",
+            "value": "Scroll"
+        },
+        {
+            "name": "cover",
+            "value": "Cover"
+        },
+        {
+            "name": "simulation",
+            "value": "Simulation"
+        },
+        {
+            "name": "slide",
+            "value": "Slide"
+        },
+        {
+            "name": "none",
+            "value": "None"
+        },
+        {
+            "name": "off",
+            "value": "Off"
+        },
+        {
+            "name": "to_traditional",
+            "value": "To Traditional"
+        },
+        {
+            "name": "to_simplified",
+            "value": "To Simplified"
+        },
+        {
+            "name": "screen_settings",
+            "value": "Screen Settings"
+        },
+        {
+            "name": "auto_brightness",
+            "value": "Auto Brightness"
+        },
+        {
+            "name": "keep_screen_on",
+            "value": "Keep Screen On"
+        },
+        {
+            "name": "full_screen",
+            "value": "Full Screen"
+        },
+        {
+            "name": "show_status_bar",
+            "value": "Show Status Bar"
+        },
+        {
+            "name": "cache_settings",
+            "value": "Cache Settings"
+        },
+        {
+            "name": "cache_size",
+            "value": "Cache Size"
+        },
+        {
+            "name": "clear_cache",
+            "value": "Clear Cache"
+        },
+        {
+            "name": "statistics",
+            "value": "Statistics"
+        },
+        {
+            "name": "local_books",
+            "value": "Local Books"
+        },
+        {
+            "name": "version",
+            "value": "Version"
+        },
+        {
+            "name": "copyright",
+            "value": "Copyright"
+        },
+        {
+            "name": "reader",
+            "value": "Reader"
+        },
+        {
+            "name": "page_of",
+            "value": "/"
+        },
+        {
+            "name": "slide_to_read",
+            "value": "Slide down to read"
+        },
+        {
+            "name": "next_page",
+            "value": "Next Page"
+        },
+        {
+            "name": "prev_page",
+            "value": "Previous Page"
+        },
+        {
+            "name": "table_of_contents",
+            "value": "Contents"
+        },
+        {
+            "name": "highlight",
+            "value": "Highlight"
+        },
+        {
+            "name": "add_bookmark",
+            "value": "Add Bookmark"
+        },
+        {
+            "name": "remove_bookmark",
+            "value": "Remove Bookmark"
+        },
+        {
+            "name": "ocr_scan",
+            "value": "OCR Scan"
+        },
+        {
+            "name": "ocr_scan_hint",
+            "value": "Scan to recognize text"
+        },
+        {
+            "name": "recognizing",
+            "value": "Recognizing..."
+        },
+        {
+            "name": "recognition_failed",
+            "value": "Recognition Failed"
+        },
+        {
+            "name": "recognition_success",
+            "value": "Recognition Success"
+        },
+        {
+            "name": "copy_text",
+            "value": "Copy Text"
+        },
+        {
+            "name": "insert_to_book",
+            "value": "Insert to Book"
+        },
+        {
+            "name": "file_picker",
+            "value": "File Picker"
+        },
+        {
+            "name": "reading_days",
+            "value": "Reading Days"
+        },
+        {
+            "name": "total_time",
+            "value": "Total Time"
+        },
+        {
+            "name": "today",
+            "value": "Today"
+        },
+        {
+            "name": "this_week",
+            "value": "This Week"
+        },
+        {
+            "name": "total",
+            "value": "Total"
+        },
+        {
+            "name": "hours",
+            "value": "Hours"
+        },
+        {
+            "name": "minutes",
+            "value": "Minutes"
+        },
+        {
+            "name": "books_count",
+            "value": "Books"
+        },
+        {
+            "name": "days_count",
+            "value": "Days"
+        },
+        {
+            "name": "achievements",
+            "value": "Achievements"
+        },
+        {
+            "name": "no_achievements",
+            "value": "No achievements yet, keep reading!"
+        },
+        {
+            "name": "features_showcase",
+            "value": "Features"
+        },
+        {
+            "name": "core_features",
+            "value": "Core Features"
+        },
+        {
+            "name": "pure_reading",
+            "value": "Pure Reading Experience"
+        },
+        {
+            "name": "advanced_notes",
+            "value": "Advanced Notes"
+        },
+        {
+            "name": "tts_feature",
+            "value": "TTS Feature"
+        },
+        {
+            "name": "harmony_cards",
+            "value": "HarmonyOS Cards"
+        },
+        {
+            "name": "ebook_formats",
+            "value": "E-book Formats"
+        },
+        {
+            "name": "format_support",
+            "value": "7 Formats Support"
+        },
+        {
+            "name": "pdf",
+            "value": "PDF"
+        },
+        {
+            "name": "epub",
+            "value": "EPUB"
+        },
+        {
+            "name": "mobi",
+            "value": "MOBI"
+        },
+        {
+            "name": "txt",
+            "value": "TXT"
+        },
+        {
+            "name": "docx",
+            "value": "DOCX"
+        },
+        {
+            "name": "cbz",
+            "value": "CBZ"
+        },
+        {
+            "name": "cbr",
+            "value": "CBR"
+        },
+        {
+            "name": "read_now",
+            "value": "Read Now"
+        },
+        {
+            "name": "view_details",
+            "value": "View Details"
+        },
+        {
+            "name": "retry",
+            "value": "Retry"
+        },
+        {
+            "name": "error",
+            "value": "Error"
+        },
+        {
+            "name": "success",
+            "value": "Success"
+        },
+        {
+            "name": "warning",
+            "value": "Warning"
+        },
+        {
+            "name": "info",
+            "value": "Info"
+        },
+        {
+            "name": "yes",
+            "value": "Yes"
+        },
+        {
+            "name": "no",
+            "value": "No"
+        },
+        {
+            "name": "ok",
+            "value": "OK"
+        },
+        {
+            "name": "close_hint",
+            "value": "Tap anywhere to close"
+        },
+        {
+            "name": "no_more",
+            "value": "No more"
+        },
+        {
+            "name": "load_more",
+            "value": "Pull to load more"
+        },
+        {
+            "name": "refreshing",
+            "value": "Refreshing..."
+        },
+        {
+            "name": "no_result",
+            "value": "No Results"
+        },
+        {
+            "name": "processing",
+            "value": "Processing..."
+        },
+        {
+            "name": "computing",
+            "value": "Computing..."
+        },
+        {
+            "name": "permission_denied",
+            "value": "Permission Denied"
+        },
+        {
+            "name": "permission_required",
+            "value": "Permission Required"
+        },
+        {
+            "name": "grant",
+            "value": "Grant"
+        },
+        {
+            "name": "denied",
+            "value": "Denied"
+        },
+        {
+            "name": "network_error",
+            "value": "Network Error"
+        },
+        {
+            "name": "file_not_support",
+            "value": "File Format Not Supported"
+        },
+        {
+            "name": "search_hint",
+            "value": "Search books..."
+        },
+        {
+            "name": "all",
+            "value": "All"
+        },
+        {
+            "name": "login_account",
+            "value": "Account Login"
+        },
+        {
+            "name": "guest_mode",
+            "value": "Guest Mode"
+        },
+        {
+            "name": "login_your_account",
+            "value": "Login to your account"
+        },
+        {
+            "name": "i_agree",
+            "value": "I have read and agree"
+        },
+        {
+            "name": "donation",
+            "value": "Donation"
+        },
+        {
+            "name": "loading_resources",
+            "value": "Loading resources..."
+        },
+        {
+            "name": "init_engine",
+            "value": "Initializing engine..."
+        },
+        {
+            "name": "prepare_reading",
+            "value": "Preparing reading experience..."
+        },
+        {
+            "name": "help_docs",
+            "value": "Help Docs"
+        },
+        {
+            "name": "legal_support",
+            "value": "Legal & Support"
+        },
+        {
+            "name": "donate",
+            "value": "Donate"
+        },
+        {
+            "name": "select_language",
+            "value": "Select Language"
+        },
+        {
+            "name": "current_language",
+            "value": "Current Language"
+        },
+        {
+            "name": "language_settings",
+            "value": "Language Settings"
+        },
+        {
+            "name": "home",
+            "value": "Home"
+        },
+        {
+            "name": "my_bookshelf",
+            "value": "My Bookshelf"
+        },
+        {
+            "name": "book_count",
+            "value": "Book Count"
+        },
+        {
+            "name": "reading_notes",
+            "value": "Reading Notes"
+        },
+        {
+            "name": "note_count",
+            "value": "Note Count"
+        },
+        {
+            "name": "smart_services",
+            "value": "Smart Services"
+        },
+        {
+            "name": "online_books",
+            "value": "Online Books"
+        },
+        {
+            "name": "local_import",
+            "value": "Local Import"
+        },
+        {
+            "name": "folder_scan",
+            "value": "Folder Scan"
+        },
+        {
+            "name": "start_reading",
+            "value": "Start Reading"
+        },
+        {
+            "name": "recent_read",
+            "value": "Recent Read"
+        },
+        {
+            "name": "all_books",
+            "value": "All Books"
+        },
+        {
+            "name": "favorites",
+            "value": "Favorites"
+        },
+        {
+            "name": "finished_reading",
+            "value": "Finished"
+        },
+        {
+            "name": "sort_by",
+            "value": "Sort By"
+        },
+        {
+            "name": "sort_title",
+            "value": "By Title"
+        },
+        {
+            "name": "sort_author",
+            "value": "By Author"
+        },
+        {
+            "name": "sort_time",
+            "value": "By Time"
+        },
+        {
+            "name": "sort_progress",
+            "value": "By Progress"
+        },
+        {
+            "name": "group_manage",
+            "value": "Group Manage"
+        },
+        {
+            "name": "add_group",
+            "value": "Add Group"
+        },
+        {
+            "name": "edit_group",
+            "value": "Edit Group"
+        },
+        {
+            "name": "delete_group",
+            "value": "Delete Group"
+        },
+        {
+            "name": "group_name",
+            "value": "Group Name"
+        },
+        {
+            "name": "input_group_name",
+            "value": "Enter group name"
+        },
+        {
+            "name": "confirm_delete",
+            "value": "Confirm Delete"
+        },
+        {
+            "name": "delete_confirm_hint",
+            "value": "Are you sure? This action cannot be undone"
+        },
+        {
+            "name": "chapter_list",
+            "value": "Chapters"
+        },
+        {
+            "name": "add_note",
+            "value": "Add Note"
+        },
+        {
+            "name": "search_in_book",
+            "value": "Search in Book"
+        },
+        {
+            "name": "tts_play",
+            "value": "Play"
+        },
+        {
+            "name": "tts_pause",
+            "value": "Pause"
+        },
+        {
+            "name": "tts_stop",
+            "value": "Stop"
+        },
+        {
+            "name": "brightness",
+            "value": "Brightness"
+        },
+        {
+            "name": "font_family",
+            "value": "Font"
+        },
+        {
+            "name": "background_color",
+            "value": "Background"
+        },
+        {
+            "name": "text_color",
+            "value": "Text Color"
+        },
+        {
+            "name": "account_settings",
+            "value": "Account"
+        },
+        {
+            "name": "general_settings",
+            "value": "General"
+        },
+        {
+            "name": "theme_settings",
+            "value": "Theme"
+        },
+        {
+            "name": "notification_settings",
+            "value": "Notifications"
+        },
+        {
+            "name": "data_backup",
+            "value": "Data Backup"
+        },
+        {
+            "name": "storage_settings",
+            "value": "Storage"
+        },
+        {
+            "name": "about_app",
+            "value": "About"
+        },
+        {
+            "name": "logout",
+            "value": "Logout"
+        },
+        {
+            "name": "clear_confirm",
+            "value": "Confirm Clear"
+        },
+        {
+            "name": "clear_success",
+            "value": "Cleared"
+        },
+        {
+            "name": "backup_success",
+            "value": "Backup Success"
+        },
+        {
+            "name": "restore_success",
+            "value": "Restore Success"
+        },
+        {
+            "name": "personal_info",
+            "value": "Personal Info"
+        },
+        {
+            "name": "vip_member",
+            "value": "VIP Member"
+        },
+        {
+            "name": "reading_goal",
+            "value": "Reading Goal"
+        },
+        {
+            "name": "daily_goal",
+            "value": "Daily Goal"
+        },
+        {
+            "name": "continuous_days",
+            "value": "Continuous Days"
+        },
+        {
+            "name": "weekly_stats",
+            "value": "This Week"
+        },
+        {
+            "name": "monthly_stats",
+            "value": "This Month"
+        },
+        {
+            "name": "yearly_stats",
+            "value": "This Year"
+        },
+        {
+            "name": "avg_speed",
+            "value": "Avg Speed"
+        },
+        {
+            "name": "words_per_minute",
+            "value": "words/min"
+        },
+        {
+            "name": "todo_page_title",
+            "value": "Todo"
+        },
+        {
+            "name": "no_todo_items",
+            "value": "No todo items"
+        },
+        {
+            "name": "tap_add_button_hint",
+            "value": "Tap + button to add"
+        },
+        {
+            "name": "add_todo_item",
+            "value": "Add Todo"
+        },
+        {
+            "name": "edit_todo_item",
+            "value": "Edit Todo"
+        },
+        {
+            "name": "todo_title_placeholder",
+            "value": "Title"
+        },
+        {
+            "name": "todo_description_placeholder",
+            "value": "Description (optional)"
+        },
+        {
+            "name": "priority_label",
+            "value": "Priority"
+        },
+        {
+            "name": "todo_due_date_placeholder",
+            "value": "Due date (YYYY-MM-DD, optional)"
+        },
+        {
+            "name": "low_priority",
+            "value": "Low"
+        },
+        {
+            "name": "medium_priority",
+            "value": "Medium"
+        },
+        {
+            "name": "high_priority",
+            "value": "High"
+        },
+        {
+            "name": "urgent_priority",
+            "value": "Urgent"
+        },
+        {
+            "name": "sort_by_priority",
+            "value": "By Priority"
+        },
+        {
+            "name": "sort_by_due_date",
+            "value": "By Due Date"
+        },
+        {
+            "name": "sort_by_created_time",
+            "value": "By Created Time"
+        },
+        {
+            "name": "sort_by_title",
+            "value": "By Title"
+        },
+        {
+            "name": "filter_all",
+            "value": "All"
+        },
+        {
+            "name": "filter_pending",
+            "value": "Pending"
+        },
+        {
+            "name": "filter_completed",
+            "value": "Completed"
+        },
+        {
+            "name": "todo_status_pending",
+            "value": "Pending"
+        },
+        {
+            "name": "todo_status_completed",
+            "value": "Completed"
+        },
+        {
+            "name": "overdue",
+            "value": "Overdue"
+        },
+        {
+            "name": "due_today",
+            "value": "Due Today"
+        },
+        {
+            "name": "select_group",
+            "value": "Select Group"
+        },
+        {
+            "name": "create_group",
+            "value": "Create Group"
+        },
+        {
+            "name": "shortcut_editor_title",
+            "value": "Shortcut Editor"
+        },
+        {
+            "name": "enable_shortcut",
+            "value": "Enable Shortcut"
+        },
+        {
+            "name": "book_detail",
+            "value": "Book Detail"
+        },
+        {
+            "name": "delete_book",
+            "value": "Delete Book"
+        },
+        {
+            "name": "weekly_overview",
+            "value": "Weekly Overview"
+        },
+        {
+            "name": "click_top_right_add",
+            "value": "Click + in top right to add books"
+        },
+        {
+            "name": "select_book_start",
+            "value": "Select a book to start reading"
+        },
+        {
+            "name": "select_settings_category",
+            "value": "Select a settings category"
+        },
+        {
+            "name": "click_view_details",
+            "value": "Click to view details"
+        },
+        {
+            "name": "no_results_hint",
+            "value": "Try other keywords"
+        },
+        {
+            "name": "search_history",
+            "value": "Search History"
+        },
+        {
+            "name": "clear_history",
+            "value": "Clear History"
+        },
+        {
+            "name": "import_export_menu",
+            "value": "Import/Export"
+        },
+        {
+            "name": "replace_rules",
+            "value": "Replace Rules"
+        },
+        {
+            "name": "weight",
+            "value": "Weight"
+        },
+        {
+            "name": "enabled",
+            "value": "Enabled"
+        },
+        {
+            "name": "manual_input_url",
+            "value": "Manual Input URL"
+        },
+        {
+            "name": "preset_sources",
+            "value": "Preset Sources"
+        },
+        {
+            "name": "import_result",
+            "value": "Import Result"
+        },
+        {
+            "name": "search_source_hint",
+            "value": "Search source name or URL"
+        },
+        {
+            "name": "reward_success",
+            "value": "Reward Success"
+        },
+        {
+            "name": "thank_support",
+            "value": "Thank you for your support"
+        },
+        {
+            "name": "got_it",
+            "value": "Got it"
+        },
+        {
+            "name": "reading_record",
+            "value": "Reading Record"
+        },
+        {
+            "name": "no_reading_record",
+            "value": "No reading record"
+        },
+        {
+            "name": "start_reading_record_hint",
+            "value": "Start reading books, records will appear here"
+        },
+        {
+            "name": "word_book",
+            "value": "Word Book"
+        },
+        {
+            "name": "input_word_search",
+            "value": "Input word to search..."
+        },
+        {
+            "name": "comic_reader",
+            "value": "Comic Reader"
+        },
+        {
+            "name": "eye_tracking_calibration",
+            "value": "Eye Tracking Calibration"
+        },
+        {
+            "name": "dictionary",
+            "value": "Dictionary"
+        },
+        {
+            "name": "online_source_market",
+            "value": "Online Source Market"
+        },
+        {
+            "name": "source_content",
+            "value": "Source Content"
+        },
+        {
+            "name": "category_filter",
+            "value": "Category Filter"
+        },
+        {
+            "name": "check_network_hint",
+            "value": "Please check network settings and try again"
+        },
+        {
+            "name": "no_groups",
+            "value": "No Groups"
+        },
+        {
+            "name": "favorited",
+            "value": "Favorited"
+        },
+        {
+            "name": "last_read",
+            "value": "Last Read"
+        },
+        {
+            "name": "page_info",
+            "value": "Page %{current} / %{total}"
+        },
+        {
+            "name": "book_info",
+            "value": "Book Info"
+        },
+        {
+            "name": "format",
+            "value": "Format"
+        },
+        {
+            "name": "file_size",
+            "value": "File Size"
+        },
+        {
+            "name": "total_pages",
+            "value": "Total Pages"
+        },
+        {
+            "name": "description",
+            "value": "Description"
+        },
+        {
+            "name": "unknown",
+            "value": "Unknown"
+        },
+        {
+            "name": "yesterday",
+            "value": "Yesterday"
+        },
+        {
+            "name": "days_ago",
+            "value": " days ago"
+        },
+        {
+            "name": "weeks_ago",
+            "value": " weeks ago"
+        },
+        {
+            "name": "months_ago",
+            "value": " months ago"
+        },
+        {
+            "name": "recommend_book",
+            "value": "Recommend: 《"
+        },
+        {
+            "name": "author_label",
+            "value": "Author: "
+        },
+        {
+            "name": "groups",
+            "value": "Groups"
+        },
+        {
+            "name": "share",
+            "value": "Share"
+        },
+        {
+            "name": "share_failed",
+            "value": "Share Failed"
+        },
+        {
+            "name": "no_bookmarks",
+            "value": "No Bookmarks"
+        },
+        {
+            "name": "book_management",
+            "value": "Book Management"
+        },
+        {
+            "name": "light_mode",
+            "value": "Light Mode"
+        },
+        {
+            "name": "dark_mode_label",
+            "value": "Dark Mode"
+        },
+        {
+            "name": "notes_title",
+            "value": "Notes"
+        },
+        {
+            "name": "no_notes",
+            "value": "No Notes"
+        },
+        {
+            "name": "long_press_to_add_note",
+            "value": "Long press to select text and add note"
+        },
+        {
+            "name": "export",
+            "value": "Export"
+        },
+        {
+            "name": "source_manage",
+            "value": "Source Manage"
+        },
+        {
+            "name": "filter_by_book",
+            "value": "Filter by Book"
+        },
+        {
+            "name": "all_tags",
+            "value": "All Tags"
+        },
+        {
+            "name": "filter_notes",
+            "value": "Filter Notes"
+        },
+        {
+            "name": "unknown_book",
+            "value": "Unknown Book"
+        }
     ]
 }

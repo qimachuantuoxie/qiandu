@@ -110,8 +110,6 @@
         { "name": "notes_title", "value": "笔记" },
         { "name": "no_notes", "value": "暂无笔记" },
         { "name": "long_press_to_add_note", "value": "长按选中文字添加笔记" },
-        { "name": "all_books", "value": "全部书籍" },
-        { "name": "filter_by_book", "value": "按书籍筛选" },
         { "name": "export", "value": "导出" },
         { "name": "source_manage", "value": "书源管理" },
         { "name": "replace_rules", "value": "替换规则" },
