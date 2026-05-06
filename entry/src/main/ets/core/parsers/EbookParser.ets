@@ -125,10 +125,9 @@ export class EbookParser {
   }
 
   private static async parseWithNativeParser(filePath: string, format: BookFormat): Promise<ParseResult | null> {
-    // TODO: 原生解析模块待实现 - Return null to use fallback
-    return null;
-  }
-    // TODO: 原生解析模块待实现
+    // 原生解析模块待实现 - Return null to use fallback
+    // TODO: 集成 C++ 原生解析器 (EPUB/PDF) 以提升性能
+    logger.info('[EbookParser] Native parser not available, using JavaScript fallback for', format);
     return null;
   }
 
@@ -144,8 +143,7 @@ export class EbookParser {
       return decoder.decodeToString(new Uint8Array(buffer));
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      logger.error('EbookParser extractText failed:', message);
-      return '';
+      logger.error('[EbookParser] Extract text failed:', message);
       return '';
     }
   }

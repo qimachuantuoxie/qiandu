@@ -1,13 +1,15 @@
-import { logger } from '.\.\common/utils/Logger';
+import { logger } from '../../../utils/Logger';
 /**
- * SettingsPage ViewModel - V2鐗堟湰
+ * SettingsPage ViewModel - V2 Version
  * 
- * 绠＄悊璁剧疆椤甸潰鎵€鏈夌姸鎬侊紝浣跨敤 @ObservedV2 瀹炵幇缁嗙矑搴︾姸鎬佹洿鏂? */
+ * Manages all settings page state, uses @ObservedV2 for fine-grained state updates
+ */
 
 import { preferenceManager } from '../utils/PreferenceManager';
 import { themeManager, AppColors } from '../../../common/constants/AppTheme';
 import { fontScaleManager } from '../../../common/utils/FontScaleManager';
 import { loginStateManager } from '../services/auth/LoginStateManager';
+import { imageCacheManager } from '../../core/services/image/ImageCacheManager';
 
 export enum SettingTab {
   BASIC,
@@ -23,24 +25,25 @@ export interface SettingItem {
 
 @ObservedV2
 export class SettingsViewModel {
-  // ==================== Tab鐘舵€?====================
+  // ==================== Tab State ====================
   @Trace currentTab: SettingTab = SettingTab.BASIC;
 
-  // ==================== 涓婚�鍜屾樉绀虹姸鎬?====================
+  // ==================== Theme and Display State ====================
   @Trace isDarkMode: boolean = false;
   @Trace currentColors: AppColors = themeManager.getColors();
   @Trace fontScale: number = 1.0;
   @Trace breakpoint: string = 'sm';
 
-  // ==================== 瀛樺偍鐘舵€?====================
-  @Trace cacheSize: string = '128 MB';
+  // ==================== Storage State ====================
+  @Trace cacheSize: string = '0 MB';
 
-  // ==================== 鐢ㄦ埛鐘舵€?====================
+  // ==================== User State ====================
   @Trace isLoggedIn: boolean = false;
   @Trace username: string = '';
 
   /**
-   * 鍒濆�鍖?   */
+   * Initialize
+   */
   init(): void {
     this.isDarkMode = preferenceManager.getTheme() === 'dark';
     const fontConfig = fontScaleManager.getConfig();
@@ -54,14 +57,14 @@ export class SettingsViewModel {
   }
 
   /**
-   * 鍒囨崲Tab
+   * Switch Tab
    */
   setTab(tab: SettingTab): void {
     this.currentTab = tab;
   }
 
   /**
-   * 鑾峰彇Tab鍒楄〃
+   * Get Tab List
    */
   getTabNames(): SettingItem[] {
     return [
@@ -73,7 +76,7 @@ export class SettingsViewModel {
   }
 
   /**
-   * 鏇存柊涓婚�
+   * Refresh Theme
    */
   refreshTheme(): void {
     this.isDarkMode = preferenceManager.getTheme() === 'dark';
@@ -81,7 +84,7 @@ export class SettingsViewModel {
   }
 
   /**
-   * 鏇存柊瀛椾綋缂╂斁
+   * Refresh Font Scale
    */
   refreshFontScale(): void {
     const fontConfig = fontScaleManager.getConfig();
@@ -89,29 +92,44 @@ export class SettingsViewModel {
   }
 
   /**
-   * 璁＄畻缂撳瓨澶у皬
+   * Calculate Cache Size
    */
   async calculateCacheSize(): Promise<void> {
     try {
-      this.cacheSize = '128 MB';
+      const size = imageCacheManager.getCacheSize();
+      if (size < 1024) {
+        this.cacheSize = size + ' B';
+      } else if (size < 1024 * 1024) {
+        this.cacheSize = (size / 1024).toFixed(2) + ' KB';
+      } else if (size < 1024 * 1024 * 1024) {
+        this.cacheSize = (size / (1024 * 1024)).toFixed(2) + ' MB';
+      } else {
+        this.cacheSize = (size / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+      }
     } catch (error) {
+      const err = error as Error;
+      logger.error('[SettingsViewModel] Calculate cache size failed:', err.message);
       this.cacheSize = 'Unknown';
     }
   }
 
   /**
-   * 娓呴櫎缂撳瓨
+   * Clear Cache
    */
   async clearCache(): Promise<void> {
     try {
+      await imageCacheManager.clearCache();
       this.cacheSize = '0 MB';
+      logger.info('[SettingsViewModel] Cache cleared successfully');
     } catch (error) {
-      logger.error('Clear cache failed:', error);
+      const err = error as Error;
+      logger.error('[SettingsViewModel] Clear cache failed:', err.message);
     }
   }
 
   /**
-   * 閫€鍑虹櫥褰?   */
+   * Logout
+   */
   logout(): void {
     loginStateManager.logout();
     this.isLoggedIn = false;
@@ -119,5 +137,5 @@ export class SettingsViewModel {
   }
 }
 
-// 瀵煎嚭鍗曚緥
+// Export singleton
 export const settingsViewModel = new SettingsViewModel();

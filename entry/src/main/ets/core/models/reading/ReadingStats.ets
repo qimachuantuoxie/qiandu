@@ -281,13 +281,87 @@ class ReadingStatisticsManager {
    * 生成阅读报告（周报/月报/年报）
    */
   generateReport(type: 'week' | 'month' | 'year'): ReadingReport {
-    // TODO: 实现完整的报告生成
+    const now = new Date();
+    let startDate: Date;
+    let endDate = now;
+
+    // 计算时间范围
+    if (type === 'week') {
+      const dayOfWeek = now.getDay();
+      const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+      startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+    } else if (type === 'month') {
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else {
+      // year
+      startDate = new Date(now.getFullYear(), 0, 1);
+    }
+
+    const startTime = startDate.getTime();
+    const endTime = endDate.getTime();
+
+    // 统计该时间段的数据
+    let totalTime = 0;
+    let totalBooks = 0;
+    const bookTimeMap: Map<string, number> = new Map();
+    const dailyTrend: Array<{date: string, minutes: number}> = [];
+
+    // 遍历每日记录
+    for (const dateKey of this.dailyRecordsKeys) {
+      const recordDate = new Date(dateKey).getTime();
+      if (recordDate >= startTime && recordDate <= endTime) {
+        const record = this.dailyRecords[dateKey];
+        if (record) {
+          totalTime += record.minutes;
+          
+          // 统计书籍数量
+          const books = Object.keys(record.books || {});
+          totalBooks += books.length;
+          
+          // 累加每本书的阅读时间
+          for (const bookId in record.books) {
+            const currentBookTime = bookTimeMap.get(bookId) || 0;
+            bookTimeMap.set(bookId, currentBookTime + record.books[bookId]);
+          }
+
+          // 添加到趋势数据
+          dailyTrend.push({
+            date: dateKey,
+            minutes: record.minutes
+          });
+        }
+      }
+    }
+
+    // 按日期排序趋势数据
+    dailyTrend.sort((a, b) => a.date.localeCompare(b.date));
+
+    // 找出最喜欢的书（阅读时间最长）
+    let favoriteBook = '';
+    let maxTime = 0;
+    for (const [bookId, time] of bookTimeMap.entries()) {
+      if (time > maxTime) {
+        maxTime = time;
+        favoriteBook = bookId;
+      }
+    }
+
+    // 计算平均每日阅读时间
+    const daysInPeriod = Math.floor((endTime - startTime) / MS_PER_DAY) + 1;
+    const avgDailyTime = daysInPeriod > 0 ? Math.round(totalTime / daysInPeriod) : 0;
+
+    // 计算活跃天数
+    const activeDays = dailyTrend.filter(d => d.minutes > 0).length;
+
     return {
       period: type,
-      totalTime: 0,
-      totalBooks: 0,
-      favoriteBook: '',
-      readingTrend: []
+      totalTime: totalTime,
+      totalBooks: totalBooks,
+      favoriteBook: favoriteBook,
+      readingTrend: dailyTrend,
+      avgDailyTime: avgDailyTime,
+      activeDays: activeDays,
+      totalDays: daysInPeriod
     };
   }
 
@@ -654,11 +728,14 @@ class FriendPKManager {
 }
 
 interface ReadingReport {
-  period: string;
-  totalTime: number;
-  totalBooks: number;
-  favoriteBook: string;
-  readingTrend: number[];
+  period: string;                        // 报告类型 (week/month/year)
+  totalTime: number;                     // 总阅读时间（分钟）
+  totalBooks: number;                    // 阅读书籍数量
+  favoriteBook: string;                  // 最喜欢的书 ID
+  readingTrend: Array<{date: string, minutes: number}>;  // 阅读趋势数据
+  avgDailyTime: number;                  // 平均每日阅读时间
+  activeDays: number;                    // 活跃天数
+  totalDays: number;                     // 总天数
 }
 
 // 导出单例

@@ -172,7 +172,59 @@ class OnlineBookService {
       // 提取每本书的信息
       for (let i = 0; i < books.length; i++) {
         const bookHtml = books[i];
-        // TODO: 实现书籍信息提取逻辑
+        
+        // 提取书名
+        const title: string = searchRule.bookName
+          ? RuleEngine.extractFromHtml(bookHtml, searchRule.bookName) as string
+          : '';
+        
+        if (!title) continue; // 跳过没有书名的结果
+        
+        // 提取作者
+        const author: string = searchRule.author
+          ? RuleEngine.extractFromHtml(bookHtml, searchRule.author) as string
+          : '未知作者';
+        
+        // 提取封面
+        const coverUrl: string = searchRule.coverUrl
+          ? RuleEngine.extractFromHtml(bookHtml, searchRule.coverUrl) as string
+          : '';
+        
+        // 提取书籍链接
+        const bookUrl: string = searchRule.bookUrl
+          ? RuleEngine.extractFromHtml(bookHtml, searchRule.bookUrl) as string
+          : '';
+        
+        // 提取最新章节
+        const latestChapter: string = searchRule.latestChapter
+          ? RuleEngine.extractFromHtml(bookHtml, searchRule.latestChapter) as string
+          : '';
+        
+        // 提取简介
+        const intro: string = searchRule.intro
+          ? RuleEngine.extractFromHtml(bookHtml, searchRule.intro) as string
+          : '';
+        
+        // 提取字数
+        const wordCountStr: string = searchRule.wordCount
+          ? RuleEngine.extractFromHtml(bookHtml, searchRule.wordCount) as string
+          : '';
+        const wordCount = parseInt(wordCountStr.replace(new RegExp('[^0-9]', 'g'), ''), 10) || 0;
+        
+        // 解析完整 URL
+        const fullBookUrl = this.resolveRelativeUrl(source.url, bookUrl);
+        const fullCoverUrl = coverUrl ? this.resolveRelativeUrl(source.url, coverUrl) : '';
+        
+        results.push({
+          title,
+          author,
+          coverUrl: fullCoverUrl,
+          bookUrl: fullBookUrl,
+          sourceId: source.id,
+          latestChapter,
+          intro,
+          wordCount
+        });
       }
 
       return results;

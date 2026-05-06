@@ -166,7 +166,7 @@ class AIService {
       this.endpoint = config.endpoint;
     }
     this.isInitialized = true;
-    logger.info('[AIService] Initialized with engine:', this.engine);
+    logger.info('[AIService] Initialized with engine:', this.engine, 'endpoint:', this.endpoint);
   }
 
   /**
@@ -197,7 +197,14 @@ class AIService {
       : level === 'detailed'
       ? '请详细总结以下内容，包括背景、论点和结论：'
       : '请简洁总结以下内容的主要论点：';
-    return instruction + '\n\n' + text.substring(0, 8000);
+    
+    // 限制输入长度以避免超出API限制
+    const maxLength = 8000;
+    const truncatedText = text.length > maxLength 
+      ? text.substring(0, maxLength) + '...(内容过长已截断)' 
+      : text;
+    
+    return instruction + '\n\n' + truncatedText;
   }
 
   /**
@@ -216,9 +223,16 @@ class AIService {
       'de-DE': '德文',
       'es-ES': '西班牙文',
       'ru-RU': '俄文'
-    }
+    };
     const targetName = langMap[targetLang] || '中文';
-    return '请将以下内容翻译成' + targetName + '：\n\n' + text.substring(0, 5000);
+    
+    // 限制输入长度
+    const maxLength = 5000;
+    const truncatedText = text.length > maxLength 
+      ? text.substring(0, maxLength) + '...(内容过长已截断)' 
+      : text;
+    
+    return '请将以下内容翻译成' + targetName + '：\n\n' + truncatedText;
   }
 
   /**
@@ -227,7 +241,13 @@ class AIService {
    * @param text 原文
    */
   private buildOutlinePrompt(text: string): string {
-    return '请提取以下文章的大纲结构，以markdown列表格式呈现：\n\n' + text.substring(0, 10000);
+    // 限制输入长度
+    const maxLength = 10000;
+    const truncatedText = text.length > maxLength 
+      ? text.substring(0, maxLength) + '...(内容过长已截断)' 
+      : text;
+    
+    return '请提取以下文章的大纲结构，以markdown列表格式呈现：\n\n' + truncatedText;
   }
 
   /**
@@ -398,9 +418,16 @@ class AIService {
    * @returns AI响应
    */
   private async callHuaweiCloud(prompt: string, taskType: string): Promise<string> {
+    if (!this.apiKey) {
+      logger.error('[AIService] API key not configured');
+      throw new Error('请先配置 API Key');
+    }
+    
     const request = http.createHttp();
 
     try {
+      logger.info('[AIService] Calling Huawei Cloud AI, task:', taskType, 'prompt length:', prompt.length);
+      
       const authHeader = 'Bearer ' + this.apiKey;
 
       const response = await request.request(
@@ -416,7 +443,9 @@ class AIService {
             task_type: taskType,
             max_tokens: 2048,
             temperature: 0.7
-          })
+          }),
+          connectTimeout: 10000,
+          readTimeout: 30000
         }
       );
 
@@ -429,14 +458,24 @@ class AIService {
           data = JSON.parse(resultStr);
         } catch (error) {
           const err = error as Error;
-          logger.error('AI response parse error:', err.message);
-          return '生成内容失败';
+          logger.error('[AIService] Response parse error:', err.message);
+          throw new Error('解析响应失败');
         }
         const content = data?.choices?.[0]?.message?.content;
-        return content ? content : '生成内容失败';
+        if (!content) {
+          logger.warn('[AIService] Empty content in response');
+          throw new Error('AI返回内容为空');
+        }
+        logger.info('[AIService] AI response received, length:', content.length);
+        return content;
       }
 
-      throw new Error('API请求失败: ' + response.responseCode);
+      logger.error('[AIService] API request failed, code:', response.responseCode);
+      throw new Error('API请求失败: HTTP ' + response.responseCode);
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('[AIService] Huawei Cloud AI call failed:', err.message);
+      throw err;
     } finally {
       request.destroy();
     }

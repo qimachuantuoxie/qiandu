@@ -1,10 +1,10 @@
 import { logger } from '../../../utils/Logger';
 /**
- * Share Kit 閺堝秴濮?- 閸掑棔闊╅張宥呭�
  * Share Kit Service - Sharing Service
- *
- * 閹绘劒绶甸弬鍥ㄦ拱閵嗕礁娴橀悧鍥モ偓浣规瀮娴犲墎鐡戦崚鍡曢煩閸掓澘鍙炬禒鏍х安閻€劎娈戦懗钘夊�
- * 娴ｈ法鏁?@kit.ShareKit 鐎圭偟骞囬惇鐔风杽閸掑棔闊╅崝鐔诲厴
+ * 分享服务 - 使用 HarmonyOS ShareKit 实现真实分享功能
+ * 
+ * 支持分享文本、图片、文件等到其他应用
+ * Using HarmonyOS ShareKit for real sharing functionality
  *
  * @since 3.0.0
  */
@@ -12,86 +12,85 @@ import { logger } from '../../../utils/Logger';
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { BusinessError } from '@kit.BasicServicesKit';
-// TODO: @kit.ShareKit not available in this SDK version
-// import { shareExtension, ShareParams, ShareResult } from '@kit.ShareKit';
+import { shareExtension, ShareParams, ShareResult } from '@kit.ShareKit';
 
 const DOMAIN = 0xFF06;
 
 /**
- * 閸掑棔闊╃猾璇茬€?
+ * 分享类型枚举
  */
 export enum ShareType {
-  /** 缁绢垱鏋冮張?*/
+  /** 纯文本 */
   TEXT = 'text',
-  /** 閸ュ墽澧?*/
+  /** 图片 */
   IMAGE = 'image',
-  /** 閸ョ偓鏋冨ǎ宄版値 */
+  /** 图文混合 */
   IMAGE_AND_TEXT = 'image_and_text',
-  /** 閺傚洣娆?*/
+  /** 文件 */
   FILE = 'file',
-  /** 婢舵碍鏋冩禒?*/
+  /** 多个文件 */
   MULTIPLE_FILES = 'multiple_files'
 }
 
 /**
- * 閸掑棔闊╅崣鍌涙殶
+ * 分享数据接口
  */
 export interface ShareData {
-  /** 閸掑棔闊╃猾璇茬€?*/
+  /** 分享类型 */
   type: ShareType;
-  /** 閺傚洦婀伴崘鍛�啇 */
+  /** 分享的文本内容 */
   text?: string;
-  /** 閺嶅洭顣?*/
+  /** 分享标题 */
   title?: string;
-  /** 閸ュ墽澧朥RI閸掓�銆?*/
+  /** 图片URI数组 */
   imageUris?: string[];
-  /** 閺傚洣娆�RI閸掓�銆?*/
+  /** 文件URI数组 */
   fileUris?: string[];
-  /** 閻╊喗鐖ｆ惔鏃傛暏閸栧懎鎮曢敍鍫濆讲闁��绱?*/
+  /** 指定分享到特定应用包名 */
   targetPackage?: string;
 }
 
 /**
- * 閸掑棔闊╃紒鎾寸亯
+ * 分享结果接口
  */
 export interface ShareResultData {
-  /** 閺勵垰鎯侀幋鎰�� */
+  /** 是否成功 */
   success: boolean;
-  /** 閸掑棔闊╅崚鎵�畱鎼存梻鏁?*/
+  /** 分享到的目标应用 */
   targetApp?: string;
-  /** 闁挎瑨顕ゆ穱鈩冧紖 */
+  /** 错误信息 */
   error?: string;
 }
 
 /**
- * 閸掑棔闊╅柅澶愩€?
+ * 分享选项接口
  */
 export interface ShareOptions {
-  /** 閸掑棔闊╅棃銏℃緲閺嶅洭顣?*/
+  /** 分享面板标题 */
   panelTitle?: string;
-  /** 閸掑棔闊╅棃銏℃緲閹诲繗鍫?*/
+  /** 分享面板描述 */
   panelDescription?: string;
-  /** 閺勵垰鎯侀弰鍓с仛閸掑棔闊╂０鍕�潔 */
+  /** 是否显示预览 */
   showPreview?: boolean;
 }
 
 /**
- * Share Kit 閺堝秴濮熺猾?
+ * Share Kit 服务类
  */
 class ShareKitService {
-  /** 閸楁洑绶ョ€圭偘绶?*/
+  /** 单例实例 */
   private static instance: ShareKitService;
 
-  /** 娑撳﹣绗呴弬?*/
+  /** 上下文 */
   private context: common.Context | null = null;
 
-  /** 閺勵垰鎯佸�鎻掑灥婵��瀵?*/
+  /** 是否已初始化 */
   private isInitialized: boolean = false;
 
   private constructor() {}
 
   /**
-   * 閼惧嘲褰囬崡鏇氱伐鐎圭偘绶?
+   * 获取单例实例
    */
   static getInstance(): ShareKitService {
     if (!ShareKitService.instance) {
@@ -101,7 +100,7 @@ class ShareKitService {
   }
 
   /**
-   * 閸掓繂顫愰崠鏍у瀻娴滎偅婀囬崝?
+   * 初始化ShareKit服务
    */
   async init(context: common.Context): Promise<boolean> {
     try {
@@ -109,27 +108,26 @@ class ShareKitService {
       this.context = context;
 
       this.isInitialized = true;
-      hilog.info(DOMAIN, 'ShareKit', 'Initialized successfully');
+      hilog.info(DOMAIN, 'ShareKit', 'Initialized successfully with ShareKit');
       return true;
     } catch (error) {
       const err = error as Error;
-      const errorErr = error as Error;
-      hilog.error(DOMAIN, 'ShareKit', 'Init failed: %{public}s', errorErr.message);
+      hilog.error(DOMAIN, 'ShareKit', 'Init failed: %{public}s', err.message);
       return false;
     }
   }
 
   /**
-   * 濡�偓閺屻儲婀囬崝鈩冩Ц閸氾箑姘ㄧ紒?
+   * 检查服务是否就绪
    */
   isReady(): boolean {
     return this.isInitialized && this.context !== null;
   }
 
-  // ==================== 閸掑棔闊╅崝鐔诲厴 ====================
+  // ==================== 分享功能 ====================
 
   /**
-   * 閸掑棔闊╅弬鍥ㄦ拱
+   * 分享文本
    */
   async shareText(text: string, title?: string, options?: ShareOptions): Promise<ShareResultData> {
     try {
@@ -139,26 +137,32 @@ class ShareKitService {
 
       hilog.info(DOMAIN, 'ShareKit', 'Sharing text: %{public}s', text.substring(0, 50));
 
-      // TODO: Replace with actual ShareKit API when available
-      logger.warn('[ShareKit] shareText stub called');
+      const shareParams: ShareParams = {
+        text: text,
+        title: title || '分享'
+      };
+
+      const result: ShareResult = await shareExtension.share(this.context!, shareParams);
+      
+      hilog.info(DOMAIN, 'ShareKit', 'Share text completed, result: %{public}s', result.success ? 'success' : 'failed');
+      
       return {
-        success: false,
-        error: 'ShareKit not available in this SDK version'
+        success: result.success,
+        targetApp: result.targetPackage,
+        error: result.errorCode ? `Error code: ${result.errorCode}` : undefined
       };
     } catch (error) {
       const err = error as Error;
-      const errorErr = error as Error;
-      hilog.error(DOMAIN, 'ShareKit', 'Share text failed: %{public}s', errorErr.message);
-      const errInfo = error as Error;
+      hilog.error(DOMAIN, 'ShareKit', 'Share text failed: %{public}s', err.message);
       return {
         success: false,
-        error: errInfo.message
+        error: err.message
       };
     }
   }
 
   /**
-   * 閸掑棔闊╅崶鍓у�
+   * 分享图片
    */
   async shareImage(imageUri: string, text?: string, options?: ShareOptions): Promise<ShareResultData> {
     try {
@@ -168,23 +172,33 @@ class ShareKitService {
 
       hilog.info(DOMAIN, 'ShareKit', 'Sharing image: %{public}s', imageUri);
 
-      // 閺嬪嫬缂撻崚鍡曢煩閸欏倹鏆?
-      // TODO: Replace with actual ShareKit API
-      logger.warn('[ShareKit] shareImage stub called');
-      return { success: false, error: 'ShareKit not available' };
+      const shareParams: ShareParams = {
+        uris: [imageUri],
+        text: text,
+        title: options?.panelTitle || '分享图片'
+      };
+
+      const result: ShareResult = await shareExtension.share(this.context!, shareParams);
+      
+      hilog.info(DOMAIN, 'ShareKit', 'Share image completed');
+      
+      return {
+        success: result.success,
+        targetApp: result.targetPackage,
+        error: result.errorCode ? `Error code: ${result.errorCode}` : undefined
+      };
     } catch (error) {
       const err = error as Error;
-      const errorErr = error as Error;
-      hilog.error(DOMAIN, 'ShareKit', 'Share image failed: %{public}s', errorErr.message);
+      hilog.error(DOMAIN, 'ShareKit', 'Share image failed: %{public}s', err.message);
       return {
         success: false,
-        error: errorErr.message
+        error: err.message
       };
     }
   }
 
   /**
-   * 閸掑棔闊╅崶鐐�瀮濞ｅ嘲鎮?
+   * 分享图文混合
    */
   async shareImageAndText(imageUris: string[], text: string, options?: ShareOptions): Promise<ShareResultData> {
     try {
@@ -192,18 +206,29 @@ class ShareKitService {
         throw new Error('ShareKit service not initialized');
       }
 
-      hilog.info(DOMAIN, 'ShareKit', 'Sharing image and text');
+      hilog.info(DOMAIN, 'ShareKit', 'Sharing image and text, images count: %{public}d', imageUris.length);
 
-      // TODO: Replace with actual ShareKit API
-      logger.warn('[ShareKit] shareImageAndText stub called');
-      return { success: false, error: 'ShareKit not available' };
+      const shareParams: ShareParams = {
+        uris: imageUris,
+        text: text,
+        title: options?.panelTitle || '分享'
+      };
+
+      const result: ShareResult = await shareExtension.share(this.context!, shareParams);
+      
+      hilog.info(DOMAIN, 'ShareKit', 'Share image and text completed');
+      
+      return {
+        success: result.success,
+        targetApp: result.targetPackage,
+        error: result.errorCode ? `Error code: ${result.errorCode}` : undefined
+      };
     } catch (error) {
       const err = error as Error;
-      const errorErr = error as Error;
-      hilog.error(DOMAIN, 'ShareKit', 'Share image and text failed: %{public}s', errorErr.message);
+      hilog.error(DOMAIN, 'ShareKit', 'Share image and text failed: %{public}s', err.message);
       return {
         success: false,
-        error: errorErr.message
+        error: err.message
       };
     }
   }
@@ -219,24 +244,33 @@ class ShareKitService {
 
       hilog.info(DOMAIN, 'ShareKit', 'Sharing file: %{public}s', fileUri);
 
-      // TODO: Replace with actual ShareKit API
-      logger.warn('[ShareKit] shareFile stub called');
-      const result: ShareResultData = { success: false, error: 'ShareKit not available' };
-      return result;
-} catch (error) {
-  const err = error as Error;
-      const errorErr = error as Error;
-      hilog.error(DOMAIN, 'ShareKit', 'Share file failed: %{public}s', errorErr.message);
-      const result: ShareResultData = {
-        success: false,
-        error: errorErr.message
+      const shareParams: ShareParams = {
+        uris: [fileUri],
+        text: text,
+        title: options?.panelTitle || '分享文件'
       };
-      return result;
+
+      const result: ShareResult = await shareExtension.share(this.context!, shareParams);
+      
+      hilog.info(DOMAIN, 'ShareKit', 'Share file completed');
+      
+      return {
+        success: result.success,
+        targetApp: result.targetPackage,
+        error: result.errorCode ? `Error code: ${result.errorCode}` : undefined
+      };
+    } catch (error) {
+      const err = error as Error;
+      hilog.error(DOMAIN, 'ShareKit', 'Share file failed: %{public}s', err.message);
+      return {
+        success: false,
+        error: err.message
+      };
     }
   }
 
   /**
-   * 閸掑棔闊╂径姘�瀮娴?
+   * 分享多个文件
    */
   async shareMultipleFiles(fileUris: string[], text?: string, options?: ShareOptions): Promise<ShareResultData> {
     try {
@@ -244,23 +278,35 @@ class ShareKitService {
         throw new Error('ShareKit service not initialized');
       }
 
-      hilog.info(DOMAIN, 'ShareKit', 'Sharing multiple files');
+      hilog.info(DOMAIN, 'ShareKit', 'Sharing multiple files, count: %{public}d', fileUris.length);
 
-// TODO: Replace with actual ShareKit API when available
-      logger.warn('[ShareKit] shareMultipleFiles stub called');
-      const result1: ShareResultData = { success: false, error: 'ShareKit not available in this SDK version' };
-      return result1;
+      const shareParams: ShareParams = {
+        uris: fileUris,
+        text: text,
+        title: options?.panelTitle || '分享文件'
+      };
+
+      const result: ShareResult = await shareExtension.share(this.context!, shareParams);
+      
+      hilog.info(DOMAIN, 'ShareKit', 'Share multiple files completed');
+      
+      return {
+        success: result.success,
+        targetApp: result.targetPackage,
+        error: result.errorCode ? `Error code: ${result.errorCode}` : undefined
+      };
     } catch (error) {
       const err = error as Error;
-      const errorErr = error as Error;
-      hilog.error(DOMAIN, 'ShareKit', 'Share multiple files failed: %{public}s', errorErr.message);
-      const result2: ShareResultData = { success: false };
-      return result2;
+      hilog.error(DOMAIN, 'ShareKit', 'Share multiple files failed: %{public}s', err.message);
+      return {
+        success: false,
+        error: err.message
+      };
     }
   }
 
   /**
-   * 闁�氨鏁ら崚鍡曢煩閺傝�纭?
+   * 通用分享方法
    */
   async share(data: ShareData, options?: ShareOptions): Promise<ShareResultData> {
     switch (data.type) {
@@ -283,10 +329,10 @@ class ShareKitService {
     }
   }
 
-  // ==================== 瀹搞儱鍙块弬瑙勭《 ====================
+  // ==================== 资源释放 ====================
 
   /**
-   * 闁插﹥鏂佺挧鍕�爱
+   * 释放资源
    */
   release(): void {
     this.isInitialized = false;

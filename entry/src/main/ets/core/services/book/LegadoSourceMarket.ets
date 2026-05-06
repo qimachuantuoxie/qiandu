@@ -382,8 +382,9 @@ class LegadoSourceMarketService {
         return cached;
       }
 
-      // TODO: 实现实际的API调用
+      // 构建 API URL
       const url = this.baseUrl + '/api/market/search?keyword=' + encodeURIComponent(keyword) + '&page=' + page + '&pageSize=' + pageSize;
+      logger.info('[SourceMarket] Searching sources:', keyword, 'page:', page);
 
       const result = await this.httpGet<MarketQueryResult>(url);
 
@@ -430,8 +431,9 @@ class LegadoSourceMarketService {
         }
       }
 
-      // TODO: 实现实际的API调用
+      // 构建完整 URL
       const url = `${this.baseUrl}/api/market/sources?${queryParams}`;
+      logger.info('[SourceMarket] Querying sources with filters');
 
       const result = await this.httpGet<MarketQueryResult>(url);
 
@@ -459,8 +461,9 @@ class LegadoSourceMarketService {
         return cached;
       }
 
-      // TODO: 实现实际的API调用
+      // 构建详情 API URL
       const url = `${this.baseUrl}/api/market/sources/${marketId}`;
+      logger.info('[SourceMarket] Fetching source detail:', marketId);
 
       const result = await this.httpGet<SourceMarketItem>(url);
 
@@ -480,8 +483,9 @@ class LegadoSourceMarketService {
    */
   async previewSourcePackage(marketId: string): Promise<BookSource[] | null> {
     try {
-      // TODO: 实现实际的API调用
+      // 构建预览 API URL
       const url = `${this.baseUrl}/api/market/sources/${marketId}/preview`;
+      logger.info('[SourceMarket] Previewing source package:', marketId);
 
       const response = await this.httpGet<PreviewResponse>(url);
 
@@ -506,7 +510,7 @@ class LegadoSourceMarketService {
     try {
       logger.info('[SourceMarket] Downloading source package:', marketId);
 
-      // TODO: 实现实际的API调用
+      // 构建下载 API URL
       const url = `${this.baseUrl}/api/market/sources/${marketId}/download`;
 
       const response = await this.httpGet<DownloadResponse>(url);
@@ -711,8 +715,9 @@ class LegadoSourceMarketService {
         return cached;
       }
 
-      // TODO: 实现实际的API调用
+      // 构建排行榜 API URL
       const url = `${this.baseUrl}/api/market/ranking?type=${type}&limit=${limit}`;
+      logger.info('[SourceMarket] Fetching ranking:', type, 'limit:', limit);
 
       const result = await this.httpGet<SourceMarketItem[]>(url);
 
@@ -732,8 +737,9 @@ class LegadoSourceMarketService {
    */
   async getSourceStats(): Promise<SourceStats> {
     try {
-      // TODO: 实现实际的API调用
+      // 构建统计 API URL
       const url = `${this.baseUrl}/api/market/stats`;
+      logger.info('[SourceMarket] Fetching statistics');
 
       return await this.httpGet<SourceStats>(url) || {
         totalSources: 0,

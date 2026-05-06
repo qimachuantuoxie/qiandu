@@ -10,7 +10,7 @@ import { logger } from '../../../utils/Logger';
  */
 
 import { audioKitService, AudioType, PlayMode } from '../huawei-kit/AudioKitService';
-import { coreSpeechService } from '../ai/CoreSpeechService';
+import { coreSpeechService, SpeechListener, SpeechProgress } from '../ai/CoreSpeechService';
 
 /**
  * 章节内容
@@ -107,6 +107,12 @@ class NovelPlayerService {
 
   /** 页面变化监听器 */
   private pageChangeListeners: Array<(index: number) => void> = [];
+
+  /** 自动滚动定时器 */
+  private autoScrollTimer: number | null = null;
+
+  /** 当前是否在自动滚动 */
+  private isAutoScrolling: boolean = false;
 
   private constructor() {}
 
@@ -210,20 +216,57 @@ class NovelPlayerService {
     if (this.currentPageIndex >= this.pages.length) {
       logger.info('[NovelPlayer] All pages played');
       this.playState = PlayState.STOPPED;
+      this.stopAutoScroll();
       return;
     }
 
     const currentPage = this.pages[this.currentPageIndex];
     
     try {
-      // TODO: 调用CoreSpeech Service进行TTS
-      logger.info('[NovelPlayer] Speaking page:', this.currentPageIndex + 1);
+      // 设置 CoreSpeech Service 监听器
+      const speechListener: SpeechListener = {
+        onStart: () => {
+          logger.info('[NovelPlayer] TTS started for page:', this.currentPageIndex + 1);
+          this.notifyTTSListeners('speaking');
+        },
+        onComplete: () => {
+          logger.info('[NovelPlayer] TTS completed for page:', this.currentPageIndex + 1);
+          
+          // 如果正在播放且启用自动滚动，翻到下一页
+          if (this.playState === PlayState.PLAYING && this.config.autoScroll) {
+            setTimeout(() => {
+              if (this.nextPage()) {
+                this.speakCurrentPage();
+              } else {
+                this.playState = PlayState.STOPPED;
+                this.notifyTTSListeners('finished');
+              }
+            }, 500);
+          }
+        },
+        onError: (error: string) => {
+          logger.error('[NovelPlayer] TTS error:', error);
+          this.notifyTTSListeners('error');
+        },
+        onProgress: (progress: SpeechProgress) => {
+          // 可以根据进度更新 UI
+          logger.debug('[NovelPlayer] TTS progress:', progress.beginIndex, '-', progress.endIndex);
+        }
+      };
       
-      // 通知TTS状态变化
-      this.notifyTTSListeners('speaking');
+      coreSpeechService.setListener(speechListener);
+      
+      // 开始朗读
+      const success = await coreSpeechService.speak(currentPage);
+      
+      if (!success) {
+        logger.error('[NovelPlayer] Failed to start TTS');
+        this.notifyTTSListeners('error');
+      }
     } catch (error) {
       const err = error as Error;
       logger.error('[NovelPlayer] Speak failed:', err.message);
+      this.notifyTTSListeners('error');
     }
   }
 
@@ -231,8 +274,40 @@ class NovelPlayerService {
    * 启动自动滚动
    */
   private startAutoScroll(): void {
-    // TODO: 实现自动滚动逻辑
-    logger.info('[NovelPlayer] Auto scroll started');
+    if (this.isAutoScrolling) {
+      return;
+    }
+
+    this.isAutoScrolling = true;
+    const scrollInterval = this.config.scrollSpeed * 1000; // 转换为毫秒
+
+    logger.info('[NovelPlayer] Auto scroll started, interval:', scrollInterval, 'ms');
+
+    // 清除旧的定时器
+    this.stopAutoScroll();
+
+    // 创建新的定时器
+    this.autoScrollTimer = setInterval(() => {
+      if (this.playState === PlayState.PLAYING && this.isAutoScrolling) {
+        if (!this.nextPage()) {
+          // 已经到最后一页，停止自动滚动
+          this.stopAutoScroll();
+          logger.info('[NovelPlayer] Auto scroll finished - last page reached');
+        }
+      }
+    }, scrollInterval);
+  }
+
+  /**
+   * 停止自动滚动
+   */
+  private stopAutoScroll(): void {
+    if (this.autoScrollTimer !== null) {
+      clearInterval(this.autoScrollTimer);
+      this.autoScrollTimer = null;
+      this.isAutoScrolling = false;
+      logger.info('[NovelPlayer] Auto scroll stopped');
+    }
   }
 
   /**
@@ -243,7 +318,12 @@ class NovelPlayerService {
       this.playState = PlayState.PAUSED;
       logger.info('[NovelPlayer] Playback paused');
       
-      // TODO: 暂停TTS
+      // 暂停 TTS
+      coreSpeechService.pause();
+      
+      // 停止自动滚动
+      this.stopAutoScroll();
+      
       this.notifyTTSListeners('paused');
     }
   }
@@ -256,7 +336,14 @@ class NovelPlayerService {
       this.playState = PlayState.PLAYING;
       logger.info('[NovelPlayer] Playback resumed');
       
-      // TODO: 恢复TTS
+      // 恢复 TTS
+      coreSpeechService.resume();
+      
+      // 如果启用自动滚动，重新启动
+      if (this.config.autoScroll) {
+        this.startAutoScroll();
+      }
+      
       this.notifyTTSListeners('resumed');
     }
   }
@@ -268,7 +355,12 @@ class NovelPlayerService {
     this.playState = PlayState.STOPPED;
     logger.info('[NovelPlayer] Playback stopped');
     
-    // TODO: 停止TTS
+    // 停止 TTS
+    coreSpeechService.stop();
+    
+    // 停止自动滚动
+    this.stopAutoScroll();
+    
     this.notifyTTSListeners('stopped');
   }
 

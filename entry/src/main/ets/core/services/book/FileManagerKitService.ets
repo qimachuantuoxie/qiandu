@@ -275,15 +275,28 @@ class FileManagerKitService {
         };
       }
 
-      // TODO: Implement actual File Manager Kit delete API call
-      // The following is a placeholder until real API is available
+      // 创建回收站目录
+      const trashDir = `${this.appFilesDir}/.trash`;
+      if (!(await this.directoryExists(trashDir))) {
+        await fileIo.mkdir(trashDir);
+      }
+
+      // 生成唯一的回收站文件名 (使用时间戳 + 原始文件名)
+      const timestamp = Date.now();
+      const fileName = this.extractFileName(filePath);
+      const trashFileName = `${timestamp}_${fileName}`;
+      const trashFilePath = `${trashDir}/${trashFileName}`;
+
+      // 移动文件到回收站目录
+      await fileIo.move(filePath, trashFilePath);
+
       const trashInfo: TrashFileInfo = {
         originalUri: uri,
-        trashUri: `trash://${uri}`,
-        name: this.extractFileName(filePath),
+        trashUri: `file://${trashFilePath}`,
+        name: fileName,
         deletedTime: Date.now(),
         expireTime: Date.now() + 30 * MS_PER_DAY, // 30天后过期
-        size: (await fileIo.stat(filePath)).size
+        size: (await fileIo.stat(trashFilePath)).size
       };
 
       this.trashFiles.set(uri, trashInfo);
@@ -324,7 +337,27 @@ class FileManagerKitService {
         };
       }
 
-      // TODO: 恢复文件
+      // 解析回收站文件路径
+      const trashFilePath = trashInfo.trashUri.replace('file://', '');
+      const originalPath = trashInfo.originalUri.replace('file://', '');
+
+      // 检查回收站文件是否存在
+      if (!(await this.fileExists(trashFilePath))) {
+        return {
+          success: false,
+          message: '回收站文件不存在'
+        };
+      }
+
+      // 确保原目录存在
+      const originalDir = originalPath.substring(0, originalPath.lastIndexOf('/'));
+      if (!(await this.directoryExists(originalDir))) {
+        await fileIo.mkdir(originalDir);
+      }
+
+      // 移动文件回原位置
+      await fileIo.move(trashFilePath, originalPath);
+
       this.trashFiles.delete(fileUri);
       await this.saveTrashFiles();
 
@@ -361,7 +394,14 @@ class FileManagerKitService {
         };
       }
 
-      // TODO: 真正删除文件
+      // 解析回收站文件路径
+      const trashFilePath = trashInfo.trashUri.replace('file://', '');
+
+      // 真正删除文件
+      if (await this.fileExists(trashFilePath)) {
+        await fileIo.unlink(trashFilePath);
+      }
+
       this.trashFiles.delete(fileUri);
       await this.saveTrashFiles();
 
@@ -390,7 +430,21 @@ class FileManagerKitService {
         throw new Error('FileManagerKit not initialized');
       }
 
-      // TODO: 清空回收站
+      // 遍历所有回收站文件并删除
+      const entries = Array.from(this.trashFiles.entries());
+      for (let i = 0; i < entries.length; i++) {
+        const trashInfo = entries[i][1];
+        const trashFilePath = trashInfo.trashUri.replace('file://', '');
+        
+        try {
+          if (await this.fileExists(trashFilePath)) {
+            await fileIo.unlink(trashFilePath);
+          }
+        } catch (error) {
+          logger.warn('[FileManagerKit] Failed to delete trash file:', trashFilePath);
+        }
+      }
+
       this.trashFiles.clear();
       await this.saveTrashFiles();
 
@@ -735,8 +789,18 @@ class FileManagerKitService {
     }
 
     for (const uri of expiredUris) {
+      const trashInfo = this.trashFiles.get(uri);
+      if (trashInfo) {
+        const trashFilePath = trashInfo.trashUri.replace('file://', '');
+        try {
+          if (await this.fileExists(trashFilePath)) {
+            await fileIo.unlink(trashFilePath);
+          }
+        } catch (error) {
+          logger.warn('[FileManagerKit] Failed to delete expired trash file:', trashFilePath);
+        }
+      }
       this.trashFiles.delete(uri);
-      // TODO: 真正删除文件
     }
 
     if (expiredUris.length > 0) {
@@ -949,6 +1013,30 @@ class FileManagerKitService {
     try {
       await fileIo.access(filePath);
       return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * 检查文件是否存在
+   */
+  private async fileExists(filePath: string): Promise<boolean> {
+    try {
+      await fileIo.access(filePath);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * 检查目录是否存在
+   */
+  private async directoryExists(dirPath: string): Promise<boolean> {
+    try {
+      const stat = await fileIo.stat(dirPath);
+      return stat.isDirectory();
     } catch {
       return false;
     }

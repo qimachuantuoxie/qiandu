@@ -7,6 +7,7 @@ import { logger } from '../../../utils/Logger';
 import { preferenceManager } from '../utils/PreferenceManager';
 import { secureStorage } from '../utils/SecureStorage';
 import { MS_PER_MINUTE, MS_PER_HOUR, MS_PER_DAY } from '../../constants/TimeConstants';
+import http from '@ohos.net.http';
 
 /**
  * 用户信息接口
@@ -325,7 +326,6 @@ class LoginStateManager {
 
   /**
    * 刷新Token
-   * TODO: 实际项目中需要调用后端API刷新Token
    */
   async refreshToken(): Promise<boolean> {
     if (!this.currentUser || !this.currentUser.token) {
@@ -335,21 +335,85 @@ class LoginStateManager {
     try {
       logger.info('[LoginStateManager] Refreshing token...');
       
-      // TODO: 实际项目中需要调用后端API
-      // const response = await this.httpPost('/api/auth/refresh', { 
-      //   refreshToken: this.currentUser.refreshToken 
-      // });
+      // 使用 refreshToken 调用后端 API
+      const refreshToken = this.currentUser.refreshToken;
+      if (!refreshToken) {
+        logger.error('[LoginStateManager] No refresh token available');
+        return false;
+      }
+
+      // 构造请求数据
+      const requestData = {
+        refreshToken: refreshToken,
+        userId: this.currentUser.id
+      };
+
+      // 发送 POST 请求到后端
+      const response = await this.httpPost('/api/auth/refresh', requestData);
       
-      // 临时方案：延长当前Token有效期
-      this.currentUser.expiresAt = Date.now() + this.TOKEN_EXPIRY_TIME;
-      preferenceManager.setString('tokenExpiresAt', this.currentUser.expiresAt.toString());
-      
-      logger.info('[LoginStateManager] Token refreshed successfully');
-      return true;
+      if (response && response.success) {
+        // 更新 Token 信息
+        this.currentUser.token = response.data.accessToken;
+        this.currentUser.refreshToken = response.data.refreshToken;
+        this.currentUser.expiresAt = Date.now() + (response.data.expiresIn * 1000);
+        
+        // 保存到本地存储
+        preferenceManager.setString('token', this.currentUser.token);
+        preferenceManager.setString('refreshToken', this.currentUser.refreshToken);
+        preferenceManager.setString('tokenExpiresAt', this.currentUser.expiresAt.toString());
+        
+        logger.info('[LoginStateManager] Token refreshed successfully, expires at:', 
+          new Date(this.currentUser.expiresAt).toISOString());
+        return true;
+      } else {
+        logger.error('[LoginStateManager] Token refresh failed:', response?.message);
+        return false;
+      }
     } catch (error) {
       const err = error as Error;
       logger.error('[LoginStateManager] Token refresh failed:', err.message);
+      
+      // 如果刷新失败，清除登录状态
+      await this.logout();
       return false;
+    }
+  }
+
+  /**
+   * HTTP POST 请求封装
+   */
+  private async httpPost(url: string, data: Record<string, Object>): Promise<any> {
+    try {
+      // 使用 HarmonyOS http 模块
+      const httpRequest = http.createHttp();
+      
+      const baseUrl = preferenceManager.getString('apiBaseUrl', 'https://api.example.com');
+      const fullUrl = `${baseUrl}${url}`;
+      
+      const response = await httpRequest.request(fullUrl, {
+        method: http.RequestMethod.POST,
+        header: {
+          'Content-Type': 'application/json'
+        },
+        extraData: JSON.stringify(data),
+        connectTimeout: 5000,
+        readTimeout: 10000
+      });
+      
+      httpRequest.destroy();
+      
+      if (response.responseCode === 200) {
+        const resultStr = response.result !== null && response.result !== undefined
+          ? String(response.result)
+          : '{}';
+        return JSON.parse(resultStr);
+      } else {
+        throw new Error(`HTTP ${response.responseCode}`);
+      }
+    } catch (error) {
+      const err = error as Error;
+      logger.error('[LoginStateManager] HTTP POST failed:', err.message);
+      throw error;
     }
   }
 

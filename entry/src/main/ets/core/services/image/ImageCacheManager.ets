@@ -1,7 +1,7 @@
 import { logger } from '../../../utils/Logger';
 /**
- * 閸ュ墽澧栫紓鎾崇摠缁狅紕鎮婇崳?- 缁狅紕鎮婇崶鍓у�缂傛挸鐡?
  * Image Cache Manager - Manage image caching
+ * 图片缓存管理器 - 管理图片缓存
  */
 
 import { fileIo } from '@kit.CoreFileKit';
@@ -11,37 +11,40 @@ import { image } from '@kit.ImageKit';
 import { MS_PER_DAY } from '../../constants/TimeConstants';
 
 /**
- * 缂傛挸鐡ㄩ柊宥囩枂
+ * Cache configuration interface
+ * 缓存配置接口
  */
 export interface CacheConfig {
-  /** 閺堚偓婢堆呯处鐎涙ê銇囩亸蹇ョ礄鐎涙�濡�敍?*/
+  /** Maximum cache size in bytes */
   maxSize: number;
-  /** 缂傛挸鐡ㄩ惄顔肩秿鐠侯垰绶?*/
+  /** Cache directory path */
   cacheDir: string;
-  /** 缂傛挸鐡ㄦ潻鍥ㄦ埂閺冨爼妫块敍鍫燁嚑缁夋帪绱?*/
+  /** Cache expiry time in milliseconds */
   expiryTime: number;
 }
 
 /**
- * 缂傛挸鐡ㄦい?
+ * Cache item interface
+ * 缓存项接口
  */
 export interface CacheItem {
-  /** 閸樼喎顫愰弬鍥︽�鐠侯垰绶?*/
+  /** Source image path */
   sourcePath: string;
-  /** 缂傛挸鐡ㄩ弬鍥︽�鐠侯垰绶?*/
+  /** Cached file path */
   cachePath: string;
-  /** 閺傚洣娆㈡径褍鐨?*/
+  /** File size in bytes */
   size: number;
-  /** 閸掓稑缂撻弮鍫曟？ */
+  /** Creation timestamp */
   createTime: number;
-  /** 閺堚偓閸氬氦顔栭梻顔芥�闂?*/
+  /** Last access timestamp */
   lastAccessTime: number;
-  /** 缂傛挸鐡ㄩ柨?*/
+  /** Cache key */
   key: string;
 }
 
 /**
- * 閸ュ墽澧栫紓鈺傛杹闁��銆?
+ * Image scaling options
+ * 图片缩放选项
  */
 export interface ImageScaleOptions {
   width?: number;
@@ -49,7 +52,8 @@ export interface ImageScaleOptions {
 }
 
 /**
- * 閸ュ墽澧栫紓鎾崇摠缁狅紕鎮婇崳?
+ * Image Cache Manager class
+ * 图片缓存管理器类
  */
 class ImageCacheManager {
   private static instance: ImageCacheManager;
@@ -57,7 +61,7 @@ class ImageCacheManager {
   private cacheConfig: CacheConfig = {
     maxSize: 500 * 1024 * 1024, // 500MB
     cacheDir: '',
-    expiryTime: 7 * MS_PER_DAY // 7天
+    expiryTime: 7 * MS_PER_DAY // 7 days
   };
   private memoryCache: Map<string, image.PixelMap> = new Map();
   private cacheIndex: Map<string, CacheItem> = new Map();
@@ -72,35 +76,36 @@ class ImageCacheManager {
   }
 
   /**
-   * 閸掓繂顫愰崠?
+   * Initialize cache manager
+   * 初始化缓存管理器
    */
   async init(context: common.Context): Promise<void> {
     this.context = context;
     
-    // 閼惧嘲褰囩紓鎾崇摠閻╊喖缍?
+    // Get cache directory
     const cacheDir = context.cacheDir;
     this.cacheConfig.cacheDir = cacheDir + '/image_cache';
     
-    // 閸掓稑缂撶紓鎾崇摠閻╊喖缍?
+    // Create cache directory if not exists
     try {
       if (!fileIo.accessSync(this.cacheConfig.cacheDir)) {
         fileIo.mkdirSync(this.cacheConfig.cacheDir);
       }
     } catch (error) {
       const err = error as Error;
-      const errorErr = error as Error;
-      logger.error('[ImageCacheManager] Create cache dir failed: ' + errorErr.message);
+      logger.error('[ImageCacheManager] Create cache dir failed:', err.message);
     }
     
-    // 閸旂姾娴囩紓鎾崇摠缁便垹绱?
+    // Load cache index
     await this.loadCacheIndex();
     
-    // 濞撳懐鎮婃潻鍥ㄦ埂缂傛挸鐡?
+    // Clean expired cache
     await this.cleanExpiredCache();
   }
 
   /**
-   * 閸旂姾娴囩紓鎾崇摠缁便垹绱?
+   * Load cache index from storage
+   * 从存储加载缓存索引
    */
   private async loadCacheIndex(): Promise<void> {
     try {
@@ -111,13 +116,13 @@ class ImageCacheManager {
       }
     } catch (error) {
       const err = error as Error;
-      const errorErr = error as Error;
-      logger.error('[ImageCacheManager] Load cache index failed: ' + errorErr.message);
+      logger.error('[ImageCacheManager] Load cache index failed:', err.message);
     }
   }
 
   /**
-   * 娣囨繂鐡ㄧ紓鎾崇摠缁便垹绱?
+   * Save cache index to storage
+   * 保存缓存索引到存储
    */
   private async saveCacheIndex(): Promise<void> {
     try {
@@ -132,13 +137,13 @@ class ImageCacheManager {
       preferenceManager.setString('image_cache_index', indexJson);
     } catch (error) {
       const err = error as Error;
-      const errorErr = error as Error;
-      logger.error('[ImageCacheManager] Save cache index failed: ' + errorErr.message);
+      logger.error('[ImageCacheManager] Save cache index failed:', err.message);
     }
   }
 
   /**
-   * 閻㈢喐鍨氱紓鎾崇摠闁?
+   * Generate cache key
+   * 生成缓存键
    */
   private generateCacheKey(sourcePath: string, options?: ImageScaleOptions): string {
     let key = sourcePath;
@@ -150,25 +155,27 @@ class ImageCacheManager {
         key += '_h' + options.height;
       }
     }
-    // 娴ｈ法鏁ょ粻鈧�崡鏇犳畱閸濆牆绗?
+    // Hash the key
     return this.hashString(key);
   }
 
   /**
-   * 鐎涙�顑佹稉鎻掓惐鐢?
+   * Hash string function
+   * 字符串哈希函数
    */
   private hashString(str: string): string {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
       hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // 鏉烆剚宕叉稉?2娴ｅ秵鏆ｉ弫?
+      hash = hash & hash; // Convert to 32bit integer
     }
     return Math.abs(hash).toString(36);
   }
 
   /**
-   * 閼惧嘲褰囩紓鎾崇摠閸ュ墽澧栫捄顖氱窞
+   * Get cached image path
+   * 获取缓存图片路径
    */
   getCachedImagePath(sourcePath: string, options?: ImageScaleOptions): string | null {
     const key = this.generateCacheKey(sourcePath, options);
@@ -176,23 +183,23 @@ class ImageCacheManager {
     
     if (!item) return null;
     
-    // 濡�偓閺屻儳绱︾€涙ɑ妲搁崥锕佺箖閺?
+    // Check if cache is expired
     const now = Date.now();
     if (now - item.createTime > this.cacheConfig.expiryTime) {
       return null;
     }
     
-    // 濡�偓閺屻儳绱︾€涙ɑ鏋冩禒鑸垫Ц閸氾箑鐡ㄩ崷?
+    // Check if cache file exists
     try {
       if (fileIo.accessSync(item.cachePath)) {
-        // 閺囧瓨鏌婇張鈧�崥搴ゎ問闂傤喗妞傞梻?
+        // Update last access time
         item.lastAccessTime = now;
         this.cacheIndex.set(key, item);
         return item.cachePath;
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      logger.error('[ImageCacheManager] Access cache file failed: ' + message);
+      logger.error('[ImageCacheManager] Access cache file failed:', message);
       return null;
     }
     
@@ -200,19 +207,20 @@ class ImageCacheManager {
   }
 
   /**
-   * 缂傛挸鐡ㄩ崶鍓у�
+   * Cache image
+   * 缓存图片
    */
   async cacheImage(sourcePath: string, cachePath: string, options?: ImageScaleOptions): Promise<void> {
     const key = this.generateCacheKey(sourcePath, options);
     
     try {
-      // 閼惧嘲褰囬弬鍥︽�婢堆冪毈
+      // Get file stats
       const stat = fileIo.statSync(cachePath);
       
-      // 濡�偓閺屻儳绱︾€涙ê銇囩亸蹇旀Ц閸氾箒绉撮梽?
+      // Check cache size and clean if needed
       await this.checkCacheSize(stat.size);
       
-      // 閸掓稑缂撶紓鎾崇摠妞?
+      // Create cache item
       const cacheItem: CacheItem = {
         sourcePath,
         cachePath,
@@ -222,20 +230,20 @@ class ImageCacheManager {
         key
       };
       
-      // 濞ｈ�濮為崚鎵�偍瀵?
+      // Add to cache index
       this.cacheIndex.set(key, cacheItem);
       await this.saveCacheIndex();
       
       logger.info('[ImageCacheManager] Image cached:', key);
     } catch (error) {
       const err = error as Error;
-      const errorErr = error as Error;
-      logger.error('[ImageCacheManager] Cache image failed: ' + errorErr.message);
+      logger.error('[ImageCacheManager] Cache image failed:', err.message);
     }
   }
 
   /**
-   * 濡�偓閺屻儳绱︾€涙ê銇囩亸?
+   * Check cache size and clean if needed
+   * 检查缓存大小并在需要时清理
    */
   private async checkCacheSize(newFileSize: number): Promise<void> {
     let totalSize = 0;
@@ -244,14 +252,15 @@ class ImageCacheManager {
       totalSize += items[i].size;
     }
     
-    // 婵″倹鐏夐崝鐘辩瑐閺傜増鏋冩禒鎯扮Т鏉╁洣绗傞梽鎰剁礉濞撳懐鎮婇弮褏绱︾€?
+    // If cache exceeds limit, clean old cache
     if (totalSize + newFileSize > this.cacheConfig.maxSize) {
       await this.cleanOldCache(totalSize + newFileSize - this.cacheConfig.maxSize);
     }
   }
 
   /**
-   * 濞撳懐鎮婇弮褏绱︾€?
+   * Clean old cache based on LRU
+   * 基于LRU清理旧缓存
    */
   private async cleanOldCache(bytesToFree: number): Promise<void> {
     const items = Array.from(this.cacheIndex.values())
@@ -270,17 +279,17 @@ class ImageCacheManager {
         freed += item.size;
       } catch (error) {
         const err = error as Error;
-        const errorErr = error as Error;
-        logger.error('[ImageCacheManager] Delete cache file failed: ' + errorErr.message);
+        logger.error('[ImageCacheManager] Delete cache file failed:', err.message);
       }
     }
 
     await this.saveCacheIndex();
-    logger.info('[ImageCacheManager] Cleaned cache, freed: ' + freed + ' bytes');
+    logger.info('[ImageCacheManager] Cleaned cache, freed:', freed, 'bytes');
   }
 
   /**
-   * 濞撳懐鎮婃潻鍥ㄦ埂缂傛挸鐡?
+   * Clean expired cache
+   * 清理过期缓存
    */
   private async cleanExpiredCache(): Promise<void> {
     const now = Date.now();
@@ -305,20 +314,20 @@ class ImageCacheManager {
           this.cacheIndex.delete(key);
         } catch (error) {
           const err = error as Error;
-          const errorErr = error as Error;
-          logger.error('[ImageCacheManager] Delete expired cache failed: ' + errorErr.message);
+          logger.error('[ImageCacheManager] Delete expired cache failed:', err.message);
         }
       }
     }
 
     if (toDelete.length > 0) {
       await this.saveCacheIndex();
-      logger.info('[ImageCacheManager] Cleaned expired cache: ' + toDelete.length + ' items');
+      logger.info('[ImageCacheManager] Cleaned expired cache:', toDelete.length, 'items');
     }
   }
 
   /**
-   * 濞撳懐鈹栭幍鈧�張澶岀处鐎?
+   * Clear all cache
+   * 清除所有缓存
    */
   async clearCache(): Promise<void> {
     try {
@@ -331,8 +340,7 @@ class ImageCacheManager {
           }
         } catch (error) {
           const err = error as Error;
-          const errorErr = error as Error;
-          logger.error('[ImageCacheManager] Delete cache file failed: ' + errorErr.message);
+          logger.error('[ImageCacheManager] Delete cache file failed:', err.message);
         }
       }
 
@@ -343,13 +351,13 @@ class ImageCacheManager {
       logger.info('[ImageCacheManager] Cache cleared');
     } catch (error) {
       const err = error as Error;
-      const errorErr = error as Error;
-      logger.error('[ImageCacheManager] Clear cache failed: ' + errorErr.message);
+      logger.error('[ImageCacheManager] Clear cache failed:', err.message);
     }
   }
 
   /**
-   * 閼惧嘲褰囩紓鎾崇摠婢堆冪毈
+   * Get total cache size
+   * 获取总缓存大小
    */
   getCacheSize(): number {
     let totalSize = 0;
@@ -361,14 +369,16 @@ class ImageCacheManager {
   }
 
   /**
-   * 閼惧嘲褰囩紓鎾崇摠妞よ�鏆熼柌?
+   * Get cache item count
+   * 获取缓存项数量
    */
   getCacheCount(): number {
     return this.cacheIndex.size;
   }
 
   /**
-   * 鐠佸墽鐤嗛張鈧�径褏绱︾€涙ê銇囩亸?
+   * Set maximum cache size
+   * 设置最大缓存大小
    */
   async setMaxCacheSize(size: number): Promise<void> {
     this.cacheConfig.maxSize = size;
@@ -377,7 +387,8 @@ class ImageCacheManager {
   }
 
   /**
-   * 鐠佸墽鐤嗙紓鎾崇摠鏉╁洦婀￠弮鍫曟？
+   * Set cache expiry time
+   * 设置缓存过期时间
    */
   async setCacheExpiryTime(time: number): Promise<void> {
     this.cacheConfig.expiryTime = time;
