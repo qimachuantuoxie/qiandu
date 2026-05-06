@@ -1,3 +1,5 @@
+import { layoutHelper, ScreenInfo } from '../../../common/utils/LayoutHelper';
+
 import { logger } from '../../../common/utils/Logger';
 import { router, promptAction } from '@kit.ArkUI';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
@@ -130,53 +132,33 @@ struct NotesPage {
   }
 
   private getFilteredNotes(): NoteWithBook[] {
-    let filtered: NoteWithBook[] = [];
-
-    for (let i = 0; i < this.notes.length; i++) {
-      filtered.push(this.notes[i]);
-    }
+    let filtered = this.notes.slice();
 
     if (this.selectedBookId) {
-      const bookFiltered: NoteWithBook[] = [];
-      for (let i = 0; i < filtered.length; i++) {
-        const item: NoteWithBook = filtered[i];
-        if (item.book && item.book.id === this.selectedBookId) {
-          bookFiltered.push(item);
-        }
-      }
-      filtered = bookFiltered;
+      filtered = filtered.filter(item => 
+        item.book && item.book.id === this.selectedBookId);
     }
 
     if (this.selectedTag) {
-      const tagFiltered: NoteWithBook[] = [];
-      for (let i = 0; i < filtered.length; i++) {
-        const item: NoteWithBook = filtered[i];
-        const noteTags: string[] | undefined = item.note.tags;
-        if (noteTags) {
-          for (let j = 0; j < noteTags.length; j++) {
-            if (noteTags[j] === this.selectedTag) {
-              tagFiltered.push(item);
-              break;
-            }
-          }
-        }
-      }
-      filtered = tagFiltered;
+      filtered = filtered.filter(item => 
+        item.note.tags && item.note.tags.includes(this.selectedTag));
     }
 
     if (this.searchText.trim()) {
       const keyword = this.searchText.toLowerCase();
-      const searchFiltered: NoteWithBook[] = [];
-      for (let i = 0; i < filtered.length; i++) {
-        const item: NoteWithBook = filtered[i];
-        const noteContent: string = item.note.content;
-        const contentMatch: boolean = noteContent ? noteContent.toLowerCase().includes(keyword) : false;
-        const highlight: string | undefined = item.note.highlight;
-        const highlightMatch: boolean = highlight ? highlight.toLowerCase().includes(keyword) : false;
-        const bookTitle: string = item.book ? item.book.title : '';
-        const titleMatch: boolean = bookTitle.toLowerCase().includes(keyword);
+      filtered = filtered.filter(item => {
+        const content = item.note.content;
+        const contentMatch = content ? content.toLowerCase().includes(keyword) : false;
+        const highlight = item.note.highlight;
+        const highlightMatch = highlight ? highlight.toLowerCase().includes(keyword) : false;
+        const bookTitle = item.book ? item.book.title : '';
+        const titleMatch = bookTitle.toLowerCase().includes(keyword);
+        return contentMatch || highlightMatch || titleMatch;
+      });
+    }
 
-        if (contentMatch || highlightMatch || titleMatch) {
+    return filtered;
+  }
           searchFiltered.push(item);
         }
       }

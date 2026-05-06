@@ -20,9 +20,10 @@ export class NotesViewModel {
     this.errorMsg = '';
     this.currentBookId = bookId;
     try {
-      this.notes = bookViewModel.getNotes(bookId);
+      const notes = bookViewModel.getNotes(bookId);
+      this.notes = notes || [];
     } catch (error) {
-      this.errorMsg = '鍔犺浇绗旇澶辫触: ' + (error as Error).message;
+      this.errorMsg = '加载笔记失败: ' + (error as Error).message;
     } finally {
       this.isLoading = false;
     }
@@ -33,25 +34,20 @@ export class NotesViewModel {
    */
   async addNote(content: string): Promise<void> {
     if (!content.trim()) {
-      this.errorMsg = '绗旇鍐呭涓嶈兘涓虹┖';
+      this.errorMsg = '笔记内容不能为空';
       return;
     }
     if (!this.currentBookId) {
-      this.errorMsg = '鏈€夋嫨涔︾睄,鏃犳硶娣诲姞绗旇';
+      this.errorMsg = '未选择书籍，无法添加笔记';
       return;
     }
     this.isLoading = true;
     this.errorMsg = '';
     try {
-      const note = bookViewModel.addNote(this.currentBookId, 0, content);
-      const newNotes: Note[] = [];
-      for (let i = 0; i < this.notes.length; i++) {
-        newNotes.push(this.notes[i]);
-      }
-      newNotes.push(note);
-      this.notes = newNotes;
+      bookViewModel.addNote(this.currentBookId, 0, content);
+      await this.loadNotes(this.currentBookId);
     } catch (error) {
-      this.errorMsg = '娣诲姞绗旇澶辫触: ' + (error as Error).message;
+      this.errorMsg = '添加笔记失败: ' + (error as Error).message;
     } finally {
       this.isLoading = false;
     }
@@ -63,13 +59,7 @@ export class NotesViewModel {
   deleteNote(noteId: string): void {
     if (!this.currentBookId) return;
     bookViewModel.deleteNote(this.currentBookId, noteId);
-    const newNotes: Note[] = [];
-    for (let i = 0; i < this.notes.length; i++) {
-      if (this.notes[i].id !== noteId) {
-        newNotes.push(this.notes[i]);
-      }
-    }
-    this.notes = newNotes;
+    this.loadNotes(this.currentBookId);
   }
 }
 

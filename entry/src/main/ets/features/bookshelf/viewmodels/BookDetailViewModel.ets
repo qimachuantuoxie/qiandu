@@ -60,32 +60,12 @@ export class BookDetailViewModel {
   }
 
   toggleFavorite(): void {
-    if (this.book) {
-      const newFavorite = !this.isFavorite;
-      this.isFavorite = newFavorite;
-      const updatedBook: BookInfo = {
-        id: this.book.id,
-        title: this.book.title,
-        author: this.book.author,
-        coverUrl: this.book.coverUrl,
-        description: this.book.description,
-        status: this.book.status,
-        currentPage: this.book.currentPage,
-        totalPages: this.book.totalPages,
-        readProgress: this.book.readProgress,
-        isFavorite: newFavorite,
-        addTime: this.book.addTime,
-        lastReadTime: this.book.lastReadTime,
-        totalReadTime: this.book.totalReadTime,
-        chapters: this.book.chapters,
-        tags: this.book.tags,
-        groupIds: this.book.groupIds,
-        format: this.book.format,
-        filePath: this.book.filePath
-      };
-      bookViewModel.updateBook(updatedBook);
-      this.book = updatedBook;
-    }
+    if (!this.book) return;
+    const newFavorite = !this.isFavorite;
+    this.isFavorite = newFavorite;
+    const updatedBook = Object.assign({}, this.book, { isFavorite: newFavorite });
+    bookViewModel.updateBook(updatedBook);
+    this.book = updatedBook;
   }
 }
 

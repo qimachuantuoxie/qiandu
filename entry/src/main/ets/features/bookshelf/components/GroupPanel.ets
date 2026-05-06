@@ -66,7 +66,7 @@ export struct GroupPanel {
 
             // 閼奉亜鐣炬稊澶婂瀻缂?
             ForEach(this.groups, (group: BookshelfGroup) => {
-              this.GroupItem(group.id, '棣冩惂', group.name)
+              this.GroupItem(group.id, $r('app.media.ic_folder'), group.name)
             }, (group: BookshelfGroup) => group.id)
           }
           .width('100%')

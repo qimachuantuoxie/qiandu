@@ -1,3 +1,5 @@
+import { layoutHelper, ScreenInfo } from '../../../common/utils/LayoutHelper';
+
 import { logger } from '../../../common/utils/Logger';
 import { router, promptAction } from '@kit.ArkUI';
 import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
@@ -117,38 +119,27 @@ struct BookmarksPage {
   }
 
   private getFilteredBookmarks(): BookmarkWithBook[] {
-    let filtered: BookmarkWithBook[] = [];
-
-    for (let i = 0; i < this.bookmarks.length; i++) {
-      filtered.push(this.bookmarks[i]);
-    }
+    let filtered = this.bookmarks.slice();
 
     if (this.selectedBookId) {
-      const bookFiltered: BookmarkWithBook[] = [];
-      for (let i = 0; i < filtered.length; i++) {
-        const item: BookmarkWithBook = filtered[i];
-        if (item.book && item.book.id === this.selectedBookId) {
-          bookFiltered.push(item);
-        }
-      }
-      filtered = bookFiltered;
+      filtered = filtered.filter(item => 
+        item.book && item.book.id === this.selectedBookId);
     }
 
     if (this.searchText.trim()) {
       const keyword = this.searchText.toLowerCase();
-      const searchFiltered: BookmarkWithBook[] = [];
-      for (let i = 0; i < filtered.length; i++) {
-        const item: BookmarkWithBook = filtered[i];
-        const titleMatch: boolean = item.bookmark.title.toLowerCase().includes(keyword);
-        const note: string | undefined = item.bookmark.note;
-        const noteMatch: boolean = note ? note.toLowerCase().includes(keyword) : false;
-        const bookTitle: string = item.book ? item.book.title : '';
-        const bookTitleMatch: boolean = bookTitle.toLowerCase().includes(keyword);
+      filtered = filtered.filter(item => {
+        const titleMatch = item.bookmark.title.toLowerCase().includes(keyword);
+        const note = item.bookmark.note;
+        const noteMatch = note ? note.toLowerCase().includes(keyword) : false;
+        const bookTitle = item.book ? item.book.title : '';
+        const bookTitleMatch = bookTitle.toLowerCase().includes(keyword);
+        return titleMatch || noteMatch || bookTitleMatch;
+      });
+    }
 
-        if (titleMatch || noteMatch || bookTitleMatch) {
-          searchFiltered.push(item);
-        }
-      }
+    return filtered;
+  }
       filtered = searchFiltered;
     }
 
