@@ -3,14 +3,14 @@ import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { promptAction } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { preferenceManager } from '../../../core/utils/PreferenceManager';
-import { themeManager, AppColors, COMMON_COLORS } from '../../../core/utils/AppTheme';
+import { themeManager, AppColors } from '../../../core/utils/AppTheme';
 import { fontScaleManager } from '../../../core/utils/FontScaleManager';
 import { PageHeader, getPageBackgroundColor } from '../../../common/utils/PageLayoutHelper';
 import { HDSCard } from '../../../common/components/HDSCard';
 import { DialogHelper } from '../../../common/utils/DialogHelper';
 import { HDSColours, HDSSpacing, HDSBorderRadius, HDSTypography } from '../../../core/design/tokens/HDSDTokens';
-import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
-import { bookSourceViewModel } from './viewmodels/BookSourceViewModel';
+import { layoutHelper, ScreenInfo } from '../../common/utils/LayoutHelper';
+import { bookSourceViewModel } from '../viewmodels/BookSourceViewModel';
 import { BookSource, BookSourceType } from '../../../core/models/BookSourceModel';
 
 interface SourceItem {
@@ -134,70 +134,47 @@ struct SourceMarketPage {
 
   build() {
     Column() {
-      // 顶部导航栏
-      Row() {
-        Row() {
-          SymbolGlyph($r('sys.symbol.chevron.left'))
-            .fontSize(Size.iconLG)
-            .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
-        }
-        .width(Size.buttonMD)
-        .height(Size.buttonMD)
-        .borderRadius(BorderRadius.full)
-        .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
-        .justifyContent(FlexAlign.Center)
-        .onClick(() => {
+      // 标准页面头部
+      PageHeader({
+        title: '书源市场',
+        showBack: true,
+        onBack: () => {
           try {
             goBack();
           } catch (error) {
             const msg = error instanceof Error ? error.message : String(error);
             logger.error('[SourceMarketPage] back failed:', msg);
           }
-        })
-        .stateStyles({
-          pressed: { .scale({ x: 0.9, y: 0.9 }) },
-          normal: { .scale({ x: 1, y: 1 }) }
-        })
-
-        Text('书源市场')
-          .fontSize(fontScaleManager.getScaledFontSize(18))
-          .fontWeight(FontWeight.SemiBold)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
-          .layoutWeight(1)
-          .textAlign(TextAlign.Center)
-
-        // 管理按钮
-        Row() {
-          SymbolGlyph($r('sys.symbol.gearshape'))
-            .fontSize(Size.iconSM)
-            .fontColor([this.currentColors.primary])
+        },
+        rightContent: () => {
+          // 管理按钮
+          Row() {
+            SymbolGlyph($r('sys.symbol.gearshape'))
+              .fontSize(HDSTypography.sizes.md)
+              .fontColor([HDSColours.primary.blue])
+          }
+          .width(32)
+          .height(32)
+          .borderRadius(HDSBorderRadius.full)
+          .backgroundColor(HDSColours.primary.blue + '15')
+          .justifyContent(FlexAlign.Center)
+          .onClick(() => {
+            navigateTo('features/source-market/pages/BookSourceManagePage');
+          })
         }
-        .width(Size.buttonSM)
-        .height(Size.buttonSM)
-        .borderRadius(BorderRadius.full)
-        .backgroundColor(this.currentColors.primary + '15')
-        .justifyContent(FlexAlign.Center)
-        .onClick(() => {
-          navigateTo('pages/BookSourceManagePage');
-        })
-      }
-      .width('100%')
-      .height(Size.buttonLG + Spacing.sm)
-      .padding({ left: Spacing.lg, right: Spacing.lg })
-      .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
-      .shadow(getShadow('sm', this.isDarkMode))
+      })
 
       // 搜索栏
-      Row({ space: Spacing.sm }) {
+      Row({ space: HDSSpacing.sm }) {
         SymbolGlyph($r('sys.symbol.magnifyingglass'))
-          .fontSize(Size.iconSM)
-          .fontColor([this.tc('#8E8E93', '#8E8E93')])
-          .margin({ left: Spacing.md })
+          .fontSize(HDSTypography.sizes.md)
+          .fontColor([this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600])
+          .margin({ left: HDSSpacing.md })
 
         TextInput({ placeholder: '搜索书源...', text: $$this.searchText })
-          .placeholderColor(this.tc('#C7C7CC', '#8E8E93'))
-          .fontSize(fontScaleManager.getScaledFontSize(14))
-          .height(Size.inputSM)
+          .placeholderColor(this.isDarkMode ? HDSColours.neutralDark.textTertiary : HDSColours.neutral.gray400)
+          .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.sm))
+          .height(40)
           .backgroundColor(Color.Transparent)
           .layoutWeight(1)
           .onChange((value: string) => {
@@ -207,11 +184,11 @@ struct SourceMarketPage {
         if (this.searchText) {
           Row() {
             SymbolGlyph($r('sys.symbol.xmark.circle.fill'))
-              .fontSize(Size.iconSM)
-              .fontColor([this.tc('#8E8E93', '#8E8E93')])
+              .fontSize(HDSTypography.sizes.md)
+              .fontColor([this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600])
           }
-          .width(Size.buttonSM)
-          .height(Size.buttonSM)
+          .width(32)
+          .height(32)
           .justifyContent(FlexAlign.Center)
           .onClick(() => {
             this.searchText = '';
@@ -219,17 +196,17 @@ struct SourceMarketPage {
         }
       }
       .width('100%')
-      .height(Size.inputSM)
-      .padding({ left: Spacing.sm, right: Spacing.sm })
-      .backgroundColor(this.tc('#F2F2F7', '#2C2C2E'))
-      .borderRadius(BorderRadius.xl)
-      .margin({ left: Spacing.lg, right: Spacing.lg, top: Spacing.md })
+      .height(40)
+      .padding({ left: HDSSpacing.sm, right: HDSSpacing.sm })
+      .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.surface : HDSColours.neutral.gray100)
+      .borderRadius(HDSBorderRadius.xl)
+      .margin({ left: HDSSpacing.lg, right: HDSSpacing.lg, top: HDSSpacing.md })
 
       // 书源列表
       if (this.getFilteredSources().length === 0) {
         this.EmptyState()
       } else {
-        List({ space: Spacing.md }) {
+        List({ space: HDSSpacing.md }) {
           ForEach(this.getFilteredSources(), (source: SourceItem) => {
             ListItem() {
               this.SourceItem(source)
@@ -239,10 +216,10 @@ struct SourceMarketPage {
         .width('100%')
         .layoutWeight(1)
         .padding({ 
-          left: Spacing.lg, 
-          right: Spacing.lg,
-          top: Spacing.md,
-          bottom: Spacing.xxxl
+          left: HDSSpacing.lg, 
+          right: HDSSpacing.lg,
+          top: HDSSpacing.md,
+          bottom: HDSSpacing.xxxl
         })
         .scrollBar(BarState.Auto)
         .edgeEffect(EdgeEffect.Spring)
@@ -250,41 +227,41 @@ struct SourceMarketPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
+    .backgroundColor(getPageBackgroundColor())
   }
 
   @Builder
   EmptyState() {
-    Column({ space: Spacing.xl }) {
+    Column({ space: HDSSpacing.xl }) {
       Column() {
         SymbolGlyph($r('sys.symbol.book.closed'))
-          .fontSize(Size.iconXXXL * 1.5)
-          .fontColor([this.tc('#D1D1D6', '#48484A')])
+          .fontSize(64)
+          .fontColor([this.isDarkMode ? HDSColours.neutralDark.textDisabled : HDSColours.neutral.gray400])
       }
       .width(100)
       .height(100)
-      .borderRadius(BorderRadius.full)
-      .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+      .borderRadius(HDSBorderRadius.full)
+      .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.surface : HDSColours.neutral.gray100)
       .justifyContent(FlexAlign.Center)
 
       Text('暂无书源')
-        .fontSize(fontScaleManager.getScaledFontSize(16))
+        .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.lg))
         .fontWeight(FontWeight.Medium)
-        .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
 
       Text('前往书源管理页面添加书源')
-        .fontSize(fontScaleManager.getScaledFontSize(13))
-        .fontColor(this.tc('#8E8E93', '#8E8E93'))
+        .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.sm))
+        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
 
       Button('管理书源')
-        .height(Size.buttonMD)
-        .fontSize(fontScaleManager.getScaledFontSize(14))
-        .fontColor('#FFFFFF')
-        .backgroundColor(COMMON_COLORS.PRIMARY_BLUE)
-        .borderRadius(BorderRadius.xl)
-        .padding({ left: Spacing.xxl, right: Spacing.xxl })
+        .height(40)
+        .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.sm))
+        .fontColor(HDSColours.neutral.white)
+        .backgroundColor(HDSColours.primary.blue)
+        .borderRadius(HDSBorderRadius.xl)
+        .padding({ left: HDSSpacing.xxl, right: HDSSpacing.xxl })
         .onClick(() => {
-          navigateTo('pages/BookSourceManagePage');
+          navigateTo('features/source-market/pages/BookSourceManagePage');
         })
     }
     .width('100%')
@@ -294,47 +271,47 @@ struct SourceMarketPage {
 
   @Builder
   SourceItem(source: SourceItem) {
-    Column({ space: Spacing.md }) {
+    Column({ space: HDSSpacing.md }) {
       // 头部：名称和评分
-      Row({ space: Spacing.md }) {
+      Row({ space: HDSSpacing.md }) {
         // 图标
         Column() {
           SymbolGlyph($r('sys.symbol.book.closed.fill'))
-            .fontSize(Size.iconXL)
-            .fontColor(['#FFFFFF'])
+            .fontSize(HDSTypography.sizes.xl)
+            .fontColor([HDSColours.neutral.white])
         }
-        .width(Size.avatarLG)
-        .height(Size.avatarLG)
-        .borderRadius(BorderRadius.lg)
+        .width(48)
+        .height(48)
+        .borderRadius(HDSBorderRadius.lg)
         .linearGradient({
           direction: GradientDirection.Top,
-          colors: [COMMON_COLORS.PRIMARY_BLUE, COMMON_COLORS.PRIMARY_BLUE + 'CC']
+          colors: [HDSColours.primary.blue, HDSColours.primary.blue + 'CC']
         })
         .justifyContent(FlexAlign.Center)
 
-        Column({ space: Spacing.xs }) {
-          Row({ space: Spacing.sm }) {
+        Column({ space: HDSSpacing.xs }) {
+          Row({ space: HDSSpacing.sm }) {
             Text(source.name)
-              .fontSize(fontScaleManager.getScaledFontSize(16))
+              .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.lg))
               .fontWeight(FontWeight.SemiBold)
-              .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
+              .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
 
             // 评分
-            Row({ space: Spacing.xs }) {
+            Row({ space: HDSSpacing.xs }) {
               SymbolGlyph($r('sys.symbol.star.fill'))
-                .fontSize(Size.iconXS)
+                .fontSize(HDSTypography.sizes.xs)
                 .fontColor(['#FFD700'])
               
               Text(source.rating.toFixed(1))
-                .fontSize(fontScaleManager.getScaledFontSize(12))
+                .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.xs))
                 .fontWeight(FontWeight.Medium)
                 .fontColor('#FFD700')
             }
           }
 
           Text(source.description)
-            .fontSize(fontScaleManager.getScaledFontSize(12))
-            .fontColor(this.tc('#8E8E93', '#8E8E93'))
+            .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.xs))
+            .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
             .maxLines(1)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
         }
@@ -343,12 +320,12 @@ struct SourceMarketPage {
 
         // 安装按钮
         Button('安装')
-          .height(Size.buttonSM)
-          .fontSize(fontScaleManager.getScaledFontSize(13))
-          .fontColor('#FFFFFF')
-          .backgroundColor(COMMON_COLORS.PRIMARY_BLUE)
-          .borderRadius(BorderRadius.xl)
-          .padding({ left: Spacing.lg, right: Spacing.lg })
+          .height(32)
+          .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.sm))
+          .fontColor(HDSColours.neutral.white)
+          .backgroundColor(HDSColours.primary.blue)
+          .borderRadius(HDSBorderRadius.xl)
+          .padding({ left: HDSSpacing.lg, right: HDSSpacing.lg })
           .onClick(() => {
             promptAction.showToast({ message: `正在安装 ${source.name}`, duration: 1500 });
           })
@@ -360,35 +337,35 @@ struct SourceMarketPage {
       .width('100%')
 
       // 统计信息
-      Row({ space: Spacing.lg }) {
-        Row({ space: Spacing.xs }) {
+      Row({ space: HDSSpacing.lg }) {
+        Row({ space: HDSSpacing.xs }) {
           SymbolGlyph($r('sys.symbol.books.vertical'))
-            .fontSize(Size.iconXS)
-            .fontColor([this.tc('#8E8E93', '#8E8E93')])
+            .fontSize(HDSTypography.sizes.xs)
+            .fontColor([this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600])
           
           Text(this.formatNumber(source.bookCount) + ' 本')
-            .fontSize(fontScaleManager.getScaledFontSize(12))
-            .fontColor(this.tc('#8E8E93', '#8E8E93'))
+            .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.xs))
+            .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
         }
 
-        Row({ space: Spacing.xs }) {
+        Row({ space: HDSSpacing.xs }) {
           SymbolGlyph($r('sys.symbol.person'))
-            .fontSize(Size.iconXS)
-            .fontColor([this.tc('#8E8E93', '#8E8E93')])
+            .fontSize(HDSTypography.sizes.xs)
+            .fontColor([this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600])
           
           Text(source.author)
-            .fontSize(fontScaleManager.getScaledFontSize(12))
-            .fontColor(this.tc('#8E8E93', '#8E8E93'))
+            .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.xs))
+            .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
         }
 
-        Row({ space: Spacing.xs }) {
+        Row({ space: HDSSpacing.xs }) {
           SymbolGlyph($r('sys.symbol.arrow.down.circle'))
-            .fontSize(Size.iconXS)
-            .fontColor([this.tc('#8E8E93', '#8E8E93')])
+            .fontSize(HDSTypography.sizes.xs)
+            .fontColor([this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600])
           
           Text(this.formatNumber(source.installCount) + ' 次')
-            .fontSize(fontScaleManager.getScaledFontSize(12))
-            .fontColor(this.tc('#8E8E93', '#8E8E93'))
+            .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.xs))
+            .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
         }
 
         Blank()
@@ -400,35 +377,39 @@ struct SourceMarketPage {
         Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
           ForEach(source.tags, (tag: string) => {
             Text(tag)
-              .fontSize(fontScaleManager.getScaledFontSize(11))
+              .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.xs))
               .padding({ 
-                left: Spacing.sm, 
-                right: Spacing.sm, 
-                top: Spacing.xs, 
-                bottom: Spacing.xs 
+                left: HDSSpacing.sm, 
+                right: HDSSpacing.sm, 
+                top: HDSSpacing.xs, 
+                bottom: HDSSpacing.xs 
               })
-              .backgroundColor(this.currentColors.primary + '10')
-              .fontColor(this.currentColors.primary)
-              .borderRadius(BorderRadius.xl)
-              .margin({ right: Spacing.xs })
+              .backgroundColor(HDSColours.primary.blue + '10')
+              .fontColor(HDSColours.primary.blue)
+              .borderRadius(HDSBorderRadius.xl)
+              .margin({ right: HDSSpacing.xs })
           }, (tag: string) => tag)
         }
         .width('100%')
       }
     }
     .width('100%')
-    .padding(Spacing.lg)
-    .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-    .borderRadius(BorderRadius.xl)
-    .shadow(getShadow('sm', this.isDarkMode))
+    .padding(HDSPacing.lg)
+    .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.surface : HDSColours.neutral.white)
+    .borderRadius(HDSBorderRadius.xl)
+    .shadow({
+      radius: 4,
+      color: this.isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.04)',
+      offsetY: 2
+    })
     .stateStyles({
       pressed: { 
-        .scale({ x: 0.98, y: 0.98 }),
-        .backgroundColor(this.tc('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.05)'))
+        scale: { x: 0.98, y: 0.98 },
+        backgroundColor: this.isDarkMode ? HDSColours.neutralDark.bgHover : HDSColours.neutral.gray50
       },
       normal: { 
-        .scale({ x: 1, y: 1 }),
-        .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
+        scale: { x: 1, y: 1 },
+        backgroundColor: this.isDarkMode ? HDSColours.neutralDark.surface : HDSColours.neutral.white
       }
     })
   }
@@ -441,28 +422,28 @@ struct SourceMarketPagePreview {
   build() {
     Column() {
       Text('书源市场 - 浅色模式')
-        .fontSize(16)
+        .fontSize(HDSTypography.sizes.lg)
         .fontWeight(FontWeight.Bold)
-        .padding(Spacing.md)
-        .backgroundColor('#F0F0F0')
+        .padding(HDSPacing.md)
+        .backgroundColor(HDSColours.neutral.gray100)
 
       SourceMarketPage()
         .height(700)
 
       Divider()
-        .margin({ top: 20, bottom: 20 })
+        .margin({ top: HDSSpacing.xl, bottom: HDSSpacing.xl })
 
       Text('书源市场 - 深色模式')
-        .fontSize(16)
+        .fontSize(HDSTypography.sizes.lg)
         .fontWeight(FontWeight.Bold)
-        .padding(Spacing.md)
-        .backgroundColor('#333333')
-        .fontColor('#FFFFFF')
+        .padding(HDSPacing.md)
+        .backgroundColor(HDSColours.neutralDark.surface)
+        .fontColor(HDSColours.neutralDark.textPrimary)
 
       SourceMarketPage()
         .height(700)
     }
     .width('100%')
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(HDSColours.neutral.white)
   }
 }

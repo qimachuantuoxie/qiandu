@@ -3,14 +3,13 @@ import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { router, promptAction } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { preferenceManager } from '../../../core/utils/PreferenceManager';
-import { themeManager, AppColors, COMMON_COLORS } from '../../../core/utils/AppTheme';
+import { themeManager, AppColors } from '../../../core/utils/AppTheme';
 import { fontScaleManager } from '../../../core/utils/FontScaleManager';
 import { PageHeader, getPageBackgroundColor } from '../../../common/utils/PageLayoutHelper';
 import { HDSCard } from '../../../common/components/HDSCard';
 import { DialogHelper } from '../../../common/utils/DialogHelper';
 import { HDSColours, HDSSpacing, HDSBorderRadius, HDSTypography } from '../../../core/design/tokens/HDSDTokens';
-import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
-import { ThemeTokens } from '../../common/utils/ThemeTokens';
+import { layoutHelper, ScreenInfo } from '../../common/utils/LayoutHelper';
 
 interface DictionaryResult {
   word: string;
@@ -116,63 +115,36 @@ struct DictionaryPage {
 
   build() {
     Column() {
-      // 顶部导航栏
-      Row() {
-        Row() {
-          SymbolGlyph($r('sys.symbol.chevron.left'))
-            .fontSize(Size.iconLG)
-            .fontColor([ThemeTokens.textPrimary()])
-        }
-        .width(Size.buttonMD)
-        .height(Size.buttonMD)
-        .borderRadius(BorderRadius.full)
-        .backgroundColor(ThemeTokens.bgHover())
-        .justifyContent(FlexAlign.Center)
-        .onClick(() => {
+      // 标准页面头部
+      PageHeader({
+        title: '词典',
+        showBack: true,
+        onBack: () => {
           try {
             goBack();
           } catch (error) {
             const msg = error instanceof Error ? error.message : String(error);
             logger.error('[DictionaryPage] back failed:', msg);
           }
-        })
-        .stateStyles({
-          pressed: { .scale({ x: 0.9, y: 0.9 }) },
-          normal: { .scale({ x: 1, y: 1 }) }
-        })
-
-        Text('词典')
-          .fontSize(fontScaleManager.getScaledFontSize(18))
-          .fontWeight(FontWeight.SemiBold)
-          .fontColor(ThemeTokens.textPrimary())
-          .layoutWeight(1)
-          .textAlign(TextAlign.Center)
-
-        Blank()
-          .width(Size.buttonMD)
-      }
-      .width('100%')
-      .height(Size.buttonLG + Spacing.sm)
-      .padding({ left: Spacing.lg, right: Spacing.lg })
-      .backgroundColor(ThemeTokens.bgSecondary())
-      .shadow(getShadow('sm', this.isDarkMode))
+        }
+      })
 
       // 搜索区域
-      Column({ space: Spacing.md }) {
-        Row({ space: Spacing.sm }) {
+      Column({ space: HDSSpacing.md }) {
+        Row({ space: HDSSpacing.sm }) {
           SymbolGlyph($r('sys.symbol.magnifyingglass'))
-            .fontSize(Size.iconMD)
-            .fontColor([ThemeTokens.textSecondary()])
-            .margin({ left: Spacing.md })
+            .fontSize(HDSTypography.sizes.lg)
+            .fontColor([this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600])
+            .margin({ left: HDSSpacing.md })
 
           TextInput({ 
             placeholder: '输入单词查询...', 
             text: $$this.searchText,
             onEnterKeyClick: () => this.handleSearch()
           })
-            .placeholderColor(ThemeTokens.textTertiary())
-            .fontSize(fontScaleManager.getScaledFontSize(15))
-            .height(Size.inputSM + Spacing.sm)
+            .placeholderColor(this.isDarkMode ? HDSColours.neutralDark.textTertiary : HDSColours.neutral.gray400)
+            .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.md))
+            .height(48)
             .backgroundColor(Color.Transparent)
             .layoutWeight(1)
             .onChange((value: string) => {
@@ -182,11 +154,11 @@ struct DictionaryPage {
           if (this.searchText) {
             Row() {
               SymbolGlyph($r('sys.symbol.xmark.circle.fill'))
-                .fontSize(Size.iconMD)
-                .fontColor([ThemeTokens.textSecondary()])
+                .fontSize(HDSTypography.sizes.lg)
+                .fontColor([this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600])
             }
-            .width(Size.buttonMD)
-            .height(Size.buttonMD)
+            .width(32)
+            .height(32)
             .justifyContent(FlexAlign.Center)
             .onClick(() => {
               this.searchText = '';
@@ -195,10 +167,10 @@ struct DictionaryPage {
           }
         }
         .width('100%')
-        .height(Size.inputSM + Spacing.sm)
-        .padding({ left: Spacing.sm, right: Spacing.sm })
-        .backgroundColor(ThemeTokens.bgTertiary())
-        .borderRadius(BorderRadius.xl)
+        .height(48)
+        .padding({ left: HDSSpacing.sm, right: HDSSpacing.sm })
+        .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.surface : HDSColours.neutral.gray50)
+        .borderRadius(HDSBorderRadius.xl)
 
         // 搜索按钮
         Button() {
@@ -208,28 +180,28 @@ struct DictionaryPage {
               .height(24)
               .color('#FFFFFF')
           } else {
-            Row({ space: Spacing.sm }) {
+            Row({ space: HDSSpacing.sm }) {
               SymbolGlyph($r('sys.symbol.magnifyingglass'))
-                .fontSize(Size.iconSM)
-                .fontColor(['#FFFFFF'])
+                .fontSize(HDSTypography.sizes.md)
+                .fontColor([HDSColours.neutral.white])
               
               Text('查询')
-                .fontSize(fontScaleManager.getScaledFontSize(15))
+                .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.md))
                 .fontWeight(FontWeight.Medium)
-                .fontColor('#FFFFFF')
+                .fontColor(HDSColours.neutral.white)
             }
           }
         }
         .width('100%')
-        .height(Size.buttonLG)
+        .height(48)
         .linearGradient({
           direction: GradientDirection.Right,
-          colors: [COMMON_COLORS.PRIMARY_BLUE, COMMON_COLORS.PRIMARY_BLUE + 'CC']
+          colors: [HDSColours.primary.blue, HDSColours.primary.blue + 'CC']
         })
-        .borderRadius(BorderRadius.xl)
+        .borderRadius(HDSBorderRadius.xl)
         .shadow({
           radius: 8,
-          color: COMMON_COLORS.PRIMARY_BLUE + '40',
+          color: HDSColours.primary.blue + '40',
           offsetY: 4
         })
         .enabled(!this.isSearching)
@@ -240,37 +212,37 @@ struct DictionaryPage {
         })
       }
       .width('100%')
-      .padding(Spacing.lg)
+      .padding(HDSPacing.lg)
 
       // 搜索结果
       if (this.searchResult) {
         Scroll() {
-          Column({ space: Spacing.lg }) {
+          Column({ space: HDSSpacing.lg }) {
             // 单词卡片
-            Column({ space: Spacing.md }) {
-              Row({ space: Spacing.md }) {
+            Column({ space: HDSSpacing.md }) {
+              Row({ space: HDSSpacing.md }) {
                 // 字母图标
                 Column() {
                   Text(this.searchResult!.word.charAt(0).toUpperCase())
-                    .fontSize(fontScaleManager.getScaledFontSize(32))
+                    .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.xxxl))
                     .fontWeight(FontWeight.Bold)
-                    .fontColor(COMMON_COLORS.PRIMARY_BLUE)
+                    .fontColor(HDSColours.primary.blue)
                 }
                 .width(70)
                 .height(70)
-                .borderRadius(BorderRadius.lg)
-                .backgroundColor(COMMON_COLORS.PRIMARY_BLUE + '15')
+                .borderRadius(HDSBorderRadius.lg)
+                .backgroundColor(HDSColours.primary.blue + '15')
                 .justifyContent(FlexAlign.Center)
 
-                Column({ space: Spacing.sm }) {
+                Column({ space: HDSSpacing.sm }) {
                   Text(this.searchResult!.word)
-                    .fontSize(fontScaleManager.getScaledFontSize(24))
+                    .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.xxl))
                     .fontWeight(FontWeight.Bold)
-                    .fontColor(ThemeTokens.textPrimary())
+                    .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
 
                   Text(this.searchResult!.phonetic)
-                    .fontSize(fontScaleManager.getScaledFontSize(14))
-                    .fontColor(ThemeTokens.textSecondary())
+                    .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.sm))
+                    .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
                 }
                 .alignItems(HorizontalAlign.Start)
                 .layoutWeight(1)
@@ -278,13 +250,13 @@ struct DictionaryPage {
                 // 发音按钮
                 Row() {
                   SymbolGlyph($r('sys.symbol.waveform'))
-                    .fontSize(Size.iconLG)
-                    .fontColor([COMMON_COLORS.PRIMARY_BLUE])
+                    .fontSize(HDSTypography.sizes.xl)
+                    .fontColor([HDSColours.primary.blue])
                 }
-                .width(Size.buttonLG)
-                .height(Size.buttonLG)
-                .borderRadius(BorderRadius.full)
-                .backgroundColor(COMMON_COLORS.PRIMARY_BLUE + '15')
+                .width(48)
+                .height(48)
+                .borderRadius(HDSBorderRadius.full)
+                .backgroundColor(HDSColours.primary.blue + '15')
                 .justifyContent(FlexAlign.Center)
                 .onClick(() => {
                   promptAction.showToast({ message: '播放发音', duration: 1000 });
@@ -293,39 +265,43 @@ struct DictionaryPage {
               .width('100%')
             }
             .width('100%')
-            .padding(Spacing.xl)
-            .backgroundColor(ThemeTokens.bgSecondary())
-            .borderRadius(BorderRadius.xl)
-            .shadow(getShadow('md', this.isDarkMode))
+            .padding(HDSPacing.xl)
+            .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.surface : HDSColours.neutral.gray50)
+            .borderRadius(HDSBorderRadius.xl)
+            .shadow({
+              radius: 8,
+              color: this.isDarkMode ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.08)',
+              offsetY: 4
+            })
 
             // 释义列表
             ForEach(this.searchResult!.meanings, (meaning: MeaningItem, index: number) => {
-              Column({ space: Spacing.md }) {
-                Row({ space: Spacing.sm }) {
+              Column({ space: HDSSpacing.md }) {
+                Row({ space: HDSSpacing.sm }) {
                   Text(meaning.partOfSpeech)
-                    .fontSize(fontScaleManager.getScaledFontSize(16))
+                    .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.lg))
                     .fontWeight(FontWeight.SemiBold)
-                    .fontColor(COMMON_COLORS.PRIMARY_BLUE)
+                    .fontColor(HDSColours.primary.blue)
                   
                   Rectangle()
                     .width('100%')
                     .height(1)
-                    .fill(ThemeTokens.borderLight())
+                    .fill(this.isDarkMode ? HDSColours.neutralDark.border : HDSColours.neutral.gray200)
                 }
                 .width('100%')
 
-                Column({ space: Spacing.sm }) {
+                Column({ space: HDSSpacing.sm }) {
                   ForEach(meaning.definitions, (def: string, idx: number) => {
-                    Row({ space: Spacing.sm }) {
+                    Row({ space: HDSSpacing.sm }) {
                       Text((idx + 1).toString() + '.')
-                        .fontSize(fontScaleManager.getScaledFontSize(14))
+                        .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.sm))
                         .fontWeight(FontWeight.Medium)
-                        .fontColor(ThemeTokens.textSecondary())
+                        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
                         .width(20)
                       
                       Text(def)
-                        .fontSize(fontScaleManager.getScaledFontSize(14))
-                        .fontColor(ThemeTokens.textPrimary())
+                        .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.sm))
+                        .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
                         .lineHeight(22)
                         .layoutWeight(1)
                     }
@@ -335,32 +311,36 @@ struct DictionaryPage {
                 .width('100%')
               }
               .width('100%')
-              .padding(Spacing.xl)
-              .backgroundColor(ThemeTokens.bgSecondary())
-              .borderRadius(BorderRadius.xl)
-              .shadow(getShadow('sm', this.isDarkMode))
+              .padding(HDSPacing.xl)
+              .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.surface : HDSColours.neutral.gray50)
+              .borderRadius(HDSBorderRadius.xl)
+              .shadow({
+                radius: 4,
+                color: this.isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.04)',
+                offsetY: 2
+              })
             }, (meaning: MeaningItem, index: number) => meaning.partOfSpeech + index)
 
             // 添加到生词本按钮
             Button() {
-              Row({ space: Spacing.sm }) {
+              Row({ space: HDSSpacing.sm }) {
                 SymbolGlyph($r('sys.symbol.bookmark'))
-                  .fontSize(Size.iconMD)
-                  .fontColor(['#FFFFFF'])
+                  .fontSize(HDSTypography.sizes.lg)
+                  .fontColor([HDSColours.neutral.white])
                 
                 Text('添加到生词本')
-                  .fontSize(fontScaleManager.getScaledFontSize(15))
+                  .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.md))
                   .fontWeight(FontWeight.Medium)
-                  .fontColor('#FFFFFF')
+                  .fontColor(HDSColours.neutral.white)
               }
             }
             .width('100%')
-            .height(Size.buttonLG)
+            .height(48)
             .linearGradient({
               direction: GradientDirection.Right,
               colors: ['#FFD700', '#FFA500']
             })
-            .borderRadius(BorderRadius.xl)
+            .borderRadius(HDSBorderRadius.xl)
             .shadow({
               radius: 8,
               color: '#FFD70040',
@@ -376,9 +356,9 @@ struct DictionaryPage {
           }
           .width('100%')
           .padding({ 
-            left: Spacing.lg, 
-            right: Spacing.lg,
-            bottom: Spacing.xxxl
+            left: HDSSpacing.lg, 
+            right: HDSSpacing.lg,
+            bottom: HDSSpacing.xxxl
           })
         }
         .layoutWeight(1)
@@ -387,26 +367,26 @@ struct DictionaryPage {
         .edgeEffect(EdgeEffect.Spring)
       } else {
         // 空状态
-        Column({ space: Spacing.xl }) {
+        Column({ space: HDSSpacing.xl }) {
           Column() {
             SymbolGlyph($r('sys.symbol.book.closed'))
-              .fontSize(Size.iconXXXL * 1.5)
-              .fontColor([ThemeTokens.textDisabled()])
+              .fontSize(64)
+              .fontColor([this.isDarkMode ? HDSColours.neutralDark.textDisabled : HDSColours.neutral.gray400])
           }
           .width(100)
           .height(100)
-          .borderRadius(BorderRadius.full)
-          .backgroundColor(ThemeTokens.bgHover())
+          .borderRadius(HDSBorderRadius.full)
+          .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.surface : HDSColours.neutral.gray100)
           .justifyContent(FlexAlign.Center)
 
           Text('输入单词开始查询')
-            .fontSize(fontScaleManager.getScaledFontSize(16))
+            .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.lg))
             .fontWeight(FontWeight.Medium)
-            .fontColor(ThemeTokens.textPrimary())
+            .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
 
           Text('支持中英文词典查询')
-            .fontSize(fontScaleManager.getScaledFontSize(13))
-            .fontColor(ThemeTokens.textSecondary())
+            .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.sm))
+            .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
         }
         .width('100%')
         .layoutWeight(1)
@@ -415,7 +395,7 @@ struct DictionaryPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(ThemeTokens.bgPrimary())
+    .backgroundColor(getPageBackgroundColor())
   }
 }
 
@@ -426,28 +406,28 @@ struct DictionaryPagePreview {
   build() {
     Column() {
       Text('词典页面 - 浅色模式')
-        .fontSize(16)
+        .fontSize(HDSTypography.sizes.lg)
         .fontWeight(FontWeight.Bold)
-        .padding(Spacing.md)
-        .backgroundColor('#F0F0F0')
+        .padding(HDSPacing.md)
+        .backgroundColor(HDSColours.neutral.gray100)
 
       DictionaryPage()
         .height(700)
 
       Divider()
-        .margin({ top: 20, bottom: 20 })
+        .margin({ top: HDSSpacing.xl, bottom: HDSSpacing.xl })
 
       Text('词典页面 - 深色模式')
-        .fontSize(16)
+        .fontSize(HDSTypography.sizes.lg)
         .fontWeight(FontWeight.Bold)
-        .padding(Spacing.md)
-        .backgroundColor('#333333')
-        .fontColor('#FFFFFF')
+        .padding(HDSPacing.md)
+        .backgroundColor(HDSColours.neutralDark.surface)
+        .fontColor(HDSColours.neutralDark.textPrimary)
 
       DictionaryPage()
         .height(700)
     }
     .width('100%')
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(HDSColours.neutral.white)
   }
 }

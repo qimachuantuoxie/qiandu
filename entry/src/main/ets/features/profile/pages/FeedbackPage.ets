@@ -3,13 +3,13 @@ import { navigateTo, goBack } from '../../../common/utils/NavigationHelper';
 import { router, promptAction } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { preferenceManager } from '../../../core/utils/PreferenceManager';
-import { themeManager, AppColors, COMMON_COLORS } from '../../../core/utils/AppTheme';
+import { themeManager, AppColors } from '../../../core/utils/AppTheme';
 import { fontScaleManager } from '../../../core/utils/FontScaleManager';
 import { PageHeader, getPageBackgroundColor } from '../../../common/utils/PageLayoutHelper';
 import { HDSCard } from '../../../common/components/HDSCard';
 import { DialogHelper } from '../../../common/utils/DialogHelper';
 import { HDSColours, HDSSpacing, HDSBorderRadius, HDSTypography } from '../../../core/design/tokens/HDSDTokens';
-import { layoutHelper, ScreenInfo } from '../common/utils/LayoutHelper';
+import { layoutHelper, ScreenInfo } from '../../common/utils/LayoutHelper';
 
 @Entry
 @ComponentV2
@@ -75,173 +75,149 @@ struct FeedbackPage {
 
   build() {
     Column() {
-      // 顶部导航栏
-      Row() {
-        Row() {
-          SymbolGlyph($r('sys.symbol.chevron.left'))
-            .fontSize(Size.iconLG)
-            .fontColor([this.tc('#1A1A1A', '#FFFFFF')])
-        }
-        .width(Size.buttonMD)
-        .height(Size.buttonMD)
-        .borderRadius(BorderRadius.full)
-        .backgroundColor(this.tc('rgba(0,0,0,0.05)', 'rgba(255,255,255,0.1)'))
-        .justifyContent(FlexAlign.Center)
-        .onClick(() => {
+      // 标准页面头部
+      PageHeader({
+        title: '意见反馈',
+        showBack: true,
+        onBack: () => {
           try {
             goBack();
           } catch (error) {
             const msg = error instanceof Error ? error.message : String(error);
             logger.error('[FeedbackPage] back failed:', msg);
           }
-        })
-        .stateStyles({
-          pressed: { .scale({ x: 0.9, y: 0.9 }) },
-          normal: { .scale({ x: 1, y: 1 }) }
-        })
-
-        Text('意见反馈')
-          .fontSize(fontScaleManager.getScaledFontSize(18))
-          .fontWeight(FontWeight.SemiBold)
-          .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
-          .layoutWeight(1)
-          .textAlign(TextAlign.Center)
-
-        Blank()
-          .width(Size.buttonMD)
-      }
-      .width('100%')
-      .height(Size.buttonLG + Spacing.sm)
-      .padding({ left: Spacing.lg, right: Spacing.lg })
-      .backgroundColor(this.tc('#FFFFFF', '#1A1A1A'))
-      .shadow(getShadow('sm', this.isDarkMode))
+        }
+      })
 
       // 表单区域
       Scroll() {
-        Column({ space: Spacing.lg }) {
+        Column({ space: HDSSpacing.lg }) {
           // 反馈类型选择
-          Column({ space: Spacing.md }) {
-            Row() {
-              SymbolGlyph($r('sys.symbol.tag.fill'))
-                .fontSize(Size.iconMD)
-                .fontColor([this.currentColors.primary])
-              
-              Text('反馈类型')
-                .fontSize(fontScaleManager.getScaledFontSize(16))
-                .fontWeight(FontWeight.SemiBold)
-                .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
-                .layoutWeight(1)
-                .margin({ left: Spacing.sm })
-            }
-            .width('100%')
+          HDSCard({
+            padding: HDSSpacing.xl,
+            content: () => {
+              Column({ space: HDSSpacing.md }) {
+                Row() {
+                  SymbolGlyph($r('sys.symbol.tag.fill'))
+                    .fontSize(HDSTypography.sizes.lg)
+                    .fontColor([HDSColours.primary.blue])
+                  
+                  Text('反馈类型')
+                    .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.lg))
+                    .fontWeight(FontWeight.SemiBold)
+                    .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
+                    .layoutWeight(1)
+                    .margin({ left: HDSSpacing.sm })
+                }
+                .width('100%')
 
-            Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
-              ForEach(this.feedbackTypes, (type: string) => {
-                Text(type)
-                  .fontSize(fontScaleManager.getScaledFontSize(14))
-                  .padding({ 
-                    left: Spacing.lg, 
-                    right: Spacing.lg, 
-                    top: Spacing.md, 
-                    bottom: Spacing.md 
-                  })
-                  .backgroundColor(this.feedbackType === type ? 
-                    this.currentColors.primary : this.bg('#F2F2F7', '#2C2C2E'))
-                  .fontColor(this.feedbackType === type ? 
-                    '#FFFFFF' : this.tc('#1A1A1A', '#FFFFFF'))
-                  .borderRadius(BorderRadius.xl)
-                  .fontWeight(this.feedbackType === type ? 
-                    FontWeight.Medium : FontWeight.Regular)
-                  .onClick(() => { this.feedbackType = type; })
-                  .stateStyles({
-                    pressed: { .scale({ x: 0.95, y: 0.95 }) },
-                    normal: { .scale({ x: 1, y: 1 }) }
-                  })
-                  .margin({ right: Spacing.sm, bottom: Spacing.sm })
-              }, (type: string) => type)
+                Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
+                  ForEach(this.feedbackTypes, (type: string) => {
+                    Text(type)
+                      .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.sm))
+                      .padding({ 
+                        left: HDSSpacing.lg, 
+                        right: HDSSpacing.lg, 
+                        top: HDSSpacing.md, 
+                        bottom: HDSSpacing.md 
+                      })
+                      .backgroundColor(this.feedbackType === type ? 
+                        HDSColours.primary.blue : this.isDarkMode ? HDSColours.neutralDark.surface : HDSColours.neutral.gray100)
+                      .fontColor(this.feedbackType === type ? 
+                        HDSColours.neutral.white : this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
+                      .borderRadius(HDSBorderRadius.xl)
+                      .fontWeight(this.feedbackType === type ? 
+                        FontWeight.Medium : FontWeight.Regular)
+                      .onClick(() => { this.feedbackType = type; })
+                      .stateStyles({
+                        pressed: { .scale({ x: 0.95, y: 0.95 }) },
+                        normal: { .scale({ x: 1, y: 1 }) }
+                      })
+                      .margin({ right: HDSSpacing.sm, bottom: HDSSpacing.sm })
+                  }, (type: string) => type)
+                }
+                .width('100%')
+              }
+              .width('100%')
             }
-            .width('100%')
-          }
-          .width('100%')
-          .padding(Spacing.xl)
-          .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-          .borderRadius(BorderRadius.xl)
-          .shadow(getShadow('sm', this.isDarkMode))
+          })
 
           // 反馈内容
-          Column({ space: Spacing.md }) {
-            Row() {
-              SymbolGlyph($r('sys.symbol.text.bubble'))
-                .fontSize(Size.iconMD)
-                .fontColor([this.currentColors.primary])
-              
-              Text('反馈内容')
-                .fontSize(fontScaleManager.getScaledFontSize(16))
-                .fontWeight(FontWeight.SemiBold)
-                .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
-                .layoutWeight(1)
-                .margin({ left: Spacing.sm })
+          HDSCard({
+            padding: HDSSpacing.xl,
+            content: () => {
+              Column({ space: HDSSpacing.md }) {
+                Row() {
+                  SymbolGlyph($r('sys.symbol.text.bubble'))
+                    .fontSize(HDSTypography.sizes.lg)
+                    .fontColor([HDSColours.primary.blue])
+                  
+                  Text('反馈内容')
+                    .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.lg))
+                    .fontWeight(FontWeight.SemiBold)
+                    .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
+                    .layoutWeight(1)
+                    .margin({ left: HDSSpacing.sm })
 
-              Text(this.feedbackContent.length + '/500')
-                .fontSize(fontScaleManager.getScaledFontSize(12))
-                .fontColor(this.feedbackContent.length > 450 ? '#FF4D4F' : this.tc('#8E8E93', '#8E8E93'))
+                  Text(this.feedbackContent.length + '/500')
+                    .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.xs))
+                    .fontColor(this.feedbackContent.length > 450 ? HDSColours.status.error : this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
+                }
+                .width('100%')
+
+                TextArea({ text: $$this.feedbackContent, placeholder: '请详细描述您遇到的问题或建议...' })
+                  .placeholderColor(this.isDarkMode ? HDSColours.neutralDark.textTertiary : HDSColours.neutral.gray400)
+                  .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.sm))
+                  .height(150)
+                  .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.surface : HDSColours.neutral.gray50)
+                  .borderRadius(HDSBorderRadius.lg)
+                  .padding(HDSPacing.md)
+                  .maxLength(500)
+                  .onChange((value: string) => {
+                    this.feedbackContent = value;
+                  })
+              }
+              .width('100%')
             }
-            .width('100%')
-
-            TextArea({ text: $$this.feedbackContent, placeholder: '请详细描述您遇到的问题或建议...' })
-              .placeholderColor(this.tc('#C7C7CC', '#8E8E93'))
-              .fontSize(fontScaleManager.getScaledFontSize(14))
-              .height(150)
-              .backgroundColor(this.bg('#F8F9FA', '#2C2C2E'))
-              .borderRadius(BorderRadius.lg)
-              .padding(Spacing.md)
-              .maxLength(500)
-              .onChange((value: string) => {
-                this.feedbackContent = value;
-              })
-          }
-          .width('100%')
-          .padding(Spacing.xl)
-          .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-          .borderRadius(BorderRadius.xl)
-          .shadow(getShadow('sm', this.isDarkMode))
+          })
 
           // 联系方式（可选）
-          Column({ space: Spacing.md }) {
-            Row() {
-              SymbolGlyph($r('sys.symbol.phone.fill'))
-                .fontSize(Size.iconMD)
-                .fontColor([this.currentColors.primary])
-              
-              Text('联系方式（可选）')
-                .fontSize(fontScaleManager.getScaledFontSize(16))
-                .fontWeight(FontWeight.SemiBold)
-                .fontColor(this.tc('#1A1A1A', '#FFFFFF'))
-                .layoutWeight(1)
-                .margin({ left: Spacing.sm })
+          HDSCard({
+            padding: HDSSpacing.xl,
+            content: () => {
+              Column({ space: HDSSpacing.md }) {
+                Row() {
+                  SymbolGlyph($r('sys.symbol.phone.fill'))
+                    .fontSize(HDSTypography.sizes.lg)
+                    .fontColor([HDSColours.primary.blue])
+                  
+                  Text('联系方式（可选）')
+                    .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.lg))
+                    .fontWeight(FontWeight.SemiBold)
+                    .fontColor(this.isDarkMode ? HDSColours.neutralDark.textPrimary : HDSColours.neutral.gray900)
+                    .layoutWeight(1)
+                    .margin({ left: HDSSpacing.sm })
 
-              Text('方便我们回复您')
-                .fontSize(fontScaleManager.getScaledFontSize(12))
-                .fontColor(this.tc('#8E8E93', '#8E8E93'))
+                  Text('方便我们回复您')
+                    .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.xs))
+                    .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
+                }
+                .width('100%')
+
+                TextInput({ placeholder: '手机号/邮箱', text: $$this.contactInfo })
+                  .placeholderColor(this.isDarkMode ? HDSColours.neutralDark.textTertiary : HDSColours.neutral.gray400)
+                  .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.sm))
+                  .height(48)
+                  .backgroundColor(this.isDarkMode ? HDSColours.neutralDark.surface : HDSColours.neutral.gray50)
+                  .borderRadius(HDSBorderRadius.lg)
+                  .padding({ left: HDSSpacing.md, right: HDSSpacing.md })
+                  .onChange((value: string) => {
+                    this.contactInfo = value;
+                  })
+              }
+              .width('100%')
             }
-            .width('100%')
-
-            TextInput({ placeholder: '手机号/邮箱', text: $$this.contactInfo })
-              .placeholderColor(this.tc('#C7C7CC', '#8E8E93'))
-              .fontSize(fontScaleManager.getScaledFontSize(14))
-              .height(Size.inputSM + Spacing.sm)
-              .backgroundColor(this.bg('#F8F9FA', '#2C2C2E'))
-              .borderRadius(BorderRadius.lg)
-              .padding({ left: Spacing.md, right: Spacing.md })
-              .onChange((value: string) => {
-                this.contactInfo = value;
-              })
-          }
-          .width('100%')
-          .padding(Spacing.xl)
-          .backgroundColor(this.tc('#FFFFFF', '#1E1E2E'))
-          .borderRadius(BorderRadius.xl)
-          .shadow(getShadow('sm', this.isDarkMode))
+          })
 
           // 提交按钮
           Button() {
@@ -249,30 +225,30 @@ struct FeedbackPage {
               LoadingProgress()
                 .width(24)
                 .height(24)
-                .color('#FFFFFF')
+                .color(HDSColours.neutral.white)
             } else {
-              Row({ space: Spacing.sm }) {
+              Row({ space: HDSSpacing.sm }) {
                 SymbolGlyph($r('sys.symbol.paperplane'))
-                  .fontSize(Size.iconMD)
-                  .fontColor(['#FFFFFF'])
+                  .fontSize(HDSTypography.sizes.lg)
+                  .fontColor([HDSColours.neutral.white])
                 
                 Text('提交反馈')
-                  .fontSize(fontScaleManager.getScaledFontSize(16))
+                  .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.lg))
                   .fontWeight(FontWeight.SemiBold)
-                  .fontColor('#FFFFFF')
+                  .fontColor(HDSColours.neutral.white)
               }
             }
           }
           .width('100%')
-          .height(Size.buttonLG + Spacing.sm)
+          .height(56)
           .linearGradient({
             direction: GradientDirection.Right,
-            colors: [COMMON_COLORS.PRIMARY_BLUE, COMMON_COLORS.PRIMARY_BLUE + 'CC']
+            colors: [HDSColours.primary.blue, HDSColours.primary.blue + 'CC']
           })
-          .borderRadius(BorderRadius.xl)
+          .borderRadius(HDSBorderRadius.xl)
           .shadow({
             radius: 8,
-            color: COMMON_COLORS.PRIMARY_BLUE + '40',
+            color: HDSColours.primary.blue + '40',
             offsetY: 4
           })
           .enabled(!this.isSubmitting && this.feedbackContent.trim().length > 0)
@@ -287,21 +263,21 @@ struct FeedbackPage {
           })
 
           // 提示信息
-          Row({ space: Spacing.xs }) {
+          Row({ space: HDSSpacing.xs }) {
             SymbolGlyph($r('sys.symbol.info.circle'))
-              .fontSize(Size.iconSM)
-              .fontColor([this.tc('#8E8E93', '#8E8E93')])
+              .fontSize(HDSTypography.sizes.md)
+              .fontColor([this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600])
             
             Text('我们会在1-3个工作日内处理您的反馈')
-              .fontSize(fontScaleManager.getScaledFontSize(12))
-              .fontColor(this.tc('#8E8E93', '#8E8E93'))
+              .fontSize(fontScaleManager.getScaledFontSize(HDSTypography.sizes.xs))
+              .fontColor(this.isDarkMode ? HDSColours.neutralDark.textSecondary : HDSColours.neutral.gray600)
           }
           .width('100%')
           .justifyContent(FlexAlign.Center)
-          .padding({ bottom: Spacing.xxxl })
+          .padding({ bottom: HDSSpacing.xxxl })
         }
         .width('100%')
-        .padding({ left: Spacing.lg, right: Spacing.lg, top: Spacing.lg })
+        .padding({ left: HDSSpacing.lg, right: HDSSpacing.lg, top: HDSSpacing.lg })
       }
       .layoutWeight(1)
       .width('100%')
@@ -310,7 +286,7 @@ struct FeedbackPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor(this.bg('#F8F9FA', '#0F0F0F'))
+    .backgroundColor(getPageBackgroundColor())
   }
 }
 
@@ -321,28 +297,28 @@ struct FeedbackPagePreview {
   build() {
     Column() {
       Text('意见反馈 - 浅色模式')
-        .fontSize(16)
+        .fontSize(HDSTypography.sizes.lg)
         .fontWeight(FontWeight.Bold)
-        .padding(Spacing.md)
-        .backgroundColor('#F0F0F0')
+        .padding(HDSPacing.md)
+        .backgroundColor(HDSColours.neutral.gray100)
 
       FeedbackPage()
         .height(700)
 
       Divider()
-        .margin({ top: 20, bottom: 20 })
+        .margin({ top: HDSSpacing.xl, bottom: HDSSpacing.xl })
 
       Text('意见反馈 - 深色模式')
-        .fontSize(16)
+        .fontSize(HDSTypography.sizes.lg)
         .fontWeight(FontWeight.Bold)
-        .padding(Spacing.md)
-        .backgroundColor('#333333')
-        .fontColor('#FFFFFF')
+        .padding(HDSPacing.md)
+        .backgroundColor(HDSColours.neutralDark.surface)
+        .fontColor(HDSColours.neutralDark.textPrimary)
 
       FeedbackPage()
         .height(700)
     }
     .width('100%')
-    .backgroundColor('#FFFFFF')
+    .backgroundColor(HDSColours.neutral.white)
   }
 }
